@@ -92,7 +92,6 @@ function OnPressAttack2()
 			g_iAmmo--;
 
 			UpDateAmmo();
-			EF(g_hGun, "SetAmmoAmount", "0");
 			Shoot_Pre();
 		}
 	}
@@ -173,10 +172,10 @@ function OnAnimEnd()
 		case "reload":
 		{
 			EF(g_hModel, "Color", "255 255 255");
+			UpDateAmmo();
 			break;
 		}
 	}
-	UpDateAmmo();
 }
 
 function IsAttack()

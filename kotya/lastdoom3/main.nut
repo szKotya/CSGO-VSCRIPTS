@@ -8,8 +8,11 @@ class class_item
 	center = null;
 	owner = null;
 
+	active = false;
+
 	script = null;
 	gun_modelname = null;
+
 	constructor(_postfix)
 	{
 		this.postfix = _postfix;
@@ -53,21 +56,23 @@ class class_item
 		printl("ToggleItem");
 		if (this.script != null)
 		{
-		if (toggle)
-		{
-			this.script.GetScriptScope().ActivateItem(this.owner);
-		}
-		else
-		{
-			if (this.gun.GetRootMoveParent() != this.owner)
+			if (toggle)
 			{
-				this.RemoveOwner();
+				this.active = true;
+				this.script.GetScriptScope().ActivateItem(this.owner);
 			}
 			else
 			{
-				this.script.GetScriptScope().DeactivateItem(this.owner);
+				this.active = false;
+				if (this.gun.GetRootMoveParent() != this.owner)
+				{
+					this.RemoveOwner();
+				}
+				else
+				{
+					this.script.GetScriptScope().DeactivateItem(this.owner);
+				}
 			}
-		}
 		}
 	}
 
@@ -88,10 +93,6 @@ class class_item
 				break;
 			}
 		}
-
-		// EF(this.center, "ClearParent");
-		// EntFireByHandle(g_hItems, "RunScriptCode", "caller.SetForwardVector(activator.GetForwardVector());caller.SetOrigin(activator.GetOrigin())", 0.01, this.gun, this.center);
-		// EntFireByHandle(this.center, "SetParent", "!activator", 0.02, this.gun, this.gun);
 	}
 }
 
@@ -260,25 +261,39 @@ function ActivateItem(owner)
 		return;
 	}
 	printl("0.5");
+	// Подбор 2 итема если есть 1 getmodel дает нулл проп
 	local viewmodel_name = viewmodel.GetModelName();
-	viewmodel_name = viewmodel_name.slice(17, viewmodel_name.len() - 5);
+	if (viewmodel_name != NULLPROP)
+	{
+		viewmodel_name = viewmodel_name.slice(17, viewmodel_name.len() - 5);
+	}
 	foreach(item in item_class)
 	{
 		if (item.gun_modelname == null)
 		{
 			printl(viewmodel_name + " : " + item.gun_modelname);
-			continue;
+			printl("0.35");
 		}
 		else if (viewmodel_name != item.gun_modelname)
 		{
+			printl(viewmodel_name + " : " + item.gun_modelname);
 			printl("0.25");
-			item.ToggleItem(false);
-			continue;
+			if (viewmodel_name != NULLPROP)
+			{
+				item.ToggleItem(false);
+			}
+			else if (!item.active)
+			{
+				item.ToggleItem(false);
+			}
 		}
-		printl("0");
-		viewmodel.SetModel(NULLPROP);
-		item.gun.SetModel(NULLPROP);
-		item.ToggleItem(true);
+		else
+		{
+			printl("0");
+			viewmodel.SetModel(NULLPROP);
+			item.gun.SetModel(NULLPROP);
+			item.ToggleItem(true);
+		}
 	}
 }
 
