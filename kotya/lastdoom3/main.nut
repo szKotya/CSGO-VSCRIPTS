@@ -22,7 +22,7 @@ class class_item
 	{
 		printl("PICK");
 		this.owner = owner;
-		this.script.GetScriptScope().g_hOwner = owner;
+		// this.script.GetScriptScope().g_hOwner = owner;
 	}
 
 	function RemoveOwner()
@@ -70,7 +70,7 @@ class class_item
 				}
 				else
 				{
-					this.script.GetScriptScope().DeactivateItem(this.owner);
+					this.script.GetScriptScope().DeactivateItem();
 				}
 			}
 		}
@@ -97,7 +97,6 @@ class class_item
 }
 
 ::g_hItems <- self;
-::g_iID <- 0;
 g_aiItems <- [];
 g_bTicking_Drop <- false;
 function LastInit()
@@ -182,7 +181,7 @@ function TickDrop()
 		}
 		if (g_bTicking_Drop)
 		{
-			EF(self, "RunScriptCode", "TickDrop()", TICKRATE_DROP);
+			CallFunction("TickDrop()", TICKRATE_DROP);
 		}
 	}
 }
@@ -193,7 +192,7 @@ function GetItemByGun(gun)
 	{
 		if (item.gun == gun)
 		{
-		return item;
+			return item;
 		}
 	}
 	return null;
@@ -205,7 +204,7 @@ function GetItemByPostFix(postfix)
 	{
 		if (item.postfix == postfix)
 		{
-		return item;
+			return item;
 		}
 	}
 	return null;
@@ -223,7 +222,7 @@ function TickProjectile(iValue)
 		EF(caller, "FireUser1", "");
 		return;
 	}
-	EntFireByHandle(self, "RunScriptCode", "TickProjectile(" + iValue + ")", TICKRATE_PROJECTILE, null, caller);
+	CallFunction("TickProjectile(" + iValue + ")", TICKRATE_PROJECTILE, caller, caller);
 }
 
 EVENT_EQUIP <- null;
@@ -273,8 +272,10 @@ function ActivateItem(owner)
 		{
 			printl(viewmodel_name + " : " + item.gun_modelname);
 			printl("0.35");
+			continue;
 		}
-		else if (viewmodel_name != item.gun_modelname)
+		
+		if (viewmodel_name != item.gun_modelname)
 		{
 			printl(viewmodel_name + " : " + item.gun_modelname);
 			printl("0.25");
@@ -286,14 +287,13 @@ function ActivateItem(owner)
 			{
 				item.ToggleItem(false);
 			}
+			continue;
 		}
-		else
-		{
-			printl("0");
-			viewmodel.SetModel(NULLPROP);
-			item.gun.SetModel(NULLPROP);
-			item.ToggleItem(true);
-		}
+
+		printl("0");
+		viewmodel.SetModel(NULLPROP);
+		item.gun.SetModel(NULLPROP);
+		item.ToggleItem(true);
 	}
 }
 
@@ -397,7 +397,7 @@ self.PrecacheModel(NULLPROP);
 ::TraceDir <- function(orig, dir, maxd = 99999, filter = null)
 {
 	local frac = TraceLine(orig, orig+dir*maxd, filter);
-	if(frac == 1.0)
+	if (frac == 1.0)
 	{
 		return orig + dir * maxd;
 	}
@@ -412,8 +412,8 @@ self.PrecacheModel(NULLPROP);
 	local deltaZ = a.z - b.z;
 	local yaw = atan2(deltaY,deltaX) * 180 / PI
 	local pitch = asin(deltaZ / sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)) * 180 / PI;
-	if(pitch > 0){pitch = -pitch;}
-	else{pitch = fabs(pitch);}
+	if (pitch > 0){pitch = -pitch;}
+	else {pitch = fabs(pitch);}
 	return Vector(pitch, yaw, 0);
 }
 
@@ -449,7 +449,13 @@ function GetItemByOwner(owner)
 	return null;
 }
 
-::DrawAxis <- function(pos,s = 16,time = 10)
+::CallFunction <- function(func_name, fdelay = 0.0, activator = null, caller = null)
+{
+	printl(self +" "+ func_name +" "+ fdelay +" "+ activator);
+	EntFireByHandle(self, "RunScriptCode", "" + func_name, fdelay, activator, caller);
+}
+
+::DrawAxis <- function(pos, s = 16,time = 10)
 {
 	DebugDrawLine(Vector(pos.x-s,pos.y,pos.z), Vector(pos.x+s,pos.y,pos.z), 255, 0, 0, true, time);
 	DebugDrawLine(Vector(pos.x,pos.y-s,pos.z), Vector(pos.x,pos.y+s,pos.z), 0, 255, 0, true, time);

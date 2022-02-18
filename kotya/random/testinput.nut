@@ -1,16 +1,16 @@
 function first()
 {
-	printl("WORK1");
+	printl("FIRST");
 }
 
 function second()
 {
-	printl("WORK2");
+	printl("SECOND");
 }
 
-function InputOnTrigger()
+function InputFireUser1()
 {
-	printl("123");
-	// second();
+	second();
+
 	return true;
 }

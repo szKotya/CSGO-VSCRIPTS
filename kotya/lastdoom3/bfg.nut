@@ -3,6 +3,7 @@ g_hMaker <- Entities.FindByName(null, "missile_bfg_maker");
 g_szName <- self.GetName().slice(self.GetPreTemplateName().len(), self.GetName().len());
 g_hEye <- Entities.CreateByClassname("prop_dynamic");
 g_hEye.SetModel("models/editor/playerstart.mdl");
+
 AOP(g_hEye, "solid", 0);
 AOP(g_hEye, "rendermode", 10);
 AOP(g_hEye, "targetname", "item_bfg_eye" + g_szName);
@@ -39,17 +40,18 @@ function ActivateItem(owner)
 	}
 	UpDateAmmo();
 
-	g_hEye.SetOrigin(owner.EyePosition());
-	AOP(owner, "targetname", "owner" + g_szName);
-	EF(g_hEye_Parent, "SetMeasureTarget", owner.GetName());
+	g_hOwner = owner;
+	g_hEye.SetOrigin(g_hOwner.EyePosition());
+	AOP(g_hOwner, "targetname", "owner" + g_szName);
+	EF(g_hEye_Parent, "SetMeasureTarget", g_hOwner.GetName());
 	EF(g_hEye_Parent, "Enable");
-	EntFireByHandle(g_hEye, "SetParent", "!activator", 0.02, owner, owner);
-	AOP(owner, "targetname", "", 0.07);
+	EntFireByHandle(g_hEye, "SetParent", "!activator", 0.02, g_hOwner, g_hOwner);
+	AOP(g_hOwner, "targetname", "", 0.07);
 
 	EF(g_hParent, "ClearParent");
-	EntFireByHandle(g_hParent, "SetParent", "!activator", 0.02, owner, owner);
-	EntFireByHandle(g_hParent, "SetParentAttachment", "weapon_hand_R", 0.07, owner, owner);
-	EntFireByHandle(self, "Activate", "", 0.05, owner, owner);
+	EntFireByHandle(g_hParent, "SetParent", "!activator", 0.02, g_hOwner, g_hOwner);
+	EntFireByHandle(g_hParent, "SetParentAttachment", "weapon_hand_R", 0.07, g_hOwner, g_hOwner);
+	EntFireByHandle(self, "Activate", "", 0.05, g_hOwner, g_hOwner);
 	g_bActive = 1;
 }
 
@@ -62,7 +64,7 @@ function RemoveOwner()
 	EF(g_hEye_Parent, "Disable");
 }
 
-function DeactivateItem(owner)
+function DeactivateItem()
 {
 	printl("DeactivateItem");
 	if (g_bActive != 0)
@@ -71,13 +73,15 @@ function DeactivateItem(owner)
 		EF(g_hEye_Parent, "Disable");
 
 		EF(g_hParent, "ClearParent");
-		EntFireByHandle(g_hParent, "SetParent", "!activator", 0.01, owner, owner);
-		EntFireByHandle(g_hParent, "SetParentAttachment", "primary", 0.06, owner, owner);
+		EntFireByHandle(g_hParent, "SetParent", "!activator", 0.01, g_hOwner, g_hOwner);
+		EntFireByHandle(g_hParent, "SetParentAttachment", "primary", 0.06, g_hOwner, g_hOwner);
 
-		if (TargerValid(owner))
+		if (TargerValid(g_hOwner))
 		{
 			EF(self, "Deactivate", "", 0.02);
 		}
+
+		g_hOwner = null; 
 		g_bActive = 0;
 	}
 }
@@ -195,4 +199,4 @@ function IsReload()
 	}
 	return false;
 }
-EF(self, "RunScriptCode", "UpDateAmmo()", 0.05);
+CallFunction("UpDateAmmo()", 0.05);
