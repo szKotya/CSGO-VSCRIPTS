@@ -2,46 +2,51 @@
 
 function RoundStart()
 {
-    local h;
-    h = Entities.CreateByClassname("logic_script");
-    EF(h, "RunScriptFile", "kotya/cosmov6_final/prespawn/prespawn_controller.nut");
-    AOP(h, "targetname", "map_script_prespawn_controller");
+	local h;
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/prespawn/prespawn_controller.nut");
+	AOP(h, "targetname", "map_script_prespawn_controller");
 
 	h = Entities.CreateByClassname("logic_script");
-    EF(h, "RunScriptFile", "kotya/cosmov6_final/items/item_controller.nut");
-    AOP(h, "targetname", "map_script_item_controller");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/items/item_controller.nut");
+	AOP(h, "targetname", "map_script_item_controller");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/player_movement.nut");
+	AOP(h, "targetname", "map_script_player_movement");
+
 
 	//DEBUG
 	SendToConsole("sv_cheats 1");
 	SendToConsole("bot_stop 1");
 	SendToConsole("mp_freezetime 0");
 	SendToConsole("mp_warmuptime 999999999");
-	//EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
+	EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
 }
 SendToConsole("mp_restartgame 1");
 ::class_pos <- class
 {
-    origin = Vector(0, 0, 0);
-    ox = 0;
-    oy = 0;
-    oz = 0;
-    angles = Vector(0, 0, 0);
-    ax = 0;
-    ay = 0;
-    az = 0;
+	origin = Vector(0, 0, 0);
+	ox = 0;
+	oy = 0;
+	oz = 0;
+	angles = Vector(0, 0, 0);
+	ax = 0;
+	ay = 0;
+	az = 0;
 
-    constructor(_origin, _angles = Vector(0, 0, 0))
-    {
-        this.origin = _origin;
-        this.ox = _origin.x;
-        this.oy = _origin.y;
-        this.oz = _origin.z;
+	constructor(_origin, _angles = Vector(0, 0, 0))
+	{
+		this.origin = _origin;
+		this.ox = _origin.x;
+		this.oy = _origin.y;
+		this.oz = _origin.z;
 
-        this.angles = _angles;
-        this.ax = _angles.x;
-        this.ay = _angles.y;
-        this.az = _angles.z;
-    }
+		this.angles = _angles;
+		this.ax = _angles.x;
+		this.ay = _angles.y;
+		this.az = _angles.z;
+	}
 }
 
 ::ITEM_INFO <- [];
@@ -56,7 +61,7 @@ class class_iteminfo
 
 	gun_particle_name = null;
 	gun_particle_light_color = null;
-    gun_particle_sprite_color = null;
+	gun_particle_sprite_color = null;
 
 	gun_model = null;
 
@@ -222,13 +227,13 @@ class class_iteminfo
 ::GetItemInfoByName <- function(name)
 {
 	foreach (item in ITEM_INFO)
-    {
-        if (item.name.tolower() == name.tolower())
-        {
-            return item;
-        }
-    }
-    return null;
+	{
+		if (item.name.tolower() == name.tolower())
+		{
+			return item;
+		}
+	}
+	return null;
 }
 
 function RegItemInfo()
@@ -287,8 +292,7 @@ function RegItemInfo()
 	obj.name = "Gravity";
 	obj.Cast_SetCD("80 75 70");
 	obj.Cast_SetDamage("256 256 256");
-	// obj.Cast_SetDuration("5 6 7");
-	obj.Cast_SetDuration("16");
+	obj.Cast_SetDuration("5 6 7");
 	obj.Cast_SetRadius("512 726 1024");
 	obj.Cast_SetTime("1.2 1.5 1.8");
 	obj.Cast_SetCastRangeForward("120 150 180");
@@ -310,10 +314,11 @@ function RegItemInfo()
 	obj = class_iteminfo();
 	obj.name = "Fire";
 	obj.Cast_SetCD("75 70 65");
-	obj.Cast_SetDamage("500 600 700");
+	obj.Cast_SetDamage("350 450 500");
 	obj.Cast_SetDuration("7 8 9");
 	obj.Cast_SetRadius("360 512 600");
-	obj.Cast_SetTime("0.15 0.2 0.25");
+	obj.Cast_SetTime("0.5 0.75 1.0");
+	obj.vscripts = "kotya/cosmov6_final/items/item_trigger_fire.nut";
 	obj.type = 1;
 	obj.can_silence = true;
 	obj.transfer_ban_double = true;
@@ -428,7 +433,7 @@ function RegItemInfo()
 
 	obj = class_iteminfo();
 	obj.name = "Ultima";
-	obj.Cast_SetDamage("80 85 95");
+	obj.Cast_SetDamage("80 90 100");
 	obj.Cast_SetDuration("15");
 	obj.cast_cd = obj.cast_duration;
 	obj.Cast_SetRadius("740 920 1024");
@@ -556,20 +561,28 @@ function RegItemInfo()
 	}
 	else if (typeof item == "instance")
 	{
-		if (typeof value == "string")
-		{
-			item.__KeyValueFromString(key, value);
-		}
-		else if (typeof value == "integer")
-		{
-			item.__KeyValueFromInt(key, value);
-		}
-		else
+		if (d > 0.00)
 		{
 			EntFireByHandle(item, "AddOutPut", key + " " + value, d, item, item);
 		}
+		else
+		{
+			if (typeof value == "string")
+			{
+				item.__KeyValueFromString(key, value);
+			}
+			else if (typeof value == "integer")
+			{
+				item.__KeyValueFromInt(key, value);
+			}
+			else
+			{
+				EntFireByHandle(item, "AddOutPut", key + " " + value, d, item, item);
+			}
+		}
 	}
 }
+
 ::EF <- function(item, key, value = "", d = 0)
 {
 	if (typeof item == "string")
@@ -585,43 +598,44 @@ function RegItemInfo()
 ::DamagePlayer <- function(player, damage, damagetype = null)
 {
 	local hp = player.GetHealth() - damage;
-	
+
 	if (hp <= 0)
 	{
 		hp = -69;
 	}
 
+	printl("hp : " +hp + " damage : " + damage);
 	EF(player, "SetHealth", "" + hp);
 }
 
 ::InSight <- function(start, end, ignorehandle = null)
 {
-    if (ignorehandle == null || typeof ignorehandle == "instance")
-    {
-        if (TraceLine(start, end, ignorehandle) < 1.00)
+	if (ignorehandle == null || typeof ignorehandle == "instance")
+	{
+		if (TraceLine(start, end, ignorehandle) < 1.00)
 		{
 			return false;
 		}
-        return true;
-    }
+		return true;
+	}
 
-    if (typeof ignorehandle == "array")
-    {
-        for (local i = 0; i < ignorehandle.len(); i++)
-        {
-            if (ignorehandle[i] == null || !ignorehandle[i].IsValid())
+	if (typeof ignorehandle == "array")
+	{
+		for (local i = 0; i < ignorehandle.len(); i++)
+		{
+			if (ignorehandle[i] == null || !ignorehandle[i].IsValid())
 			{
 				continue;
 			}
-                
-            if (InSight(start, end, ignorehandle[i]))
+				
+			if (InSight(start, end, ignorehandle[i]))
 			{
 				return true;
 			}	
-        }
-    }
+		}
+	}
 
-    return InSight(start, end, null);
+	return InSight(start, end, null);
 }
 
 
@@ -633,23 +647,23 @@ function RegItemInfo()
 ::DebugDrawCircle <- function(Vector_Center, radius, parts = 32, duration = 1.0) //0 -32 80
 {
 	local Vector_RGB = Vector(255, 255, 255);
-    local u = 0.0;
-    local vec_end = [];
-    local parts_l = parts;
-    local radius = radius;
-    local a = PI / parts * 2;
-    while (parts_l > 0)
-    {
-        local vec = Vector(Vector_Center.x+cos(u)*radius, Vector_Center.y+sin(u)*radius, Vector_Center.z);
-        vec_end.push(vec);
-        u += a;
-        parts_l--;
-    }
-    for (local i = 0; i < vec_end.len(); i++)
-    {
-        if (i < vec_end.len()-1){DebugDrawLine(vec_end[i], vec_end[i+1], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
-        else{DebugDrawLine(vec_end[i], vec_end[0], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
-    }
+	local u = 0.0;
+	local vec_end = [];
+	local parts_l = parts;
+	local radius = radius;
+	local a = PI / parts * 2;
+	while (parts_l > 0)
+	{
+		local vec = Vector(Vector_Center.x+cos(u)*radius, Vector_Center.y+sin(u)*radius, Vector_Center.z);
+		vec_end.push(vec);
+		u += a;
+		parts_l--;
+	}
+	for (local i = 0; i < vec_end.len(); i++)
+	{
+		if (i < vec_end.len()-1){DebugDrawLine(vec_end[i], vec_end[i+1], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
+		else{DebugDrawLine(vec_end[i], vec_end[0], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
+	}
 }
 
 ::DebugDrawAxis <- function(pos, s = 16, time = 10)
@@ -666,7 +680,12 @@ function RegItemInfo()
 		return false;
 	}
 	return true;
-} 
+}
+
+::CallFunction <- function(func_name, fdelay = 0.0, activator = null, caller = null)
+{
+	EntFireByHandle(self, "RunScriptCode", "" + func_name, fdelay, activator, caller);
+}
 
 ::damagetype_item <- "item";
 

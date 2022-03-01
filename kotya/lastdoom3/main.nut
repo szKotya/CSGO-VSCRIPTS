@@ -110,7 +110,7 @@ function LastInit()
 	}
 
 	item_class.Init();
-	}
+}
 
 function RegItem(ID = -1)
 {
@@ -310,6 +310,25 @@ function GetViewModelByOwner(owner)
 	return null;
 }
 
+function GetItemByOwner(owner)
+{
+	local array = [];
+	foreach(item in g_aiItems)
+	{
+		if (owner == item.owner)
+		{
+		array.push(item);
+		}
+	}
+
+	if (array.len() > 0)
+	{
+		return array;
+	}
+
+	return null;
+}
+
 ::NULLPROP <- "models/props_doors/null.mdl";
 self.PrecacheModel(NULLPROP);
 
@@ -417,41 +436,8 @@ self.PrecacheModel(NULLPROP);
 	return Vector(pitch, yaw, 0);
 }
 
-::ValueLimiter <- function(Value, Min, Max)
-{
-	if (Value > Max)
-	{
-		return Max;
-	}
-	else if (Value < Min)
-	{
-		return Min;
-	}
-	return Value;
-}
-
-function GetItemByOwner(owner)
-{
-	local array = [];
-	foreach(item in g_aiItems)
-	{
-		if (owner == item.owner)
-		{
-		array.push(item);
-		}
-	}
-
-	if (array.len() > 0)
-	{
-		return array;
-	}
-
-	return null;
-}
-
 ::CallFunction <- function(func_name, fdelay = 0.0, activator = null, caller = null)
 {
-	printl(self +" "+ func_name +" "+ fdelay +" "+ activator);
 	EntFireByHandle(self, "RunScriptCode", "" + func_name, fdelay, activator, caller);
 }
 
@@ -462,6 +448,46 @@ function GetItemByOwner(owner)
 	DebugDrawLine(Vector(pos.x,pos.y,pos.z-s), Vector(pos.x,pos.y,pos.z+s), 0, 0, 255, true, time);
 }
 
-function GetDistance3D(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y)+(v1.z-v2.z)*(v1.z-v2.z));}
-function GetDistance2D(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y));}
-function GetDistanceZ(v1, v2){return v1.z-v2.z;}
+::DrawCircle <- function(Vector_Center, radius = 16, duration = 10)
+{
+	local u = 0.0;
+	local vec_end = [];
+	local parts_l = 32;
+	local radius = radius;
+	local a = PI / parts * 2;
+	while(parts_l > 0)
+	{
+		local vec = Vector(Vector_Center.x+cos(u)*radius, Vector_Center.y+sin(u)*radius, Vector_Center.z);
+		vec_end.push(vec);
+		u += a;
+		parts_l--;
+	}
+	for(local i = 0; i < vec_end.len(); i++)
+	{
+		if(i < vec_end.len()-1)
+		{
+			DebugDrawLine(vec_end[i], vec_end[i+1], 255, 255, 255, true, duration);
+		}
+		else
+		{
+			DebugDrawLine(vec_end[i], vec_end[0], 255, 255, 255, true, duration);
+		}
+	}
+}
+
+::ValueLimiter <- function(Value, Min = null, Max = null)
+{
+	if (Value > Max && Max != null)
+	{
+		return Max;
+	}
+	else if (Value < Min && Min != null)
+	{
+		return Min;
+	}
+	return Value;
+}
+
+::GetDistance3D <- function(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y)+(v1.z-v2.z)*(v1.z-v2.z));}
+::GetDistance2D <- function(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y));}
+::GetDistanceZ <- function(v1, v2){return v1.z-v2.z;}
