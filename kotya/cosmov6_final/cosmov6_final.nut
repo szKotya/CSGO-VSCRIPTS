@@ -21,7 +21,7 @@ function RoundStart()
 	SendToConsole("bot_stop 1");
 	SendToConsole("mp_freezetime 0");
 	SendToConsole("mp_warmuptime 999999999");
-	EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
+	// EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
 }
 SendToConsole("mp_restartgame 1");
 ::class_pos <- class
@@ -638,11 +638,9 @@ function RegItemInfo()
 	return InSight(start, end, null);
 }
 
-
 ::GetDistance3D <- function(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y)+(v1.z-v2.z)*(v1.z-v2.z));}
 ::GetDistance2D <- function(v1, v2){return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y));}
 ::GetDistanceZ <- function(v1, v2){return v1.z-v2.z;}
-
 
 ::DebugDrawCircle <- function(Vector_Center, radius, parts = 32, duration = 1.0) //0 -32 80
 {
@@ -671,6 +669,19 @@ function RegItemInfo()
 	DebugDrawLine(Vector(pos.x-s,pos.y,pos.z), Vector(pos.x+s,pos.y,pos.z), 255, 0, 0, true, time);
 	DebugDrawLine(Vector(pos.x,pos.y-s,pos.z), Vector(pos.x,pos.y+s,pos.z), 0, 255, 0, true, time);
 	DebugDrawLine(Vector(pos.x,pos.y,pos.z-s), Vector(pos.x,pos.y,pos.z+s), 0, 0, 255, true, time);
+}
+
+::GetTwoVectorsYaw <- function(start, target)
+{
+	local yaw = 0.00;
+	local v = Vector(start.x - target.x, start.y - target.y, start.z - target.z);
+	local vl = sqrt(v.x * v.x + v.y * v.y);
+	yaw = 180 * acos(v.x / vl) / PI;
+	if(v.y < 0)
+	{
+		yaw = -yaw;
+	}
+	return yaw;
 }
 
 ::TargerValid <- function(target)
