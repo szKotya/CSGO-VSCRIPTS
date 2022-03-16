@@ -186,7 +186,7 @@
     {
         ticking = true;
 
-        SetHP(85);
+        SetHP(65);
         //SetHP(950);
         EntFire("Cactus_Timer_Bar", "ShowSprite", "", 0.2);
         EntFire("Cactus_HP_Bar", "ShowSprite", "", 0.2);

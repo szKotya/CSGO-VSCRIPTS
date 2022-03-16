@@ -5,42 +5,37 @@ mainscript <- Entities.FindByName(null, "map_brush");
 
 function filter()
 {
-    if(Act == activator && au && loc && useloc)
+    if(Activator == activator && au && loc && useloc)
     {
         EntFireByHandle(self, "FireUser4", "", 0, activator, activator);
     }
 }
 
-Act <- null;
+Activator <- null;
 Ticking <- true;
 Weapon <- null;
 
 function SetWeapon()
 {
     Weapon = caller;
-    Act = activator;
+    Activator = activator;
     Ticking = true;
     CheckItem();
 }
 
 function CheckItem()
 {
-    if(Ticking)
+    if(!Ticking)
+        return;
+
+    if(Weapon.GetOwner() != Activator)
     {
-        if(Act != null)
-        {
-            if(Weapon.GetRootMoveParent() != Act)
-            {
-                EntFireByHandle(mainscript, "RunScriptCode", "DropItem();", 0.05, Act, self);
-                Ticking = false;
-                Act = null;
-            }
-            else
-            {
-                EntFireByHandle(self, "RunScriptCode", "CheckItem();", 0.1, null, null);
-            }
-        }
+        EntFireByHandle(mainscript, "RunScriptCode", "DropItem();", 0.05, Activator, self);
+        Ticking = false;
+        Activator = null;
     }
+    else 
+        EntFireByHandle(self, "RunScriptCode", "CheckItem();", 0.05, null, null);
 }
 
 function GetStatus()

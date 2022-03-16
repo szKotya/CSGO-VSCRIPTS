@@ -99,9 +99,13 @@ function Start()
     EntFireByHandle(camera,"Enable","",0,owner,owner);
     EntFireByHandle(ui,"Activate","",0,owner,owner);
 }
+ticking <- true;
 
 function Stop(ui_off = false)
-{
+{   
+    if(!ticking)
+        return;
+    ticking = false;
     EntFireByHandle(button,"UnLock","",0.5,null,null);
     owner = null;
     button = null;

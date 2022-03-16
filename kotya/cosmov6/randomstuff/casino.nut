@@ -35,7 +35,7 @@ Start <- false;
 RollSpeed <- 8;
 
 Colorbonus <- [10,0.5]
-cash <- 1500;
+cash <- 500;
 RollIter <- [2,4];
 RollTime <- [3,4];
 
@@ -195,9 +195,9 @@ function GetWinners()
                 local money = p.bet + p.bet * bonus;
                 map_brush.GetScriptScope().GetPlayerClassByHandle(p.handle).Add_money(money);
                 cash -= money;
-                ShowText("You Win\n" + p.bet * bonus + "$", p.handle);
+                ShowText("You Win\n" + p.bet * bonus + Money_pref, p.handle);
             }
-            else ShowText("You Lose\n" + p.bet + "$", p.handle);
+            else ShowText("You Lose\n" + p.bet + Money_pref, p.handle);
         }
     }
     EntFireByHandle(self, "RunScriptCode", "Reset();", 5, null, null);
@@ -220,7 +220,7 @@ function Info()
             }
         }
     }
-    text += "\n\nYour balance " + pl_money + "$";
+    text += "\n\nYour balance " + pl_money + Money_pref;
     ShowText(text, activator);
 }
 

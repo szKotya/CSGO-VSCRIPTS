@@ -61,9 +61,31 @@ self.PrecacheModel(g_aChest[0]);
 
         function CreateChest() 
         {
-            local ent = Entities.CreateByClassname("prop_dynamic")
+            local ent = Entities.CreateByClassname("prop_dynamic_glow")
             ent.__KeyValueFromInt("solid", 0);
             ent.__KeyValueFromInt("rendermode", 1);
+
+            if (this.location == 0)
+            {
+                ent.__KeyValueFromString("glowcolor", "255 0 0");
+            }
+            else if (this.location == 1)
+            {
+                ent.__KeyValueFromString("glowcolor", "0 255 0");
+            }
+            else if (this.location == 2)
+            {
+                ent.__KeyValueFromString("glowcolor", "0 0 255");
+            }
+            else if (this.location == 3)
+            {
+                ent.__KeyValueFromString("glowcolor", "255 255 255");
+            }
+
+            ent.__KeyValueFromInt("glowstyle", 1);
+            ent.__KeyValueFromInt("glowdist", 1024);
+            ent.__KeyValueFromInt("glowenabled", 1);
+            
             ent.__KeyValueFromInt("renderamt", 0);
             ent.__KeyValueFromInt("disableshadows", 1);
             ent.__KeyValueFromString("targetname", "kojima_chest_" + this.userid);
@@ -76,7 +98,7 @@ self.PrecacheModel(g_aChest[0]);
             local count = this.chests.len();
             for(local i = 0; i < count; i++)
                 if(this.chests[i].IsValid())
-                    this.chests[i].Destroy();
+                    EntFireByHandle(this.chests[i], "FadeAndKill", "", 0.00, null, null);
             return count
         }
     }
@@ -85,7 +107,7 @@ self.PrecacheModel(g_aChest[0]);
     ::g_fChest_Speed <- 0.12;
     g_iChest_Money <- 5;
     g_aLoaders <- [];
-    ::g_aBonus <- [2.0, 1.5, 1.75, 2.5];
+    ::g_aBonus <- [4.0, 1.5, 1.75, 2.5];
 
     function Create(location, count) 
     {
@@ -126,11 +148,36 @@ self.PrecacheModel(g_aChest[0]);
                 g_aLoaders.remove(i);
             }
         }
+
+        if (GetCountOfChestLocation(ID) < 1)
+        {
+            EntFire("kojima_particle_0"+ID, "Kill", "", 1.00, null);
+            EntFire("kojima_trigger_0"+ID, "Kill", "", 1.00, null);
+        }
         
+
         EntFireByHandle(MainScript, "RunScriptCode", "GetPlayerClassByHandle(activator).invalid = false;", 0, activator, activator);
         EntFireByHandle(MainScript, "RunScriptCode", "SlowPlayer(" + g_fChest_Speed * result + ",-1)", 0, activator, activator);
 
         MainScript.GetScriptScope().AddCashAll(result * g_iChest_Money * g_aBonus[ID], 3)
+    }
+
+    function GetCountOfChestLocation(ID)
+    {
+        local count = 0;
+        for (local i = 0; i < g_aLoaders.len(); i++)
+        {
+            if (g_aLoaders[i].location == ID)
+            {
+                if (g_aLoaders[i].handle.IsValid() && 
+                g_aLoaders[i].handle.GetTeam() == 3 && 
+                g_aLoaders[i].handle.GetHealth() > 0)
+                {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     function GetLoaderClassByHandle(value)

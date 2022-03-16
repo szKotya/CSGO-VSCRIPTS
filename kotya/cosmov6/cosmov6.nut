@@ -1,14 +1,20 @@
 ::MainScript <- self;
-MapName <- GetMapName();
-ScriptVersion <- "24.08.2021 - 16:53";
-Stage <- 0;
+::MapName <- GetMapName();
+::ScriptVersion <- "13.12.2021 - 0:27";
+Stage <- -1;
+WARMUP_TIME <- 90.0;
+::ITEM_GLOW <- true; 			// set false to disable this
+::MAPPER_ENT_FIRE <- true; 		// set false to disable this
+::ENT_WATCH_ENABLE <- true; 	// set false to disable this(change entwatch config!)
+::ENT_WATCH_TEAM <- true; 		// set false to disable this
 
-::ITEM_GLOW <- true; // true - enable item glowing, set false if youre ew support glowing
+::COLOR_ENABLE <- true; 		// set false to disable this
+::AUTO_RETRY_ENABLE <- true; 	// set false to disable this
+	
+::WAFFEL_CAR_ENABLE <- true;	// set false to disable this
+::BHOP_ENABLE <- false; 		// set false to disable this
 
-::BHOP_ENABLE <- false; // set false to disable this
-::AUTO_RETRY_ENABLE <- true; // set false to disable this
-::WAFFEL_CAR_ENABLE <- true; // set false to disable this
-::DODJE_ENABLE <- false; // set false to disable this
+::DODJE_ENABLE <- false;
 
 ::DisableHudHint <- true;
 
@@ -16,6 +22,16 @@ Stage <- 0;
 ::RED_CHEST_RECORD_CLASS <- null;
 ::GREEN_CHEST_RECORD <- 0.00;
 ::GREEN_CHEST_RECORD_CLASS <- null;
+
+::EVENT_2XMONEY <- false;
+::EVENT_EXTRAITEMS <- false;
+::EVENT_EXTRAITEMS_COUNT <- [1, 2];
+
+::EVENT_BLACKFRIDAY <- false;
+::EVENT_BLACKFRIDAY_COUNT <- 15;
+
+::EVENT_EXTRACHEST <- false;
+::EVENT_EXTRACHEST_COUNT <- [2, 4];
 
 function MapStart()
 {
@@ -76,36 +92,30 @@ function MapStart()
 	once_check = true;
 	LoopPlayerCheck();
 
-	ShowItems();
-
-	RotateSkin();
-	ShowCredits();
-
-	ToggleParticles()
-	PrintPerksAll();
-	Bhop_Toggle();
-
-	if(Stage == 0)
+	
+	
+	//Bhop_Toggle();
+	if(Stage == -1)
 	{
 		Precache();
 		SetSettingServer();
-		local g_round = Entities.FindByName(null, "round_end");
-		local time = 10;
-
-		ScriptPrintMessageChatAll(::Mes_Warmup)
-		
-		for (local i=0; i<4; i++)
-		{
-			EntFireByHandle(self, "RunScriptCode", "ScriptPrintMessageChatAll(::Mes_Warmup);", time, null, null);
-			time += 5;
-		}
-
-		EntFireByHandle(self, "RunScriptCode", "AdminSetStage(1);", time, null, null);
+		AdminSetStage(0);
+	}
+	else if(Stage == 0)
+	{
+		Warmup_TICK();
 	}
 	else
 	{
-		//debug
-		EntFire("Start_tp", "FireUser1", "", 0);
+		ShowItems();
+		PrintPerksAll();
+		ShowCredits();
+		RotateSkin();
+		ToggleParticles();
+
+		RandomEvent();
+
+		EntFire("Start_tp", "FireUser1", "", 3);
 		EntFire("shop_travel_trigger", "FireUser1", "", 0);
 		EntFire("item_temp_mike", "ForceSpawn", "", 0);
 	  
@@ -124,10 +134,8 @@ function MapStart()
 			EntFire("Nigger", "SetAnimation", "chair_idle", 0);
 			EntFire("Nigger", "SetDefaultAnimation", "chair_idle", 0);
 
-			EntFire("Skip_Wall", "Kill", "", 0);
-
-			SendToConsoleServer("zr_infect_mzombie_respawn 1");
-			SendToConsoleServer("zr_infect_mzombie_ratio 12");
+			SendToConsoleServerPS("zr_infect_mzombie_respawn 1");
+			SendToConsoleServerPS("zr_infect_mzombie_ratio 12");
 
 			OpenSpawn(25);
 
@@ -169,8 +177,8 @@ function MapStart()
 
 			EntFire("cmd", "Command", "say **HARD MODE**", 4);
 
-			SendToConsoleServer("zr_infect_mzombie_respawn 1");
-			SendToConsoleServer("zr_infect_mzombie_ratio 10");
+			SendToConsoleServerPS("zr_infect_mzombie_respawn 1");
+			SendToConsoleServerPS("zr_infect_mzombie_ratio 10");
 
 			OpenSpawn(25);
 
@@ -266,8 +274,8 @@ function MapStart()
 			
 			EntFireByHandle(self, "RunScriptCode", "Trigger_ZM_End();", Nuke_Time, null, null);
 
-			SendToConsoleServer("zr_infect_mzombie_respawn 0");
-			SendToConsoleServer("zr_infect_mzombie_ratio 6");
+			SendToConsoleServerPS("zr_infect_mzombie_respawn 0");
+			SendToConsoleServerPS("zr_infect_mzombie_ratio 6");
 
 			OpenSpawn(5);
 		}
@@ -279,8 +287,8 @@ function MapStart()
 			EntFire("Credits_Game_Text", "AddOutput", "message EXTREME MODE", 9.95);
 			EntFire("cmd", "Command", "say **EXTREME MODE**", 4);
 
-			SendToConsoleServer("zr_infect_mzombie_respawn 1");
-			SendToConsoleServer("zr_infect_mzombie_ratio 6");
+			SendToConsoleServerPS("zr_infect_mzombie_respawn 1");
+			SendToConsoleServerPS("zr_infect_mzombie_ratio 6");
 
 			local text;
 			text = "An illusion? How is that even possible?";
@@ -311,13 +319,41 @@ function MapStart()
 			EntFire("Credits_Game_Text", "AddOutput", "message INFERNO MODE", 9.95);
 			EntFire("cmd", "Command", "say **INFERNO MODE**", 4);
 
-			SendToConsoleServer("zr_infect_mzombie_respawn 1");
-			SendToConsoleServer("zr_infect_mzombie_ratio 4");
+			SendToConsoleServerPS("zr_infect_mzombie_respawn 1");
+			SendToConsoleServerPS("zr_infect_mzombie_ratio 4");
 
 			OpenSpawn(25);
 		}
 	}
 	//EntFireByHandle(self, "RunScriptCode", "SavePos();", 5, null, null);
+}
+function Warmup_TICK()
+{
+	local text;
+	WARMUP_TIME--;
+	if (WARMUP_TIME < 1)
+	{
+		text = "MAP START";
+		AdminSetStage(1);
+	}
+	else
+	{
+		text = "WARMUP TIME : " + WARMUP_TIME
+		EntFireByHandle(self, "RunScriptCode", "Warmup_TICK();", 1.00, null, null);
+	}
+
+	ShowCreditsText(text);
+
+	if(PLAYERS.len() > 0)
+	{
+		foreach(p in PLAYERS)
+		{
+			if(p.handle != null && p.handle.IsValid())
+			{
+				ShowShopText(p.handle, text);
+			}
+		}
+	}
 }
 
 Spot_ID <- 0;
@@ -347,9 +383,18 @@ Shop_TP_CountB <- 10;
 
 function MapReset()
 {
+	if (!BHOP_ENABLE)
+	{
+		SendToConsoleServerPS("sv_enablebunnyhopping 0");
+	}
+	else
+	{
+		SendToConsoleServerPS("sv_enablebunnyhopping 1");
+	}
+	
 	DisableHudHint = true;
 	EntFireByHandle(self, "RunScriptCode", "DisableHudHint = false;", 30, null, null);
-
+	
 	ITEM_OWNER.clear();
 	Chat_Buffer.clear();
 	EndPropRotate.clear();
@@ -392,7 +437,6 @@ function MapFullRestart()
 			p.slow = false;
 			p.antidebuff = false;
 			p.petstatus = null;
-			p.maxlvluping = 6;
 
 			if(p.infect > best_infects)
 			{
@@ -426,14 +470,15 @@ function MapFullRestart()
 				p.handle.__KeyValueFromInt("rendermode", 0);
 				p.handle.__KeyValueFromInt("renderamt", 255);
 
-				if(WAFFEL_CAR_ENABLE)
-				{
-					CheckForCar(p);
-				}
-
 				if(p.knife != null)
 				{
 					Entities.FindByName(null, "pl_say").GetScriptScope().Knife(p.userid, p.knife);
+				}
+
+				if(WAFFEL_CAR_ENABLE)
+				{
+					if(!p.block_waffel)
+						CheckForCar(p);
 				}
 
 				if(p.ctskin != null)
@@ -521,6 +566,7 @@ function CheckForCar(p)
 			return SetInvalid(player_class.handle);
 		}
 	}
+	return null;
 }
 
 function GetInvalidClass(activator)
@@ -550,13 +596,13 @@ function NewStageGiveMoney()
 	{
 		local money = 0;
 		if(Stage == 2)
-			money = 150;
+			money = 120;
 		else if(Stage == 3)
-			money = 200;
+			money = 150;
 		else if(Stage == 4)
-			money = 200;
+			money = 125;
 		else if(Stage == 5)
-			money = 300;
+			money = 250;
 		else if(Stage == 6)
 			money = 500;
 		foreach(p in PLAYERS)
@@ -588,11 +634,27 @@ function SetVipSkin()
 		return Fade_Red(activator);
 	
 	Fade_White(activator);
-	if(activator.GetTeam() == 3)
-		pl.ctskin = caller.GetMoveParent().GetModelName();
-	else 
-		pl.tskin = caller.GetMoveParent().GetModelName();
-	activator.SetModel(caller.GetMoveParent().GetModelName());
+	
+	if(caller.GetName() == "ct_trigger")
+	{
+		if(pl.ctskin == CT_VIP_MODEL)
+			pl.ctskin = null;
+		else
+			pl.ctskin = CT_VIP_MODEL;
+
+		if(activator.GetTeam() == 3)
+			activator.SetModel(CT_VIP_MODEL);
+	}
+	else
+	{
+		if(pl.tskin == T_VIP_MODEL)
+			pl.tskin = null;
+		else
+			pl.tskin = T_VIP_MODEL;
+
+		if(activator.GetTeam() == 2)
+			activator.SetModel(T_VIP_MODEL);
+	}
 }
 
 function SetStage(i)
@@ -650,7 +712,8 @@ VIP_STEAM_ID <-[
 "STEAM_1:1:95551530",	//ZeddY
 "STEAM_1:1:67559577",	//FireWork
 "STEAM_1:0:52425310",	//Nemo
-
+"STEAM_1:0:68863967",	//Nano
+"STEAM_1:0:217698549",	//Tianli
 
 "STEAM_1:0:187018106",	//creepy
 
@@ -675,26 +738,15 @@ VIP_STEAM_ID <-[
 "STEAM_1:0:82660003",	//tilgep
 "STEAM_1:0:602192040",	//ump9
 
-"STEAM_1:0:54446629"    //FPT
-];
+"STEAM_1:0:54446629",    //FPT
 
-PIDARAS_COUNT <- 0;
+"STEAM_1:1:195974930",	//Igromen
 
-PIDARAS_STEAM_ID <-[
-"STEAM_0:0:209481083", //e.t
-]
-
-TESTER_STEAM_ID <-[
-"STEAM_1:0:36455426",	//Lexer
-"STEAM_1:1:32284494",	//Jayson
-"STEAM_1:0:176529696",	//switchwwe
-"STEAM_1:0:205165205",	//waffle
-"STEAM_1:1:98076432",   //xmin
-"STEAM_1:1:31474938",   //Headsh
-"STEAM_1:0:56405847",   //Vishnya
+"STEAM_1:1:54109628",	//Cron
 ];
 
 INVALID_STEAM_ID <- [
+"STEAM_1:0:56405847 27",	//Vishnya
 "STEAM_1:1:20206338 22",	//HaRyDe
 "STEAM_1:1:210572608 0" 	//Shy Way
 "STEAM_1:0:430842357 0",	//naiz
@@ -726,10 +778,34 @@ INVALID_STEAM_ID <- [
 "STEAM_1:1:101719126 19",	//bulavator
 "STEAM_1:0:44723115 20",	//umad
 "STEAM_1:1:129184042 21",	//dead angel
+
+"STEAM_1:0:121740322 29",	//Ambitious
+"STEAM_1:0:82660003 28",	//tilgep
 "STEAM_1:0:602192040 23",	//ump9
 
 "STEAM_1:0:52425310 24",	//Nemo
-"STEAM_1:0:54446629 25",	//FPTyel
+"STEAM_1:0:54446629 25",    //FPT
+"STEAM_1:1:195974930 26",	//Igromen
+
+"STEAM_1:1:551667585 30",	//Bonesaw
+"STEAM_1:0:118645099 31",	//MercaXlv
+
+"STEAM_1:1:54109628 32",	//Cron
+];
+
+PIDARAS_COUNT <- 0;
+
+PIDARAS_STEAM_ID <-[
+// "STEAM_1:0:209481083", //e.t
+]
+
+TESTER_STEAM_ID <-[
+"STEAM_1:0:36455426",	//Lexer
+"STEAM_1:1:32284494",	//Jayson
+"STEAM_1:0:176529696",	//switchwwe
+"STEAM_1:0:205165205",	//waffle
+"STEAM_1:1:31474938",   //Headsh
+"STEAM_1:0:56405847",   //Vishnya
 ];
 
 eventinfo   <- null;
@@ -798,7 +874,7 @@ perkluck_cost <- 100;
 
 perkchameleon_cost <- 60;
 ::perkchameleon_maxlvl <- 5; // 75% dont touch
-::perkchameleon_chameleonperlvl <- 30;
+::perkchameleon_chameleonperlvl <- 26;
 
 perkresist_zm_cost <- 75;
 ::perkresist_zm_maxlvl <- 5; // 25%
@@ -826,6 +902,10 @@ class Player
 	tskin = null;
 	ctskin = null;
 
+	block_entwatch = false;	
+	block_waffel = false;
+	block_driver = null;
+
 	invalid = false;
 
 	userid = null;
@@ -849,7 +929,6 @@ class Player
 	item_buff_turbo = false;
 	item_buff_doble = false;
 
-	maxlvluping = 7;
 	antidebuff = false;
 	slow = false;
 	setPerks = false;
@@ -943,25 +1022,39 @@ class Player
 		return
 	}
 
-	function Add_money(i)
+	function Add_money(i, imm = true)
 	{
+		i = ConvertPrice(i);
 		local MoneyText = Entities.FindByName(null, "pl_add_money");
-		EntFireByHandle(MoneyText, "SetText", "+ "+i+"$", 0, this.handle, this.handle);
+		MoneyText.__KeyValueFromString("message", "+ "+i+Money_pref);
 		EntFireByHandle(MoneyText, "Display", "", 0, this.handle, this.handle);
+		
+		if (imm)
+		{
+			if (EVENT_2XMONEY)
+			{
+				i *= 2;
+			}
+		}
+
 		this.money += i;
+		this.money = ConvertPrice(this.money);
 		return
 	}
 	function Minus_money(i)
 	{
+		i = ConvertPrice(i);
 		local MoneyText = Entities.FindByName(null, "pl_minus_money");
-		EntFireByHandle(MoneyText, "SetText", "- "+i+"$", 0, this.handle, this.handle);
+		MoneyText.__KeyValueFromString("message", "- "+i+Money_pref);
 		EntFireByHandle(MoneyText, "Display", "", 0, this.handle, this.handle);
 		if(this.money - i <= 0)
 		{
 			this.money = 0;
 			return
 		}
+
 		this.money -= i;
+		this.money = ConvertPrice(this.money);
 		return;
 	}
 
@@ -1157,7 +1250,7 @@ class Player
 	}
 	function PassIncome()
 	{
-		local luck_level = perkluck_lvl;
+		local luck_level = this.perkluck_lvl;
 		local p_money = 50;
 		local chance = [0,0,0,0,0];
 		if(luck_level > 0)
@@ -1284,6 +1377,10 @@ class Player
 	}
 	function GetNewPrice(i)
 	{
+		if(EVENT_BLACKFRIDAY)
+		{
+			i -= i * EVENT_BLACKFRIDAY_COUNT * 0.01;
+		}
 		if(this.perkhuckster_lvl == 0)return i;
 		return i - (i * perkhuckster_hucksterperlvl * this.perkhuckster_lvl * 0.01);
 	}
@@ -1329,17 +1426,17 @@ class Player
 			this.perksteal_lvl++;
 		}
 	}
-	function Set_level_bio(i)return this.bio_lvl = i;
-	function Set_level_ice(i)return this.ice_lvl = i;
-	function Set_level_poison(i)return this.poison_lvl = i;
-	function Set_level_wind(i)return this.wind_lvl = i;
-	function Set_level_summon(i)return this.summon_lvl = i;
-	function Set_level_fire(i)return this.fire_lvl = i;
-	function Set_level_electro(i)return this.electro_lvl = i;
-	function Set_level_earth(i)return this.earth_lvl = i;
-	function Set_level_gravity(i)return this.gravity_lvl = i;
-	function Set_level_ultimate(i)return this.ultimate_lvl = i;
-	function Set_level_heal(i)return this.heal_lvl = i;
+	function Set_level_bio(i){return this.bio_lvl = i;}
+	function Set_level_ice(i){return this.ice_lvl = i;}
+	function Set_level_poison(i){return this.poison_lvl = i;}
+	function Set_level_wind(i){return this.wind_lvl = i;}
+	function Set_level_summon(i){return this.summon_lvl = i;}
+	function Set_level_fire(i){return this.fire_lvl = i;}
+	function Set_level_electro(i){return this.electro_lvl = i;}
+	function Set_level_earth(i){return this.earth_lvl = i;}
+	function Set_level_gravity(i){return this.gravity_lvl = i;}
+	function Set_level_ultimate(i){return this.ultimate_lvl = i;}
+	function Set_level_heal(i){return this.heal_lvl = i;}
 	function level_up_bio()
 	{
 		if(this.bio_lvl < MaxLevel)
@@ -1468,7 +1565,7 @@ function DamagePlayer(i,typedamage = null)
 	local hp = activator.GetHealth() - newi;
 	if(hp <= 0)
 	{
-		EntFireByHandle(activator,"SetHealth","0",0.00,null,null);
+		EntFireByHandle(activator,"SetHealth","-69",0.00,null,null);
 	}
 	else
 	{
@@ -1715,7 +1812,7 @@ function ResetPerk()
 		return;
 
 	money *= 1.00 - perkhuckster_maxlvl * perkhuckster_hucksterperlvl * 0.01;
-	pl.Add_money(money);
+	pl.Add_money(money, false);
 
 	pl.perkhp_zm_lvl = 0;
 	pl.perkhp_hm_lvl = 0;
@@ -1761,13 +1858,13 @@ function BuyReRollStock()
 			}
 		}
 		else itemtext = "You lost and didn't get anything"
-		local text = "You won a discount ticket!\n"+itemtext+"\n\nYour balance: "+pl.money+"$";
+		local text = "You won a discount ticket!\n"+itemtext+"\n\nYour balance: "+pl.money+Money_pref;
 		Fade_White(activator);
 		ShowShopText(activator, text);
 		return;
 	}
 	needmoney = pl.GetNewPrice(money);
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	Fade_Red(activator);
 	ShowShopText(activator, text);
 }
@@ -1850,14 +1947,14 @@ function BuyStock()
 			}
 		}
 		if(itemtext == "")itemtext = "You lost and didn't get anything";
-		local text = "You won a discount ticket!\n"+itemtext+"\n\nYour balance: "+pl.money+"$";
+		local text = "You won a discount ticket!\n"+itemtext+"\n\nYour balance: "+pl.money+Money_pref;
 		Fade_White(activator);
 		ShowShopText(activator, text);
 		return;
 	}
 	needmoney = pl.GetNewPrice(money);
 
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	Fade_Red(activator);
 	ShowShopText(activator, text);
 }
@@ -1870,8 +1967,8 @@ function BuyItemNomore(handle)
 
 function BuyItem()
 {
-	if(activator.GetTeam() != 3 && GetItemByOwner(activator) != null)
-		return;
+	if(activator.GetTeam() != 3 || GetItemByOwner(activator) != null)
+		return Fade_Red(activator);
 
 	local name = caller.GetName();
 	local pl = GetPlayerClassByHandle(activator);
@@ -1886,7 +1983,7 @@ function BuyItem()
 				item_ammo_count--;
 				pl.Minus_money(needmoney);
 				GetItem(TEMP_AMMO,activator);
-				local text = "You bought an Ammo Materia\n\nYour balance "+pl.money+"$";
+				local text = "You bought an Ammo Materia\n\nYour balance "+pl.money+Money_pref;
 				Fade_White(activator);
 				ShowShopText(activator, text);
 
@@ -1897,9 +1994,8 @@ function BuyItem()
 		}
 		else 
 		{
-			Fade_Red(activator);
 			BuyItemNomore(activator);
-			return 
+			return Fade_Red(activator);
 		}
 		
 	}
@@ -1913,7 +2009,7 @@ function BuyItem()
 				item_potion_count--;
 				pl.Minus_money(needmoney);
 				GetItem(TEMP_POTION,activator);
-				local text = "You bought the Potion Materia\n\nYour balance "+pl.money+"$";
+				local text = "You bought the Potion Materia\n\nYour balance "+pl.money+Money_pref;
 				Fade_White(activator);
 				ShowShopText(activator, text);
 
@@ -1925,9 +2021,8 @@ function BuyItem()
 		}
 		else 
 		{
-			Fade_Red(activator);
 			BuyItemNomore(activator);
-			return 
+			return Fade_Red(activator);
 		}
 	}
 	else if(name.find("phoenix") != null)
@@ -1940,7 +2035,7 @@ function BuyItem()
 				item_phoenix_count--;
 				pl.Minus_money(needmoney);
 				GetItem(TEMP_PHOENIX,activator);
-				local text = "You have bought a Phoenix Materia\n\nYour balance "+pl.money+"$";
+				local text = "You have bought a Phoenix Materia\n\nYour balance "+pl.money+Money_pref;
 				Fade_White(activator);
 				ShowShopText(activator, text);
 
@@ -1952,12 +2047,11 @@ function BuyItem()
 		}
 		else 
 		{
-			Fade_Red(activator);
 			BuyItemNomore(activator);
-			return 
+			return Fade_Red(activator);
 		}
 	}
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	Fade_Red(activator);
 	ShowShopText(activator, text);
 }
@@ -1993,7 +2087,6 @@ function GetItem(item_temp, handle)
 	
 	local makerpos = GetSpot();
 	item_maker.SetOrigin(makerpos);
-	//printl(makerpos);
 	EntFireByHandle(item_maker, "ForceSpawn", "", 0, null, null);
 	EntFireByHandle(self, "RunScriptCode", "activator.SetOrigin(Vector(" + (makerpos.x) + "," + (makerpos.y) + "," + (makerpos.z - 5) + "));", 0, handle, handle);
 	EntFireByHandle(self, "RunScriptCode", "activator.SetOrigin(Vector(" + (handlepos.x) + "," + (handlepos.y) + "," + (handlepos.z) + "));", 0.2, handle, handle);
@@ -2026,7 +2119,7 @@ function BuyPerk()
 				activator.SetMaxHealth(100 + pl.perkhp_hm_lvl * perkhp_hm_hpperlvl);
 			}
 
-			local text = "You upgraded Human HP perk to level "+pl.perkhp_hm_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Human HP perk to level "+pl.perkhp_hm_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2053,7 +2146,7 @@ function BuyPerk()
 				activator.SetMaxHealth(7500 + pl.perkhp_zm_lvl * perkhp_zm_hpperlvl);
 			}
 
-			local text = "You upgraded Zombie HP perk to level "+pl.perkhp_zm_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Zombie HP perk to level "+pl.perkhp_zm_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2075,7 +2168,7 @@ function BuyPerk()
 			pl.level_up_perkhuck();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Huckster perk to level "+pl.perkhuckster_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Huckster perk to level "+pl.perkhuckster_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2097,7 +2190,7 @@ function BuyPerk()
 			pl.level_up_perkspeed();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Zombie Speed perk to level "+pl.perkspeed_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Zombie Speed perk to level "+pl.perkspeed_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2119,7 +2212,7 @@ function BuyPerk()
 			pl.level_up_perksteal();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Thief perk to level "+pl.perksteal_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Thief perk to level "+pl.perksteal_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2141,7 +2234,7 @@ function BuyPerk()
 			pl.level_up_perkchameleon();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Zombie Chameleon perk to level "+pl.perkchameleon_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Zombie Chameleon perk to level "+pl.perkchameleon_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2163,7 +2256,7 @@ function BuyPerk()
 			pl.level_up_perkresist_zm();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Human Materia Resist perk to level "+pl.perkresist_zm_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Human Materia Resist perk to level "+pl.perkresist_zm_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2184,7 +2277,7 @@ function BuyPerk()
 			pl.level_up_perkresist_hm();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Attack Resist perk to level "+pl.perkresist_hm_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Attack Resist perk to level "+pl.perkresist_hm_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2205,14 +2298,14 @@ function BuyPerk()
 			pl.level_up_perkluck();
 			pl.Minus_money(needmoney);
 
-			local text = "You upgraded Lucky Warrior perk to level "+pl.perkluck_lvl+"\n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Lucky Warrior perk to level "+pl.perkluck_lvl+"\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
 		}
 
 	}
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	Fade_Red(activator);
 	ShowShopText(activator, text);
 }
@@ -2233,7 +2326,7 @@ function BuyBuff()
 		{
 			pl.Change_Buff(4);
 			pl.Minus_money(needmoney);
-			local text = "You bought the 'W-magic' Support Materia\n[+]Gives 1 or 2 more uses to materias\n[-]Reduces Materia level and increases cooldown\n\nYour balance "+pl.money+"$";
+			local text = "You bought the 'W-magic' Support Materia\n[+]Gives 1 or 2 more uses to materias\n[-]Reduces Materia level and increases cooldown\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2245,7 +2338,7 @@ function BuyBuff()
 		{
 			pl.Change_Buff(3);
 			pl.Minus_money(needmoney);
-			local text = "You bought the 'MP turbo' Support Materia\n[+]Increases Materia duration\n[-]Increases Materia cooldown\n\nYour balance "+pl.money+"$";
+			local text = "You bought the 'MP turbo' Support Materia\n[+]Increases Materia duration\n[-]Increases Materia cooldown\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2257,7 +2350,7 @@ function BuyBuff()
 		{
 			pl.Change_Buff(2);
 			pl.Minus_money(needmoney);
-			local text = "You bought the 'Recovery' Support Materia\n[+]Reduces Materia cooldown\n[-]Reduces Materia duration\n\nYour balance "+pl.money+"$";
+			local text = "You bought the 'Recovery' Support Materia\n[+]Reduces Materia cooldown\n[-]Reduces Materia duration\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2269,7 +2362,7 @@ function BuyBuff()
 		{
 			pl.Change_Buff(1);
 			pl.Minus_money(needmoney);
-			local text = "You bought the 'Final Attack' Support Materia\n[+]Regenerates HP while holding the materia\n[-]Materia is used upon death\n\nYour balance "+pl.money+"$";
+			local text = "You bought the 'Final Attack' Support Materia\n[+]Regenerates HP while holding the materia\n[-]Materia is used upon death\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2281,14 +2374,14 @@ function BuyBuff()
 		{
 			pl.Change_Buff(0);
 			pl.Minus_money(needmoney);
-			local text = "You bought the 'All' Materia\n[+]Increases the radius of Materia\n[-]Reduces the power of Materia\n\nYour balance "+pl.money+"$";
+			local text = "You bought the 'All' Materia\n[+]Increases the radius of Materia\n[-]Reduces the power of Materia\n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
 		}
 	}
 
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	Fade_Red(activator);
 	ShowShopText(activator, text);
 }
@@ -2312,7 +2405,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_bio();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Bio Materia to level "+pl.bio_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Bio Materia to level "+pl.bio_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2332,7 +2425,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_ice();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Ice Materia to level "+pl.ice_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Ice Materia to level "+pl.ice_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2352,7 +2445,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_poison();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Poison Materia to level "+pl.poison_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Poison Materia to level "+pl.poison_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2372,7 +2465,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_wind();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Wind Materia to level "+pl.wind_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Wind Materia to level "+pl.wind_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2392,7 +2485,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_summon();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Summon Materia to level "+pl.summon_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Summon Materia to level "+pl.summon_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2412,7 +2505,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_fire();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Fire Materia to level "+pl.fire_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Fire Materia to level "+pl.fire_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2432,7 +2525,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_electro();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Electro Materia to level "+pl.electro_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Electro Materia to level "+pl.electro_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2452,7 +2545,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_earth();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Earth Materia to level "+pl.earth_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Earth Materia to level "+pl.earth_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2472,7 +2565,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_gravity();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Gravity Materia to level "+pl.gravity_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Gravity Materia to level "+pl.gravity_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2492,7 +2585,7 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_ultimate();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Ultima Materia to level "+pl.ultimate_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Ultima Materia to level "+pl.ultimate_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
@@ -2512,14 +2605,14 @@ function BuyLevelUpItem()
 		{
 			pl.level_up_heal();
 			pl.Minus_money(pl.GetNewPrice(lvlcost[lvl]));
-			local text = "You upgraded Heal Materia to level "+pl.heal_lvl+" \n\nYour balance "+pl.money+"$";
+			local text = "You upgraded Heal Materia to level "+pl.heal_lvl+" \n\nYour balance "+pl.money+Money_pref;
 			Fade_White(activator);
 			ShowShopText(activator, text);
 			return;
 		}
 		needmoney = pl.GetNewPrice(lvlcost[lvl]);
 	}
-	local text = "You don't have enough money!\nYou need "+needmoney+"$ more\n\nYour balance: "+pl.money+"$";
+	local text = "You don't have enough money!\nYou need "+needmoney+Money_pref+" more\n\nYour balance: "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 	Fade_Red(activator);
 }
@@ -2554,7 +2647,7 @@ function AddCashAll(i, TEAM = -1)
 			pl.Add_money(i);
 		}	
 
-		else if(pl.handle.IsValid() && pl.handle.GetTeam() == TEAM)
+		else if(pl.handle != null && pl.handle.IsValid() && pl.handle.GetTeam() == TEAM)
 		{
 			if(alive)
 			{
@@ -2619,15 +2712,25 @@ function InfoPerk()
 	else if(name.find("luck") != null){lvl = pl.perkluck_lvl;lvlMax = perkluck_maxlvl;price = pl.GetNewPrice(perkluck_cost);perktext += "Lucky Warrior";}
 	perktext += " ["+lvl+"/"+lvlMax+"]\n";
 	if(lvl == lvlMax)perktext += "You can't upgrade anymore";
-	else perktext += "Upgrade will cost "+price+"$";
-	local text = "Your level of "+perktext+"\n\nYour balance "+pl.money+"$";
+	else perktext += "Upgrade will cost "+ConvertPrice(price)+Money_pref;
+	local text = "Your level of "+perktext+"\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 
 }
+
+::ConvertPrice <- function(money)
+{	
+	if (typeof money == "float")
+	{
+		money = format("%.2f", money).tofloat();
+	}
+	return money;
+}
+
 function InfoBuffReset()
 {
 	local pl = GetPlayerClassByHandle(activator);
-	local text = "Reset Support Materia\n\nYour balance "+pl.money+"$";
+	local text = "Reset Support Materia\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 }
 
@@ -2675,7 +2778,7 @@ function InfoBuff()
 		bufftext += "'All'";
 		infotext += "[+]Increases the radius of Materia\n[-]Reduces the power of Materia";
 	}
-	local text = "You"+bufftext+" will cost "+pl.GetNewPrice(Buff_cost)+"$\n"+infotext+"\n\nYour balance "+pl.money+"$";
+	local text = "You"+bufftext+" will cost "+pl.GetNewPrice(Buff_cost)+Money_pref+"\n"+infotext+"\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 }
 
@@ -2692,8 +2795,8 @@ function InfoBuffItem()
 	else if(name.find("potion") != null){itemtext += "Potion";cost = pl.GetNewPrice(item_potion_cost);count = item_potion_count;limit = item_potion_countB;}
 	else if(name.find("phoenix") != null){itemtext += "Phoenix";cost = pl.GetNewPrice(item_phoenix_cost);count = item_phoenix_count;limit = item_phoenix_countB;}
 	if(count <= 0)canbuy = "You can't buy more on this round";
-	else canbuy = "Buying "+itemtext+" will cost "+cost+"$"
-	local text = "Item "+itemtext+" - "+count+" left\n"+canbuy+"\n\nYour balance "+pl.money+"$";
+	else canbuy = "Buying "+itemtext+" will cost "+ConvertPrice(cost)+Money_pref
+	local text = "Item "+itemtext+" - "+count+" left\n"+canbuy+"\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 }
 
@@ -2716,9 +2819,8 @@ function InfoItem()
 	else if(name.find("heal") != null){lvl = pl.heal_lvl;itemtext += "Heal";}
 	itemtext += " Materia ["+lvl+"/"+MaxLevel+"]\n";
 	if(lvl == MaxLevel)itemtext += "You can't upgrade anymore";
-	else itemtext += "Upgrade will cost "+pl.GetNewPrice(lvlcost[lvl])+"$";
-
-	local text = "Your level of "+itemtext+"\n\nYour balance "+pl.money+"$";
+	else itemtext += "Upgrade will cost "+ConvertPrice(pl.GetNewPrice(lvlcost[lvl]))+Money_pref;
+	local text = "Your level of "+itemtext+"\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 }
 
@@ -2747,7 +2849,7 @@ function InfoStock()
 		else if(stock[i] == "ultimate")itemtext += "|ultima|";
 		else if(stock[i] == "heal")itemtext += "|heal|";
 	}
-	local text = "Your personal new discount Kit costs "+pl.GetNewPrice(money)+"$\n"+itemtext+"\n\nYour balance "+pl.money+"$";
+	local text = "Your personal new discount Kit costs "+ConvertPrice(pl.GetNewPrice(money))+Money_pref+"\n"+itemtext+"\n\nYour balance "+pl.money+Money_pref;
 	ShowShopText(activator, text);
 }
 
@@ -2758,13 +2860,6 @@ function LevelUpItem()
 {
 	local name = caller.GetName();
 	local pl = GetPlayerClassByHandle(activator);
-
-	if(pl.maxlvluping == 0)
-	{
-		EntFireByHandle(caller, "AddOutPut", "OnUser1 map_brush:RunScriptCode:LevelUpItem():0:1", 0.05, null, null);
-		return;
-	}
-	else pl.maxlvluping--;
 
 	if(name.find("bio") != null)
 	{
@@ -2831,7 +2926,8 @@ function PickUpItem()
 	local color = ::GREEN;
 	local item_name = "";
 	local text = "Item: ";
-	
+	local havesupport = true;
+
 	local postfix = GetItemByName(caller.GetName().slice(caller.GetPreTemplateName().len(),caller.GetName().len()))
 	postfix.NewOwner(pl);
 	
@@ -2853,40 +2949,19 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_bio"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_bio"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_bio"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_bio"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_bio"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_bio"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_bio"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_bio"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_bio"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_bio"+postfix.name, "Enable", "", 0, null);
 		}
 
 		text += " seconds";
@@ -2914,40 +2989,19 @@ function PickUpItem()
 
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_ice"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_ice"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_ice"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_ice"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_ice"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_ice"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_ice"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_ice"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_ice"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_ice"+postfix.name, "Enable", "", 0, null);
 		}
 		text += " seconds";
 
@@ -2972,40 +3026,20 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_poison"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_poison"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_poison"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_poison"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_poison"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_poison"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
 		}
 
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_poison"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_poison"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_poison"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_poison"+postfix.name, "Enable", "", 0, null);
-		}
 		text += " seconds";
 		text += "\nDamage: "+item.GetDamage(lvl);
 
@@ -3029,40 +3063,20 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_wind"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_wind"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_wind"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_wind"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_wind"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_wind"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
 		}
 
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_wind"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_wind"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_wind"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_wind"+postfix.name, "Enable", "", 0, null);
-		}
 		text += " seconds";
 
 		item_name = "\x05 Wind\x01 ";
@@ -3084,40 +3098,20 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_summon"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_summon"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_summon"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_summon"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_summon"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_summon"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
 		}
 
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_summon"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_summon"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_summon"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_summon"+postfix.name, "Enable", "", 0, null);
-		}
 		text += " seconds";
 
 		item_name = "\x09 Summon\x01 ";
@@ -3139,39 +3133,18 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_fire"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_fire"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_fire"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_fire"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_fire"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_fire"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_fire"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_fire"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_fire"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_fire"+postfix.name, "Enable", "", 0, null);
 		}
 
 		text += " seconds";
@@ -3196,39 +3169,18 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_electro"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_electro"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_electro"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_electro"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_electro"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_electro"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_electro"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_electro"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_electro"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_electro"+postfix.name, "Enable", "", 0, null);
 		}
 
 		text += " seconds";
@@ -3254,41 +3206,20 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_earth"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_earth"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_earth"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_earth"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_earth"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_earth"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
 		}
 		text += " seconds";
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_earth"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_earth"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_earth"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_earth"+postfix.name, "Enable", "", 0, null);
-		}
 
 		item_name = "\x10 Earth\x01 ";
 	}
@@ -3309,40 +3240,20 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_gravity"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_gravity"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_gravity"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_gravity"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_gravity"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_gravity"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
 		}
 
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_gravity"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_gravity"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_gravity"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_gravity"+postfix.name, "Enable", "", 0, null);
-		}
 		text += " seconds";
 		text += "\nDamage: "+item.GetDamage(lvl);
 
@@ -3365,36 +3276,12 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_ultimate"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_ultimate"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_ultimate"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_ultimate"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 1";
-		}
-
-		if(pl.item_buff_recovery)
-		{
-			EntFire("item_star0_ultimate"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_ultimate"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_ultimate"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_ultimate"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_ultimate"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_ultimate"+postfix.name, "Enable", "", 0, null);
 		}
 
 		text += " seconds";
@@ -3419,85 +3306,122 @@ function PickUpItem()
 		text += "\nRadius: "+item.GetRadius(lvl);
 		if(pl.item_buff_radius)
 		{
-			EntFire("item_star0_heal"+postfix.name, "color", "0 255 0", 0, null);
-			EntFire("item_star0_heal"+postfix.name, "Enable", "", 0, null);
-
 			text += " + "+ (item.GetRadius(lvl) * 1.3).tostring();
 		}
 		text += "\nDuration: "+item.GetDuration(lvl);
 		if(pl.item_buff_turbo)
 		{
-			EntFire("item_star0_heal"+postfix.name, "color", "255 255 0", 0, null);
-			EntFire("item_star0_heal"+postfix.name, "Enable", "", 0, null);
-
 			text += " + 1";
 		}
 		text += " seconds";
 		text += "\nCD: "+item.GetCD(lvl);
 		if(pl.item_buff_recovery)
 		{
-			EntFire("item_star0_heal"+postfix.name, "color", "140 0 255", 0, null);
-			EntFire("item_star0_heal"+postfix.name, "Enable", "", 0, null);
-
 			text += " - 10";
-		}
-
-		if(pl.item_buff_doble)
-		{
-			EntFire("item_star0_heal"+postfix.name, "color", "0 0 255", 0, null);
-			EntFire("item_star0_heal"+postfix.name, "Enable", "", 0, null);
-		}
-
-		if(pl.item_buff_last)
-		{
-			EntFire("item_star0_heal"+postfix.name, "color", "255 0 0", 0, null);
-			EntFire("item_star0_heal"+postfix.name, "Enable", "", 0, null);
 		}
 
 		text += " seconds";
 
 		item_name = " Heal ";
 	}
-	else if(name.find("potion") != null)
+	else 
 	{
-		lvl = 1;
-		local item = GetItemPresetByName("potion");
-		if(lvl == 0)lvl++;
-		text += "Potion";
-		text += "\nEffect: "+item.effect;
-		text += "\nRadius: "+item.GetRadius(lvl);
-		text += "\nDuration: "+item.GetDuration(lvl);
+		havesupport = false;
+		if(name.find("potion") != null)
+		{
+			lvl = 1;
+			local item = GetItemPresetByName("potion");
+			if(lvl == 0)lvl++;
+			text += "Potion";
+			text += "\nEffect: "+item.effect;
+			text += "\nRadius: "+item.GetRadius(lvl);
+			text += "\nDuration: "+item.GetDuration(lvl);
 
-		text += " seconds";
+			text += " seconds";
 
-		item_name = " Potion ";
+			item_name = " Potion ";
+		}
+		else if(name.find("ammo") != null)
+		{
+			lvl = 1;
+			local item = GetItemPresetByName("ammo");
+			if(lvl == 0)lvl++;
+			text += "Ammo";
+			text += "\nEffect: "+item.effect;
+			text += "\nRadius: "+item.GetRadius(lvl);
+			text += "\nDuration: "+item.GetDuration(lvl);
+			text += " seconds";
+
+			item_name = " Ammo ";
+		}
+		else if(name.find("phoenix") != null)
+		{
+			lvl = 1;
+			local item = GetItemPresetByName("phoenix");
+			if(lvl == 0)lvl++;
+			text += "Phoenix";
+			text += "\nEffect: "+item.effect;
+
+			item_name = " Phoenix down ";
+		}
 	}
-	else if(name.find("ammo") != null)
+
+	if (havesupport)
 	{
-		lvl = 1;
-		local item = GetItemPresetByName("ammo");
-		if(lvl == 0)lvl++;
-		text += "Ammo";
-		text += "\nEffect: "+item.effect;
-		text += "\nRadius: "+item.GetRadius(lvl);
-		text += "\nDuration: "+item.GetDuration(lvl);
-		text += " seconds";
+		for(local i = 1; i <= lvl;i++)
+		{
+			EntFire("item_star"+ i + "_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+			if (pl.vip)
+			{
+				EntFire("item_star"+ i + "_" + postfix.name_right + "" + postfix.name, "SetGlowEnabled", "", 0, null);
+				EntFire("item_star"+ i + "_" + postfix.name_right + "" + postfix.name, "Alpha", "1", 0, null);
+			}
+		}
 
-		item_name = " Ammo ";
+		if (pl.vip)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Alpha", "1", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowEnabled", "", 0, null);
+		}
+
+		if (pl.item_buff_radius)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowColor", "0 255 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "color", "0 255 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+		}
+		if (pl.item_buff_turbo)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowColor", "255 255 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "color", "255 255 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+		}
+		if (pl.item_buff_recovery)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowColor", "140 0 255", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "color", "140 0 255", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+		}
+		if (pl.item_buff_doble)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowColor", "0 0 255", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "color", "0 0 255", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+		}
+		if (pl.item_buff_last)
+		{
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "SetGlowColor", "255 0 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "color", "255 0 0", 0, null);
+			EntFire("item_star0_" + postfix.name_right + "" + postfix.name, "Enable", "", 0, null);
+		}
 	}
-	else if(name.find("phoenix") != null)
+	if (ENT_WATCH_ENABLE)
 	{
-		lvl = 1;
-		local item = GetItemPresetByName("phoenix");
-		if(lvl == 0)lvl++;
-		text += "Phoenix";
-		text += "\nEffect: "+item.effect;
-
-		item_name = " Phoenix down ";
+		if(lvl == 2)color = ::YELLOW;
+		else if(lvl == 3)color = ::RED;
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} picked up"+ item_name+""+color+""+lvl+"\x01 level ***")
 	}
-	if(lvl == 2)color = ::YELLOW;
-	else if(lvl == 3)color = ::RED;
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} picked up"+ item_name+""+color+""+lvl+"\x01 level ***")
+	
 
 	caller.__KeyValueFromString("message",text);
 	EntFireByHandle(caller, "Display", "", 0, activator, activator);
@@ -3505,128 +3429,175 @@ function PickUpItem()
 
 function DropItem()
 {
-	local item_owner = GetItemByOwner(activator);
+	local item_owner = GetItemByButton(caller);
 	if(item_owner == null)
 		return;
+
 	local lvl = item_owner.lvl;
-	item_owner.RemoveOwner();
-	
-	local pl = GetPlayerClassByHandle(activator);
-	if(pl != null)
+	if (item_owner.RemoveOwner())
 	{
-		local item_name = "";
-		if(item_owner.name_right == "bio")
-			item_name = "\x0A Bio\x01 ";
-		if(item_owner.name_right == "ice")
-			item_name = "\x0B Ice\x01 ";
-		if(item_owner.name_right == "poison")
-			item_name = "\x06 Poison\x01 ";
-		if(item_owner.name_right == "summon")
-			item_name = "\x09 Summon\x01 ";
-		if(item_owner.name_right == "fire")
-			item_name = "\x02 Fire\x01 ";
-		if(item_owner.name_right == "wind")
-			item_name = "\x05 Wind\x01 ";
-		if(item_owner.name_right == "electro")
-			item_name = "\x0C Electro \x01 ";
-		if(item_owner.name_right == "earth")
-			item_name = "\x10 Earth\x01 ";
-		if(item_owner.name_right == "gravity")
-			item_name = "\x0E Gravity\x01 ";
-		if(item_owner.name_right == "ultimate")
-			item_name = "\x04 Ultima\x01 ";
-		if(item_owner.name_right == "heal")
-			item_name = " Heal ";
-		if(item_owner.name_right == "potion")
-			item_name = " Potion ";
-		if(item_owner.name_right == "ammo")
-			item_name = " Ammo ";
-		if(item_owner.name_right == "phoenix")
-			item_name = " Phoenix down ";
-		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} dropped"+item_name+" "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***")
+		if(ENT_WATCH_ENABLE)
+		{
+			local pl = GetPlayerClassByHandle(activator);
+			if(pl != null)
+			{
+				local item_name = "";
+				if(item_owner.name_right == "bio")
+					item_name = "\x0A Bio\x01 ";
+				if(item_owner.name_right == "ice")
+					item_name = "\x0B Ice\x01 ";
+				if(item_owner.name_right == "poison")
+					item_name = "\x06 Poison\x01 ";
+				if(item_owner.name_right == "summon")
+					item_name = "\x09 Summon\x01 ";
+				if(item_owner.name_right == "fire")
+					item_name = "\x02 Fire\x01 ";
+				if(item_owner.name_right == "wind")
+					item_name = "\x05 Wind\x01 ";
+				if(item_owner.name_right == "electro")
+					item_name = "\x0C Electro \x01 ";
+				if(item_owner.name_right == "earth")
+					item_name = "\x10 Earth\x01 ";
+				if(item_owner.name_right == "gravity")
+					item_name = "\x0E Gravity\x01 ";
+				if(item_owner.name_right == "ultimate")
+					item_name = "\x04 Ultima\x01 ";
+				if(item_owner.name_right == "heal")
+					item_name = " Heal ";
+				if(item_owner.name_right == "potion")
+					item_name = " Potion ";
+				if(item_owner.name_right == "ammo")
+					item_name = " Ammo ";
+				if(item_owner.name_right == "phoenix")
+					item_name = " Phoenix down ";
+				ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} dropped"+item_name+" "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***")
+			}
+		}
 	}
 }
 
 //entwatch
 function ShowItems()
 {
-	local text = "";
-	local item_name_array = [];
-	local item_data_array = [];
-	for (local i = 0; i < ITEM_OWNER.len(); i++)
+	if (ENT_WATCH_ENABLE)
 	{
-		if(!ITEM_OWNER[i].button.IsValid())
+		local text = "";
+		local item_name_array = [];
+		local item_data_array = [];
+		for (local i = 0; i < ITEM_OWNER.len(); i++)
 		{
-			ITEM_OWNER.remove(i);
-			return ShowItems();
-		}
-		if(ITEM_OWNER[i].owner != null)
-		{
-			local item_name = ITEM_OWNER[i].name_right;
-			local first = item_name.slice(0,1);
-			local second = item_name.slice(1,item_name.len());
-			local new_new_item_name = first.toupper() + second;
-			item_name_array.push(new_new_item_name);
-			item_data_array.push(ITEM_OWNER[i]);
-		}
-	}
-	for (local i = 0; i < item_name_array.len(); i++)
-	{
-		local id = 1;
-		for (local a = 0; a < item_name_array.len(); a++)
-		{
-			if(item_name_array[i] == item_name_array[a])
+			if(!ITEM_OWNER[i].button.IsValid())
 			{
-				if(item_data_array[i] != item_data_array[a])
-				{
-					item_name_array[a] += (id++).tostring();
-				}
+				ITEM_OWNER.remove(i);
+				return ShowItems();
+			}
+
+			if(ITEM_OWNER[i].owner != null)
+			{
+				local item_name = ITEM_OWNER[i].name_right;
+				local first = item_name.slice(0,1);
+				local second = item_name.slice(1,item_name.len());
+				local new_new_item_name = first.toupper() + second;
+				item_name_array.push(new_new_item_name);
+				item_data_array.push(ITEM_OWNER[i]);
 			}
 		}
 
-	  	local pl = GetPlayerClassByHandle(item_data_array[i].owner);
-		text += "\n" + item_name_array[i] + ((item_data_array[i].lvl != null) ? "[" + ((pl.item_buff_doble) ? "-" : "") + item_data_array[i].lvl + "]" : "");
+		for (local i = 0; i < item_name_array.len(); i++)
+		{
+			//fix name
+			{
+				local id = 1;
+				for (local a = 0; a < item_name_array.len(); a++)
+				{
+					if(item_name_array[i] == item_name_array[a])
+					{
+						if(item_data_array[i] != item_data_array[a])
+						{
+							item_name_array[a] += (id++).tostring();
+						}
+					}
+				}
+			}
 
-		if(pl.item_buff_last)
-		{
-			local handle = pl.handle;
-			local hp = handle.GetHealth()
-			local hpmax = handle.GetMaxHealth();
-			local sethp = hp + 1;
-			if(sethp > hpmax)
-				sethp = hpmax;
-			handle.SetHealth(sethp);
-		}
-		
-		if(item_data_array[i].canUse)
-		{
-			if(!item_data_array[i].button.GetScriptScope().GetStatus())
+			local pl = GetPlayerClassByHandle(item_data_array[i].owner);
+			text += "\n" + item_name_array[i] + ((item_data_array[i].lvl != null) ? "[" + ((pl.item_buff_doble) ? "-" : "") + item_data_array[i].lvl + "]" : "");
+
+			if(pl.item_buff_last)
 			{
-				text += "[L]";
+				local handle = pl.handle;
+				local hp = handle.GetHealth()
+				local hpmax = handle.GetMaxHealth();
+				local sethp = hp + 1;
+				if(sethp > hpmax)
+					sethp = hpmax;
+				handle.SetHealth(sethp);
 			}
-			else
+			
+			if(item_data_array[i].canUse)
 			{
-				if(item_data_array[i].type == 1)
+				if(!item_data_array[i].button.GetScriptScope().GetStatus())
 				{
-					text += "[R]";
+					text += "[L]";
 				}
-				else if(item_data_array[i].type == 2)
+				else
 				{
-					text += "(" + item_data_array[i].count + ")";
+					if(item_data_array[i].type == 1)
+					{
+						text += "[R]";
+					}
+					else if(item_data_array[i].type == 2)
+					{
+						text += "(" + item_data_array[i].count + ")";
+					}
+					else if(item_data_array[i].type == 3)
+					{
+						text += "(" + item_data_array[i].count + "/" + item_data_array[i].maxcount + ")";
+					}
 				}
-				else if(item_data_array[i].type == 3)
-				{
-					text += "(" + item_data_array[i].count + "/" + item_data_array[i].maxcount + ")";
-				}
+			}
+			else text += "["+item_data_array[i].cd+"]";
+			text += pl.name;
+		}
+
+		if(text != "")
+		{
+			ItemText.__KeyValueFromString("message",text);
+			foreach(pl in PLAYERS)
+			{
+				if(pl.block_entwatch)
+					continue;
+
+				if(pl.handle != null && pl.handle.IsValid() && pl.handle.GetTeam() != ((ENT_WATCH_TEAM) ? 2 : 0))
+					EntFireByHandle(ItemText, "Display", "", 0.01, pl.handle, pl.handle);
 			}
 		}
-		else text += "["+item_data_array[i].cd+"]";
-		text += pl.name;
 	}
-	if(text != "")
+	else
 	{
-		ItemText.__KeyValueFromString("message",text);
-		EntFireByHandle(ItemText, "Display", "", 0.01, null, null);
+		for (local i = 0; i < ITEM_OWNER.len(); i++)
+		{
+			if(!ITEM_OWNER[i].button.IsValid())
+			{
+				ITEM_OWNER.remove(i);
+				return ShowItems();
+			}
+
+			if(ITEM_OWNER[i].owner != null)
+			{
+				local pl = GetPlayerClassByHandle(ITEM_OWNER[i].owner);
+				if(pl.item_buff_last)
+				{
+					local handle = pl.handle;
+					local hp = handle.GetHealth()
+					local hpmax = handle.GetMaxHealth();
+					local sethp = hp + 1;
+					if(sethp > hpmax)
+						sethp = hpmax;
+					handle.SetHealth(sethp);
+				}
+			}
+		}
 	}
 	EntFireByHandle(self, "RunScriptCode", "ShowItems();", 0.5, null, null);
 }
@@ -3658,9 +3629,10 @@ function UseUltimate()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x04 Ultima\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x04 Ultima\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -3669,7 +3641,7 @@ function UseUltimate()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime -= 1;
+		worktime -= 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -3754,7 +3726,8 @@ function UseUltimate()
 
 function UltimateHurt(damage,radius,timehp,lvl)
 {
-	Boss_Damage_Item("ultimate", lvl)
+	Boss_Damage_Item("ultimate", lvl);
+
 	local h = null;
 	local AllZms = CountAlive(2);
 	local UltimaZms = [];
@@ -3781,7 +3754,7 @@ function UltimateHurt(damage,radius,timehp,lvl)
 				ignore = false;
 				if(UltimaZms.len() == AllZms)
 				{
-					UltimaZms[i].SetOrigin(Vector(4480, -9984, -400))
+					UltimaZms[i].SetOrigin(Vector(4480, -9984, -400));
 					continue;
 				}
 			}
@@ -3837,8 +3810,10 @@ function UseWind()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x05 Wind\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x05 Wind\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 
 	if(!item_owner.canUse)
 	{
@@ -3848,7 +3823,7 @@ function UseWind()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -3965,9 +3940,10 @@ function UseIce()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0B Ice\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-	
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0B Ice\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4097,9 +4073,11 @@ function UseElectro()
 
 	if(result == -1)
 		return;
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0C Electro\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0C Electro\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-	
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4108,7 +4086,7 @@ function UseElectro()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4121,11 +4099,11 @@ function UseElectro()
 		{
 			if(pl.item_buff_turbo)
 			{	
-				cd += 15;
+				cd += 5;
 			}
 			if(pl.item_buff_recovery)
 			{
-				cd -= 15;
+				cd -= 5;
 			}
 			EntFire("item_effect_"+item_preset.name+""+postfix, "Start", "", cd, null);
 			EntFire("item_button_"+item_preset.name+""+postfix, "UnLock", "", cd, null);
@@ -4141,12 +4119,12 @@ function UseElectro()
 		if(pl.item_buff_turbo)
 		{	
 			countercd += 5
-			cd += 15;
+			cd += 10;
 		}
 		if(pl.item_buff_recovery)
 		{
 			countercd -= 5
-			cd -= 15;
+			cd -= 10;
 		}
 
 		if(!item_owner.canUse)
@@ -4220,9 +4198,10 @@ function UseSummon()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x09 Summon\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x09 Summon\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4231,7 +4210,7 @@ function UseSummon()
 
 	if(pl.item_buff_turbo)
 	{	
-		Worktime += 1;
+		Worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4331,9 +4310,10 @@ function UseBio()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0A Bio\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0A Bio\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4342,7 +4322,7 @@ function UseBio()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4459,9 +4439,10 @@ function UsePoison()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x06 Poison\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x06 Poison\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4470,7 +4451,7 @@ function UsePoison()
 
 	if(pl.item_buff_turbo)
 	{	
-		Worktime += 1;
+		Worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4484,11 +4465,11 @@ function UsePoison()
 		{
 			if(pl.item_buff_turbo)
 			{	
-				cd += 15;
+				cd += 5;
 			}
 			if(pl.item_buff_recovery)
 			{
-				cd -= 15;
+				cd -= 5;
 			}
 
 			EntFire("item_effect_"+item_preset.name+""+postfix, "Start", "", cd, null);
@@ -4505,12 +4486,12 @@ function UsePoison()
 		if(pl.item_buff_turbo)
 		{	
 			countercd += 5
-			cd += 15;
+			cd += 10;
 		}
 		if(pl.item_buff_recovery)
 		{
 			countercd -= 5
-			cd -= 15;
+			cd -= 10;
 		}
 
 		if(!item_owner.canUse)
@@ -4584,9 +4565,10 @@ function UseEarth()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x10 Earth\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x10 Earth\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4595,7 +4577,7 @@ function UseEarth()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4694,9 +4676,10 @@ function UseGravity()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0E Gravity\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x0E Gravity\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4705,7 +4688,7 @@ function UseGravity()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4826,9 +4809,10 @@ function UseFire()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x02 Fire\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used\x02 Fire\x01 "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4837,7 +4821,7 @@ function UseFire()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -4958,9 +4942,10 @@ function UseHeal()
 
 	if(result == -1)
 		return;
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Heal "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Heal "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	if(!item_owner.canUse)
 	{
 		EntFire("item_effect_"+item_preset.name+""+postfix, "Stop", "", 0, null);
@@ -4969,7 +4954,7 @@ function UseHeal()
 
 	if(pl.item_buff_turbo)
 	{	
-		worktime += 1;
+		worktime += 1.5;
 	}
 	if(pl.item_buff_recovery)
 	{
@@ -5069,9 +5054,10 @@ function UsePotion()
 	local radius = item_preset.GetRadius(lvl);
 
 	local pl = GetPlayerClassByHandle(activator);
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Potion "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Potion "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	EntFire("item_sound_use", "PlaySound", "", 0, null);
 
 	local trigger = Entities.FindByName(null, "item_trigger_potion"+postfix);
@@ -5107,9 +5093,10 @@ function UseAmmo()
 	local radius = item_preset.GetRadius(lvl);
 
 	local pl = GetPlayerClassByHandle(activator);
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Ammo "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Ammo "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	EntFire("item_sound_use", "PlaySound", "", 0, null);
 
 	local trigger = Entities.FindByName(null, "item_trigger_"+item_preset.name+""+postfix);
@@ -5145,9 +5132,10 @@ function UsePhoenix()
 	local radius = item_preset.GetRadius(lvl);
 
 	local pl = GetPlayerClassByHandle(activator);
-
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Phoenix down "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
-
+	if (ENT_WATCH_ENABLE)
+	{
+		ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} used Phoenix down "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***");
+	}
 	EntFire("item_sound_use", "PlaySound", "", 0, null);
 
 	local trigger = Entities.FindByName(null, "item_trigger_"+item_preset.name+""+postfix);
@@ -5172,11 +5160,9 @@ function UsePhoenix()
 
 function CheckItem(pl)
 {
-	//printl("PRESS");
 	local item_owner = GetItemByOwner(pl.handle);
 	if(item_owner == null)
 		return;
-	//printl("PRESS1");
 	if(pl.item_buff_last && item_owner.allowRegen)
 	{
 		if(item_owner.count == 0)
@@ -5186,40 +5172,44 @@ function CheckItem(pl)
 	}
 
 	local lvl = item_owner.lvl;
-	item_owner.RemoveOwner();
-
-	local item_name = "";
-	if(item_owner.name_right == "bio")
-		item_name = "\x0A Bio\x01 ";
-	if(item_owner.name_right == "ice")
-		item_name = "\x0B Ice\x01 ";
-	if(item_owner.name_right == "poison")
-		item_name = "\x06 Poison\x01 ";
-	if(item_owner.name_right == "summon")
-		item_name = "\x09 Summon\x01 ";
-	if(item_owner.name_right == "fire")
-		item_name = "\x02 Fire\x01 ";
-	if(item_owner.name_right == "wind")
-		item_name = "\x05 Wind\x01 ";
-	if(item_owner.name_right == "electro")
-		item_name = "\x0C Electro \x01 ";
-	if(item_owner.name_right == "earth")
-		item_name = "\x10 Earth\x01 ";
-	if(item_owner.name_right == "gravity")
-		item_name = "\x0E Gravity\x01 ";
-	if(item_owner.name_right == "ultimate")
-		item_name = "\x04 Ultima\x01 ";
-	if(item_owner.name_right == "heal")
-		item_name = " Heal ";
-	if(item_owner.name_right == "potion")
-		item_name = " Potion ";
-	if(item_owner.name_right == "ammo")
-		item_name = " Ammo ";
-	if(item_owner.name_right == "phoenix")
-		item_name = " Phoenix down ";
-	if(item_owner.name_right == "Red XIII")
-		item_name = " Red XIII ";
-	ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} died and dropped"+item_name+" "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***")
+	if (item_owner.RemoveOwner())
+	{
+		if (ENT_WATCH_ENABLE)
+		{
+			local item_name = "";
+			if(item_owner.name_right == "bio")
+				item_name = "\x0A Bio\x01 ";
+			if(item_owner.name_right == "ice")
+				item_name = "\x0B Ice\x01 ";
+			if(item_owner.name_right == "poison")
+				item_name = "\x06 Poison\x01 ";
+			if(item_owner.name_right == "summon")
+				item_name = "\x09 Summon\x01 ";
+			if(item_owner.name_right == "fire")
+				item_name = "\x02 Fire\x01 ";
+			if(item_owner.name_right == "wind")
+				item_name = "\x05 Wind\x01 ";
+			if(item_owner.name_right == "electro")
+				item_name = "\x0C Electro \x01 ";
+			if(item_owner.name_right == "earth")
+				item_name = "\x10 Earth\x01 ";
+			if(item_owner.name_right == "gravity")
+				item_name = "\x0E Gravity\x01 ";
+			if(item_owner.name_right == "ultimate")
+				item_name = "\x04 Ultima\x01 ";
+			if(item_owner.name_right == "heal")
+				item_name = " Heal ";
+			if(item_owner.name_right == "potion")
+				item_name = " Potion ";
+			if(item_owner.name_right == "ammo")
+				item_name = " Ammo ";
+			if(item_owner.name_right == "phoenix")
+				item_name = " Phoenix down ";
+			if(item_owner.name_right == "Red XIII")
+				item_name = " Red XIII ";
+			ScriptPrintMessageChatAll("***\x04 "+pl.name+"\x01 {\x07"+pl.steamid+"\x01} died and dropped"+item_name+" "+((lvl==3) ? RED : (lvl==2) ? YELLOW : GREEN)+""+((lvl != null) ? lvl : 0)+"\x01 level ***")
+		}
+	}
 }
 
 SilenceTime <- 20;
@@ -5320,6 +5310,7 @@ function Boss_Damage_Item(item_name, lvl)
 					time = 5;
 					damage = 120;
 				}
+
 				EntFire(temp, "RunScriptCode", "ItemEffect_Ice(" + time + ")", 0.00);
 			}
 			
@@ -5417,7 +5408,7 @@ function Boss_Damage_Item(item_name, lvl)
 			}
 			else if(item_name == "phoenix")
 			{
-				damage = -2;
+				damage = -1.5;
 			}
 
 			break;
@@ -5479,16 +5470,17 @@ function Boss_Damage_Item(item_name, lvl)
 					time = 5;
 					damage = 350;
 				}
+				
 				EntFire(temp, "RunScriptCode", "ItemEffect_Ice(" + time + ")", 0.00);
 			}
 			else if(item_name == "ultimate")
 			{
 				if(lvl == 1)
-					damage = -5;
+					damage = -3;
 				else if(lvl == 2)
-					damage = -8;
+					damage = -4;
 				else if(lvl == 3)
-					damage = -11;
+					damage = -5;
 			}
 
 			else if(item_name == "poison")
@@ -5511,7 +5503,7 @@ function Boss_Damage_Item(item_name, lvl)
 			}
 			else if(item_name == "phoenix")
 			{
-				damage = -2;
+				damage = -1.5;
 			}
 
 			break;
@@ -5677,7 +5669,7 @@ function ElseCheck()
 							if(PLAYERS[i].perkchameleon_lvl > 0)
 							{
 								pl.__KeyValueFromInt("rendermode", 1);
-								pl.__KeyValueFromInt("renderamt", 255 - PLAYERS[i].perkchameleon_lvl * perkchameleon_chameleonperlvl);
+								pl.__KeyValueFromInt("renderamt", (255 - (PLAYERS[i].perkchameleon_lvl * perkchameleon_chameleonperlvl)));
 							}
 							if(PLAYERS[i].perkhp_zm_lvl > 0)
 							{
@@ -5854,6 +5846,11 @@ function GetItemPresetByName(name)
 //event manager
 function PlayerJump()
 {
+	if(eventjump == null || eventjump != null && !eventjump.IsValid())
+	{
+		eventjump = Entities.FindByName(null, "pl_jump");
+	}
+
 	local userid = eventjump.GetScriptScope().event_data.userid;
 	local pl = GetPlayerClassByUserID(userid);
 	if(pl != null)
@@ -5930,6 +5927,9 @@ function PlayerHurt()
 
 	local a = GetPlayerClassByUserID(attacker);
 
+	if(a.handle == null || !a.handle.IsValid())
+		return;
+
 	//thanks NiceShoot for this code
 	if(a.handle.GetTeam() == 3)
 	{
@@ -5944,58 +5944,88 @@ function PlayerDeath()
 		eventdeath = Entities.FindByName(null, "pl_death");
 	}
 
-	local userid = eventdeath.GetScriptScope().event_data.userid;
-	local attacker = eventdeath.GetScriptScope().event_data.attacker;
+	local victim_userid = eventdeath.GetScriptScope().event_data.userid;
+	local attacker_userid = eventdeath.GetScriptScope().event_data.attacker;
 
-	local b = GetPlayerClassByUserID(userid);
-	if(b == null)
+	local victim_player_class = GetPlayerClassByUserID(victim_userid);
+	if(victim_player_class == null)
 		return;
-	b.setPerks = false;
-	b.invalid = false;
-	EntFireByHandle(self, "RunScriptCode", "AntiDebuff(1.0)", 0, b.handle, b.handle);
+
+	CheckItem(victim_player_class);
 	
+	victim_player_class.setPerks = false;
+	victim_player_class.invalid = false;
 
-	EntFire("kojima_chest_" + userid, "Kill", "", 0, null);
+	{
+		EntFire("kojima_chest_" + victim_userid, "Kill", "", 0, null);
+	}
 
-	local waffel_car = Entities.FindByName(null, "waffel_controller");
-	waffel_car.GetScriptScope().DestroyCar(b.handle);
+	if(victim_player_class.handle != null)
+	{
+		{
+			EntFireByHandle(self, "RunScriptCode", "AntiDebuff(1.0)", 0, victim_player_class.handle, victim_player_class.handle);
+		}
 
-	if(b.pet != null)
-		b.pet.Destroy();
-	if(b.handle.IsValid())
-		if(b.handle.GetModelName() == T_VIP_MODEL)
-			EntFire("sound_sephiroth_death", "PlaySound", "", 0, null);
+		{
+			if(victim_player_class.handle.IsValid())
+				if(victim_player_class.handle.GetModelName() == T_VIP_MODEL)
+					EntFire("sound_sephiroth_death", "PlaySound", "", 0, null);
+		}
+		{
+			local waffel_car = Entities.FindByName(null, "waffel_controller");
+			waffel_car.GetScriptScope().DestroyCar(victim_player_class.handle);
+		}
+	}
 	
-	CheckItem(b);
-
-	if(attacker == 0)
-		return;
-	local a = GetPlayerClassByUserID(attacker);
-	if(a == null)
-		return;
-	if(a.handle == b.handle)
+	{
+		if(victim_player_class.pet != null)
+			victim_player_class.pet.Destroy();
+	}
+	
+	if(attacker_userid == 0)
 		return;
 
-	if(b.handle.GetTeam() == 3)
-		b.infect++;
-
-	if(a.perksteal_lvl == 0)
+	local attacker_player_class = GetPlayerClassByUserID(attacker_userid);
+	if(attacker_player_class == null)
 		return;
-	local a_lvl_steal = a.perksteal_lvl;
-	local a_lvl_luck = a.perkluck_lvl;
-	local integer = a_lvl_steal * perksteal_stilleperlvl;
-	local still_money = RandomInt(integer - perksteal_stilleperlvl + a_lvl_luck + 1,integer + a_lvl_luck);
-	local target_money = b.money;
-	if(a.handle.GetTeam() == 3)still_money = still_money * 0.5;
+
+	if(attacker_player_class.handle == victim_player_class.handle)
+		return;
+
+	if(attacker_player_class.handle == null || attacker_player_class.handle.IsValid())
+		return;
+
+	if(attacker_player_class.handle.GetTeam() == 3)
+		attacker_player_class.infect++;
+
+	if(attacker_player_class.perksteal_lvl < 1)
+		return;
+
+	local steal_value = attacker_player_class.perksteal_lvl * perksteal_stilleperlvl;
+	local luck_value = victim_player_class.perkluck_lvl * perksteal_stilleperlvl;
+	local min_value = steal_value - (luck_value * 0.5)
+	local max_value = perksteal_stilleperlvl + steal_value - (luck_value * 0.5)
+	local still_money = RandomInt(min_value, max_value);
+
+	if(still_money < 0)
+		return;
+
+	local target_money = victim_player_class.money;
+	if(target_money <= 10)
+		return;
+	
+	if(attacker_player_class.handle.GetTeam() == 3)
+		still_money = still_money * 0.5;
+
 	if(target_money >= still_money)
 	{
-		b.Minus_money(still_money);
-		a.Add_money(still_money);
+		victim_player_class.Minus_money(still_money);
+		attacker_player_class.Add_money(still_money);
 	}
 	else
 	{
-		b.Minus_money(still_money);
-		a.Add_money(target_money);
+		victim_player_class.Minus_money(target_money);
+		attacker_player_class.Add_money(target_money);
 	}
 }
 
@@ -6132,7 +6162,6 @@ function StartPropEnd()
 	local randomOrigin;
 	while(null != (handle = Entities.FindByName(handle,  "End_prop")))
 	{
-		//printl(handle.GetOrigin());
 		randomTimer = RandomFloat(0.0, 5.0);
 		EntFireByHandle(self, "RunScriptCode", "EndPropRotate.push(PropRotate(activator))", randomTimer, handle, handle);
 	}
@@ -6155,20 +6184,69 @@ function ShowCredits()
 {
 	local text;
 	text = "" + MapName.toupper();
-	ShowCreditsText(text, 1.05);
 	ServerChat(Chat_pref + text);
 
 	text = "Version: " + ScriptVersion;
 	ServerChat(Chat_pref + text);
 
 	text = "Map by Kondik, Kotya, Friend, Mizz(Haryde) and Microrost"
-	ServerChat(Chat_pref + text, 3.00);
-	
-	text = "More info - bit.ly/2WmDYOF"
-	ServerChat(Chat_pref + text, 3.50);
+	ServerChat(Chat_pref + text);
 
-	text = text.toupper();
-	ShowCreditsText(text, 3.00);
+	text = "More info - docs.google.com/spreadsheets/d/1V65cuBFta6nxAQkCVwxGqUJPMTszqJGQEUJFT_uKi9s"
+	ServerChat(Chat_pref + text, 6.50);
+}
+
+function RandomEvent()
+{
+	local event = null;
+	EVENT_2XMONEY = false;
+	EVENT_EXTRAITEMS = false;
+	EVENT_EXTRACHEST = false;
+	EVENT_BLACKFRIDAY = false;
+
+	if (RandomInt(1, 100) <= 20)
+	{
+		if ((RandomInt(0, 5) == 0) && !BHOP_ENABLE) 
+		{
+			SendToConsoleServerPS("sv_enablebunnyhopping 1");
+			event = "[Event] Bhop enable";
+		}
+		else if (RandomInt(0, 4) == 0) 
+		{
+			EVENT_EXTRACHEST = true;
+			event = "[Event] More chests to spawn on a map";
+		}
+		else if (RandomInt(0, 3) == 0) 
+		{
+			event = "[Event] Chicken mode";
+			EntFire("Start_tp", "AddOutPut", "OnUser3 !activator:RunScriptCode:self.SetModel(CHICKEN_MODEL):0:-1", 3);
+		}
+		else if (RandomInt(0, 2) == 0) 
+		{
+			EVENT_EXTRAITEMS = true;
+			event = "[Event] More materia to spawn on a map";
+		}
+		else if (RandomInt(0, 1) == 0) 
+		{
+			EVENT_2XMONEY = true;
+			event = "[Event] x2 GIL for every way of getting it";
+		}
+		else
+		{
+			EVENT_BLACKFRIDAY = true;
+			event = "[Event] Black friday - " + EVENT_BLACKFRIDAY_COUNT + "% discount";
+		}
+	}
+
+	if (event != null)
+	{
+		ServerChat(Chat_pref + event);
+		ServerChat(Chat_pref + event, 1.0);
+		ServerChat(Chat_pref + event, 2.0);
+
+		event = event.toupper();
+		ShowCreditsText(event);
+	}
 }
 
 Chat_Buffer <- [];
@@ -6192,9 +6270,9 @@ function ServerChatText(ID)
 function OpenSpawn(delay)
 {
 	EntFire("City_Spawn_Door", "Open", "", delay, null);
-	EntFire("City_Spawn_Doorv2", "Open", "", delay - 5, null);
+	EntFire("City_Spawn_Doorv2", "Open", "", delay - 3.5, null);
 	EntFire("City_Glass", "Break", "", delay, null);
-	EntFire("Shop_Block", "Break", "", delay + 8.00, null);	
+	EntFire("Shop_Block", "Break", "", delay + 7.00, null);	
 	EntFire("spawntoshop_travel_trigger", "Kill", "", delay null);
 }
 
@@ -6203,7 +6281,6 @@ function ToggleParticles()
 	EntFire("shop_item_particle", "Stop", "", 0.50, null);
 	EntFire("perk_particle", "Stop", "", 0.50, null);
 	EntFire("kojima_*", "Stop", "", 0.50, null);
-
 
 	EntFire("shop_item_particle", "Start", "", 1.00, null);
 	EntFire("perk_particle", "Start", "", 1.00, null);
@@ -6231,26 +6308,26 @@ function Trigger_City_Gate()
 
 function Trigger_Left_Side_Path()
 {
-	local timer = 10.0
+	local timer = 12.0
 	local text;
 
 	text = "The path open in "+timer+" seconds"
 	ServerChat(Chat_pref + text);
 
-	EntFire("Hold1_0_Clip", "Kill", "", timer);
+	EntFire("Hold1_0_Clip", "Break", "", timer);
 
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(1706,-4718,907),180,99)", timer - 0.1);
 }
 
 function Trigger_Right_Side_Path()
 {
-	local timer = 15.0
+	local timer = 13.0
 	local text;
 
 	text = "The path open in "+timer+" seconds"
 	ServerChat(Chat_pref + text);
 
-	EntFire("Hold1_2_Clip", "Kill", "", timer);
+	EntFire("Hold1_2_Clip", "Break", "", timer);
 
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(1455,-2230,976),180,99)", timer - 0.1);
 }
@@ -6263,7 +6340,7 @@ function Trigger_Cave_Bar_Lower_Path()
 	text = "The path open in "+timer+" seconds"
 	ServerChat(Chat_pref + text);
 
-	EntFire("Hold1_1_Clip", "Kill", "", timer);
+	EntFire("Hold1_1_Clip", "Break", "", timer);
 
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-138,-1130,512),80,99)", timer - 0.1);
 }
@@ -6276,7 +6353,7 @@ function Trigger_Cave_Bar_Up_Path()
 	text = "We are almost at Cosmo Canyon"
 	ServerChat(Chat_pref + text);
 
-	EntFire("Hold1_Clip", "Kill", "", timer);
+	EntFire("Hold1_Clip", "Break", "", timer);
 
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-791,-862,1088),84,80)", timer - 0.1);
 }
@@ -6376,7 +6453,12 @@ function Trigger_CosmoBar()
 		EntFire("Hold2_Door", "Open", "", 4.50);
 		EntFire("Hold2_Door", "Kill", "", 5.00);
 		EntFire("Cosmo_Bar_Glasses", "Break", "", 5.00);
+
 		EntFire("lvl3_Break", "Break", "", 5.00);
+		
+		
+		EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-1549,-1103,1193),228,100,true)", 5.00);
+		EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-1550,-1295,1193),228,100,true)", 5.01);
 		if(Stage == 5)
 			EntFire("lvl4_Break", "Break", "", 5.00);
 		
@@ -6506,11 +6588,11 @@ function Trigger_Rock()
 
 	local timer = 0;
 	if(Stage == 2)
-		timer = 4;
+		timer = 2;
 	if(Stage == 4)
-		timer = 8;
+		timer = 4;
 	if(Stage == 5)
-		timer = 12;
+		timer = 6;
 
 	text = "The explosives will blow the rocks up in " + (25 + timer) + " seconds"
 	ServerChat(Chat_pref + text);
@@ -6620,12 +6702,16 @@ function Trigger_Cave_Second()
 	ServerChat(Chat_pref + text, 15);   
 
 	EntFire("Hold5_Door1", "Open", "", 15);
-	EntFire("cave_skip", "Kill", "", 30);
 
+	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-5111,-1827,1922),228,100)", 29.99);
+	EntFire("cave_skip", "Break", "", 30);
+	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-4450,-1515,566),228,100)", 29.99);
+	EntFire("Skip_Wall", "Toggle", "", 30);
+	
 	EntFire("Map_TD", "AddOutput", "origin -6414 -2240 2036", 0);
 	EntFire("Map_TP_3", "Enable", "", 0.5);
 
-	EntFireByHandle(self, "RunScriptCode", "Bhop_Toggle(true, true);", 17, null, null);
+	//EntFireByHandle(self, "RunScriptCode", "Bhop_Toggle(true, true);", 17, null, null);
 }
 
 function Bhop_Toggle(value = false, show = false) 
@@ -6633,7 +6719,7 @@ function Bhop_Toggle(value = false, show = false)
 	if(!BHOP_ENABLE)
 		return;
 
-	SendToConsoleServer("sv_enablebunnyhopping " + ((value) ? "1" : "0"));
+	SendToConsoleServerPS("sv_enablebunnyhopping " + ((value) ? "1" : "0"));
 	if(show)
 	{
 		local text;
@@ -6669,7 +6755,6 @@ function Trigger_Cave_Third()
 
 	if(Stage == 4 || Stage == 5)
 	{
-		
 		EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-1169,300,373),228,100)", 20);
 		EntFire("lvl3_Wall", "Kill", "", 20.01);  
 	}
@@ -6701,6 +6786,9 @@ function Trigger_Cave_Last()
 	EntFire("Hold5_Door", "Close", "", 35);
 
 	EntFire("Hold7_Break", "Break", "", 35);
+
+	EntFire("Map_TD", "AddOutput", "angles 5 -84 0", 5);
+	EntFire("Map_TD", "AddOutput", "origin -2934 696 575", 5);
 }
 
 function Trigger_Cave_Boss_Start()
@@ -6842,25 +6930,30 @@ function Trigger_After_Boss_Skip_First()
 		break;
 	}
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(643,5346,637),228,100)", time);
-	EntFire("cage_skip", "Kill", "", time + 0.01);
+	EntFire("cage_skip", "Break", "", time + 0.01);
 }
 
 function Trigger_After_Boss_Skip_Second() 
 {
 	local time;
+	local time1;
 	switch (Stage)
 	{
 		case 1:
 		time = 7;
+		time1 = 0;
 		break;
 		case 2:
 		time = 5;
+		time1 = 4;
 		break;
 		case 4:
 		time = 3;
+		time1 = 8;
 		break;
 		case 5:
 		time = 0;
+		time1 = 12;
 		break;
 	}
 
@@ -6871,12 +6964,23 @@ function Trigger_After_Boss_Skip_Second()
 	EntFire("Boss_Side_Model", "Kill", "", time + 0.01);
 	EntFire("Boss_Side_Wall", "Kill", "", time + 0.01);
 
-	EntFire("Hold6_Move", "Open", "", 25);
 
-	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-3120,958,525),228,100)", 35.5);
-	EntFire("Hold6_Rock", "Disable", "", 35.51);
-	EntFire("Hold6_Rock_wall", "Toggle", "", 35.51);
+	if(Stage == 1)
+	{
+		EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-4450,-1515,566),228,100)", (30 - 0.01) + time1);
+		EntFire("Skip_Wall", "Kill", "", 30 + time1);
+	}
+		
+
+	EntFire("Hold6_Move", "Open", "", 25 + time1);
+
+	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-3120,958,525),228,100)", 35.5 + time1);
+	EntFire("Hold6_Rock", "Disable", "", 35.51 + time1);
+	EntFire("Hold6_Rock_wall", "Toggle", "", 35.51 + time1);
 }
+
+
+
 //Normal
 {
 	function Trigger_Normal_End_Pre()
@@ -6966,8 +7070,9 @@ function Trigger_Hold_End()
 	text = "Door opens in 10 seconds"
 	ServerChat(Chat_pref + text);
 
+	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(-4450,-1515,566),228,100)", 10 - 0.01);
+	EntFire("Skip_Wall", "Kill", "", 10);
 
-	EntFire("Skip_Wall", "Kill", "", 10)
 	EntFire("Final_Rope_Temp", "ForceSpawn", "", 10);
 
 	EntFire("Hold5_Door1", "Open", "", 10);
@@ -7148,10 +7253,20 @@ function Trigger_Hold_End()
 			if(handle.GetTeam() == 3)
 				Winner_array.push(handle);
 			else if(handle.GetTeam() == 2)
-				EntFireByHandle(handle, "SetHealth" "-1", 0.00, null, null);
+			{
+				EntFireByHandle(handle, "SetDamageFilter", "", 0.9, null, null);
+            	EntFireByHandle(handle, "SetHealth", "-1", 2.0, null, null);
+			}
 		}
+		local g_round = Entities.FindByName(null, "round_end");
+		EntFireByHandle(g_round, "EndRound_CounterTerroristsWin", "6", 1.8, null, null);
+		
+		Show_Credits_Passed();
+
 		EntFire("music", "RunScriptCode", "SetMusic(Sound_Win);", 0.00);
 		EntFire("Nuke_fade", "Fade", "", 0.00);
+		EntFire("zamok_ct", "RunScriptCode", "Stop()", 0);
+
 		SetStage(4);
 	}
 }
@@ -7212,10 +7327,24 @@ function Trigger_New_End_Last()
 			EntFire("music", "Volume", "" + i, 10.0 + a);
 		}
 
+		if(ScoreBass > 0 && ScoreBass % 10 == 0)
+		{
+			EntFire("Extreme_Reno_Model", "RunScriptCode", "self.SetModel(CHICKEN_MODEL);", 8);
+			EntFire("Extreme_Reno_Model", "Skin", "4", 8.01);
+			EntFire("Extreme_Reno_Model", "SetAnimation", "Run01", 8.01);
+			EntFire("Extreme_Reno_Model", "AddOutPut", "ModelScale 3.5", 8);
+			EntFire("Extreme_Reno_Model", "AddOutPut", "angles 0 180 0", 8.05 );
+
+			EntFire("Extreme_Reno_Model", "SetAnimation", "Bunnyhop", 3.15 + 8);
+			EntFire("Extreme_Reno_Model", "SetAnimation", "Flap_falling", 3.3 + 8);
+			EntFire("Extreme_Reno_Model", "SetAnimation", "bounce", 5.9 + 8);
+			EntFire("Extreme_Reno_Model", "SetAnimation", "Walk01", 7.4 + 8);
+		}
+		
 		EntFire("Camera_old", "RunScriptCode", "SetOverLay(Overlay)", 8);
 		EntFire("Camera_old", "RunScriptCode", "SpawnCameras(Vector(-8225,-982,1878),Vector(0,45,0),0,Vector(-8695,-982,1878),Vector(0,45,0),1,2.4)", 8);
 		EntFire("Camera_old", "RunScriptCode", "SpawnCameras(Vector(-10413,-928,1833),Vector(0,0,0),3,Vector(-10413,-928,1897),Vector(0,0,0),0,1)", 3.4 + 8);
-		EntFire("Camera_old", "RunScriptCode", "SpawnCameras(Vector(-10413,-928,1897),Vector(0,0,0),0,Vector(-10639,-928,1897),Vector(0,0,0),1,2.7)", 7.4 + 8);
+		EntFire("Camera_old", "RunScriptCode", "SpawnCameras(Vector(-10413,-928,1897),Vector(0,0,0),0,Vector(-10839,-928,1897),Vector(0,0,0),1,2.7)", 7.4 + 8);
 		EntFire("Camera_old", "RunScriptCode", "SetOverLay()", 11.1 + 8);
 
 		EntFire("End_Platform_Move", "FireUser1", "", 3);
@@ -7293,7 +7422,7 @@ function PlayerConnect()
 {
 	if(eventlist == null || eventlist != null && !eventlist.IsValid())
 	{
-		SendToConsoleServer("sv_disable_immunity_alpha 1");
+		SendToConsoleServerPS("sv_disable_immunity_alpha 1");
 		eventlist = Entities.FindByName(null, "event_player_connect");
 	}
 	local userid = eventlist.GetScriptScope().event_data.userid;
@@ -7442,8 +7571,10 @@ function Trigger_Invalid()
     {
 		if(WAFFEL_CAR_ENABLE && Allow_Waffel)
 		{
-			SetInvalid(activator);
-			Fade_White(activator);
+			if(CheckForCar(GetPlayerClassByHandle(activator)) != null)
+				Fade_White(activator);
+			else 
+				Fade_Red(activator);
 		}
 		else Fade_Red(activator); 
     }
@@ -7516,10 +7647,12 @@ ServerSettings <-[
 
 "mp_freezetime 1",
 
+"sv_disable_radar 1",
+
 "sv_gravity 800",
 
 //"sv_enablebunnyhopping 1",
-"sv_airaccelerate 16",
+"sv_airaccelerate 18",
 
 "zr_class_modify zombies health_infect_gain 500",
 "zr_class_modify zombies health 7500",
@@ -7553,8 +7686,14 @@ function SetSettingServer()
 {
 	for (local i=0; i<ServerSettings.len()-1; i++)
 	{
-		SendToConsoleServer(ServerSettings[i]);
+		SendToConsoleServerPS(ServerSettings[i]);
 	}
+}
+
+function SendToConsoleServerPS(sCommand)
+{
+	EntFire("cmd", "Command", sCommand, 0);
+    //EntFire("cmd", "Command", "sm_cvar " + sCommand, 0);
 }
 
 //teleportitem
@@ -7775,7 +7914,7 @@ class ItemOwner
 			this.glow_weapon = Entities.CreateByClassname("prop_dynamic_glow");
 			this.glow_weapon.__KeyValueFromInt("solid", 0);
 			this.glow_weapon.__KeyValueFromInt("glowenabled", 1);
-			this.glow_weapon.__KeyValueFromInt("glowdist", 1528);
+			this.glow_weapon.__KeyValueFromInt("glowdist", 1024);
 			this.glow_weapon.__KeyValueFromInt("glowstyle", 0);
         	this.glow_weapon.__KeyValueFromInt("rendermode", 6);
 
@@ -7803,7 +7942,6 @@ class ItemOwner
 			this.glow_weapon = null;
 		}
 			
-
 		if(this.name_right == "bio")
 		{
 			this.type = (_owner.item_buff_doble) ? 3 : 1;
@@ -7944,6 +8082,8 @@ class ItemOwner
 		{
 			for(local i = 0; i <= 3; i++)
 			{
+				EntFire("item_star"+ i + "_" + this.name_right + "" + this.name, "Alpha", "255", 0, null);
+				EntFire("item_star"+ i + "_" + this.name_right + "" + this.name, "SetGlowDisabled", "", 0, null);
 				EntFire("item_star"+ i + "_" + this.name_right + "" + this.name, "Disable", "", 0, null);
 			}
 
@@ -7962,7 +8102,9 @@ class ItemOwner
 			this.owner = null;
 			if(this.lvl != null)
 				this.lvl = 0;
+			return true;
 		}
+		return false;
 	}
 }
 
@@ -7974,12 +8116,12 @@ function StartCD(cooldown = 0)
 
 	if(item.type == 2) 
 	{
-		if(item.count == 0)
-		{
-			item.cd = "E";
-			item.canUse = false;
-			return;
-		}
+	  if(item.count == 0)
+	  {
+		item.cd = "E";
+		item.canUse = false;
+		return;
+	  }
 	}
 	if(cooldown != 0)
 	{
@@ -7990,15 +8132,14 @@ function StartCD(cooldown = 0)
 	{
 		item.cd -= 1;
 	}
-	
 	if(item.cd > 0)
 	{
 		EntFireByHandle(self, "RunScriptCode", "StartCD();", 1, caller, caller);
 	}
 	else
 	{
-		if(item.type == 1)
-			item.count++;
+	  if(item.type == 1)
+		 item.count++;
 		item.canUse = true;
 	}
 }
@@ -8202,9 +8343,12 @@ Item_Preset.push(obj) //phoenix
 ///////////////
 //////Skin/////
 ///////////////
-::CT_MODEL <- "models/player/custom_player/legacy/ctm_sas_variantf.mdl"
-::CT_VIP_MODEL <- "models/player/custom_player/microrost/tifa/tifa.mdl"
-::T_VIP_MODEL <- "models/player/custom_player/microrost/sephiroth/sephiroth.mdl"
+::CT_MODEL <- "models/player/custom_player/legacy/ctm_sas_variantf.mdl";
+::CT_VIP_MODEL <- "models/player/custom_player/legacy/gxp/ffvii_remake/tifa/tifa_v1.mdl";
+::T_VIP_MODEL <- "models/player/custom_player/microrost/sephiroth/sephiroth.mdl";
+::CHICKEN_MODEL <- "models/chicken/chicken.mdl";
+
+self.PrecacheModel(CHICKEN_MODEL);
 self.PrecacheModel(CT_MODEL);
 self.PrecacheModel(CT_VIP_MODEL);
 self.PrecacheModel(T_VIP_MODEL);

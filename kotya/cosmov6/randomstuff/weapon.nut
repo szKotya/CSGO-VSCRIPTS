@@ -8,25 +8,25 @@ function SetWeapon()
 
 function Tick() 
 {
-	printl("Tick");
-	local w = null;
-	while(null != (w = Entities.FindByClassname(w, "predicted_viewmodel")))
-	{        
-		if(w.GetModelName() == "models/weapons/v_knife_default_ct.mdl")
-		{
-			printl(w.GetMoveParent())
-			w.SetModel(model_v);
-			printl(w);
-		}
-	}
+    printl("Tick");
+    local w = null;
+    while(null != (w = Entities.FindByClassname(w, "predicted_viewmodel")))
+    {        
+        if(w.GetModelName() == "models/weapons/v_knife_default_ct.mdl")
+        {
+            printl(w.GetMoveParent())
+            w.SetModel(model_v);
+            printl(w);
+        }
+    }
 
-	while(null != (w = Entities.FindByClassname(w, "weaponworldmodel"))) 
-	{       
-		if(w.GetModelName() == "models/weapons/w_knife_default_ct.mdl")
-		{
-			printl(w.GetMoveParent())
-			w.SetModel(model_w);
-			printl(w);
-		}
-	}
+    while(null != (w = Entities.FindByClassname(w, "weaponworldmodel"))) 
+    {       
+        if(w.GetModelName() == "models/weapons/w_knife_default_ct.mdl")
+        {
+            printl(w.GetMoveParent())
+            w.SetModel(model_w);
+            printl(w);
+        }
+    }
 }

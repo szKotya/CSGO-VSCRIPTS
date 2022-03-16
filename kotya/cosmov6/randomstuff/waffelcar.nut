@@ -103,6 +103,14 @@ class car
         this.invalid.__KeyValueFromVector("rendercolor", newcolor);
     }
 
+    function SetGlowColor(newcolor, type = 1)
+    {
+        this.model.__KeyValueFromVector("glowcolor", newcolor);
+        this.model.__KeyValueFromInt("glowstyle", type);
+        this.model.__KeyValueFromInt("glowdist", 128);
+        this.model.__KeyValueFromInt("glowenabled", 1);
+    }
+
     function SetAllowDriver(allow)
     {
         this.allowdriver = allow;
@@ -125,9 +133,11 @@ class car
         //     this.driverbutton.GetMoveParent().Destroy();
         if(this.driverbutton != null && this.driverbutton.IsValid())
             this.driverbutton.Destroy();
-
-        this.invalid.__KeyValueFromInt("MoveType", 2);
-        this.invalid.__KeyValueFromVector("rendercolor", Vector(255,255,255));
+        if(this.invalid.IsValid())
+        {
+            this.invalid.__KeyValueFromInt("MoveType", 2);
+            this.invalid.__KeyValueFromVector("rendercolor", Vector(255,255,255));
+        }
         if(this.lastpos != null)
             this.invalid.SetOrigin(this.lastpos);
     }
@@ -176,7 +186,7 @@ function AddCar()
     if(Preset != null)
         return;
     
-    local ent = Entities.CreateByClassname("prop_dynamic")
+    local ent = Entities.CreateByClassname("prop_dynamic_glow")
     ent.__KeyValueFromInt("solid", 0);
     ent.__KeyValueFromInt("rendermode", 1);
     ent.__KeyValueFromInt("renderamt", 254);
@@ -199,6 +209,7 @@ function AddCar()
 function GetPresent(Car_Class)
 {
     local Preset = MainScript.GetScriptScope().GetInvalidClass(Car_Class.invalid);
+    local player_class = MainScript.GetScriptScope().GetPlayerClassByHandle(Car_Class.invalid);
     if(Preset == 0)
     {
         Car_Class.SetTextMessage("Waffel");
@@ -210,8 +221,10 @@ function GetPresent(Car_Class)
         Car_Class.SetAllowJump(true);
 
         Car_Class.SetTextMessage("Kotya");
-        Car_Class.SetTextColor(Vector(0,0,255));
-        Car_Class.SetColor(Vector(0,0,255));
+        
+        Car_Class.SetGlowColor(Vector(0,40,80), 0);
+        Car_Class.SetTextColor(Vector(0,128,255));
+        Car_Class.SetColor(Vector(0,128,255));
     }
     else if(Preset == 2)
     {
@@ -229,6 +242,8 @@ function GetPresent(Car_Class)
         Car_Class.SetAllowDriver(false);
         Car_Class.SetAllowJump(true);
 
+        Car_Class.SetTextMessage("memories");
+        Car_Class.SetTextColor(Vector(255,0,0));
         Car_Class.SetColor(Vector(225,0,0));    
     }
     else if(Preset == 4)
@@ -379,7 +394,7 @@ function GetPresent(Car_Class)
 
         Car_Class.SetTextMessage("try");
         Car_Class.SetTextColor(Vector(0,255,0));
-        Car_Class.SetColor(Vector(128,255,128));
+        Car_Class.SetColor(Vector(128,128,255));
     }
     else if(Preset == 19)
     {
@@ -450,7 +465,92 @@ function GetPresent(Car_Class)
         Car_Class.SetTextColor(Vector(255,255,255));
         Car_Class.SetColor(Vector(128,0,128));
     }
+    else if(Preset == 26)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
 
+        Car_Class.SetTextMessage("Ushastik");
+        Car_Class.SetTextColor(Vector(255,0,255));
+        Car_Class.SetColor(Vector(255,0,255));
+    }
+    else if(Preset == 27)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
+    }
+    else if(Preset == 28)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
+
+        Car_Class.SetTextMessage("Tilgep");
+        Car_Class.SetTextColor(Vector(255,255,255));
+        Car_Class.SetColor(Vector(255,255,255));
+    }
+    else if(Preset == 29)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
+
+        Car_Class.SetTextMessage("Ambitious");
+        Car_Class.SetTextColor(Vector(255,255,255));
+        Car_Class.SetColor(Vector(255,255,255));
+    }
+    else if(Preset == 29)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
+
+        Car_Class.SetTextMessage("Ambitious");
+        Car_Class.SetTextColor(Vector(255,255,255));
+        Car_Class.SetColor(Vector(255,255,255));
+    }
+    else if(Preset == 30)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(false);
+
+        Car_Class.SetTextMessage("Bonesaw");
+        Car_Class.SetTextColor(Vector(255,0,0));
+        Car_Class.SetColor(Vector(100,100,100));
+    }
+    else if(Preset == 31)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(true);
+
+        Car_Class.SetTextMessage("MercaXlv");
+
+        Car_Class.SetGlowColor(Vector(42,0,42), 0);
+        Car_Class.SetTextColor(Vector(0,255,255));
+        Car_Class.SetColor(Vector(140,0,140));
+    }
+    else if(Preset == 32)
+    {
+        Car_Class.SetSpeed(0);
+        Car_Class.SetAllowJump(true);
+        Car_Class.SetAllowDriver(true);
+
+        Car_Class.SetTextMessage("cron");
+        Car_Class.SetTextColor(Vector(10,10,250));
+        Car_Class.SetColor(Vector(128,0,128));
+    }
+    
+    if(player_class.block_driver != null)
+        Car_Class.SetAllowDriver(((player_class.block_driver) ? false : true));
+
+    else if(Car_Class.allowdriver)
+        player_class.block_driver = false;
+    else 
+        player_class.block_driver = true;
 
     if(!Car_Class.allowjump)
         MainScript.GetScriptScope().GetPlayerClassByHandle(activator).invalid = true;
@@ -559,12 +659,8 @@ function Tick()
         EntFireByHandle(self, "RunScriptCode", "Tick();", tickrate, null, null);
 }
 
-function Toggle(handle)
+function Toggle(car_class)
 {
-    local car_class = GetClassByInvalid(handle);
-    if(car_class == null)
-        return;
-
     if(car_class.allowdriver)
     {
         car_class.allowdriver = false;

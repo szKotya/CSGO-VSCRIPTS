@@ -2,6 +2,7 @@ PLAYERS <- [];
 
 start_pos <- EntityGroup[0].GetOrigin() - Vector(0, 0, 80);
 end_pos <- EntityGroup[1].GetOrigin() - Vector(0, 0, 80);
+
 grab_radius <- null;
 ungrab_radius <- null;
 grab_pos <- null;
@@ -26,6 +27,7 @@ function OnPostSpawn()
 function LoadPreset()
 {
     EntFireByHandle(self, "FireUser1", "", 0.00, null, null);
+    EntFireByHandle(EntityGroup[2], "AddOutPut", "renderfx 17", 0.00, null, null);
 }
 
 function Start()

@@ -31,7 +31,7 @@ MainMenuPoint <- [
     menu_point("Set Stage", "menustage", "Set stage immediately"),
     //menu_point("Set Invalid", "menuinvalid", "Set Invalid"),
     menu_point("Set VIP", "menuvip", "Set VIP status"),
-    menu_point("Set Mapper", "menumapper", "Set Mapper status"),
+    //menu_point("Set Mapper", "menumapper", "Set Mapper status"),
     menu_point("Give Money", "menuaddmoney", "Give Money to players"),
     menu_point("Take Money", "menuremovemoney", "Take Money from players"),
     menu_point("Death Note", "menuslay", "It's death note"),
@@ -268,6 +268,8 @@ function Forward()
         else if(array_split[1] == "bhop")
         {
             BHOP_ENABLE = array_split[2].tointeger();
+            SendToConsoleServerPS("sv_enablebunnyhopping " + array_split[2].tointeger());
+
             Active_Menu = BuildMenu("settings");
         }
 
@@ -282,6 +284,23 @@ function Forward()
             ITEM_GLOW = array_split[2].tointeger();
             Active_Menu = BuildMenu("settings");
         }
+
+        else if(array_split[1] == "ewteam")
+        {
+            ENT_WATCH_TEAM = array_split[2].tointeger();
+            Active_Menu = BuildMenu("settings");
+        }
+
+        else if(array_split[1] == "color")
+        {
+            COLOR_ENABLE = array_split[2].tointeger();
+            if(COLOR_ENABLE)
+                EntFire("map_colorcorrection", "Enable", "", 0);
+            else
+                EntFire("map_colorcorrection", "Disable", "", 0);
+            Active_Menu = BuildMenu("settings");
+        }
+
 
         else if(array_split[1] == "removevip")
         {
@@ -362,7 +381,7 @@ function Forward()
         {
             Active_Title = "< Give "+array_split[3].tointeger()+" Money >"
             Back_Menu = "MoneyAddMenuPoint";
-            map_brush.GetScriptScope().GetPlayerClassByUserID(array_split[2].tointeger()).Add_money(array_split[3].tointeger());
+            map_brush.GetScriptScope().GetPlayerClassByUserID(array_split[2].tointeger()).Add_money(array_split[3].tointeger(), false);
             Active_Menu = BuildMenu("menuaddmoney", array_split[3].tointeger());
         }
 
@@ -511,8 +530,10 @@ function BuildMenu(value, count = 0)
         NewMenu.push(menu_point((AUTO_RETRY_ENABLE) ? "Auto retry[Enable]" : "Auto retry[Disable]", (AUTO_RETRY_ENABLE) ? "input:autoretry:0" : "input:autoretry:1", "Toggle auto retry"));
         NewMenu.push(menu_point((WAFFEL_CAR_ENABLE) ? "Waffel cars[Enable]" : "Waffel cars[Disable]", (WAFFEL_CAR_ENABLE) ? "input:waffelcars:0" : "input:waffelcars:1", "Toggle Waffel cars"));
         NewMenu.push(menu_point((BHOP_ENABLE) ? "BHOP[Enable]" : "BHOP[Disable]", (BHOP_ENABLE) ? "input:bhop:0" : "input:bhop:1", "Toggle BHOP"));
-        NewMenu.push(menu_point((DODJE_ENABLE) ? "DODJE[Enable]" : "DODJE[Disable]", (DODJE_ENABLE) ? "input:dodje:0" : "input:dodje:1", "Toggle DODJE"));
+        //NewMenu.push(menu_point((DODJE_ENABLE) ? "DODJE[Enable]" : "DODJE[Disable]", (DODJE_ENABLE) ? "input:dodje:0" : "input:dodje:1", "Toggle DODJE"));
         NewMenu.push(menu_point((ITEM_GLOW) ? "ITEM GLOW[Enable]" : "ITEM GLOW[Disable]", (ITEM_GLOW) ? "input:glow:0" : "input:glow:1", "Toggle ITEM GLOW"));
+        NewMenu.push(menu_point((ENT_WATCH_TEAM) ? "ENT_WATCH TEAM[Enable]" : "ENT_WATCH TEAM[Disable]", (ENT_WATCH_TEAM) ? "input:ewteam:0" : "input:ewteam:1", "Toggle ENT_WATCH TEAM"));
+        NewMenu.push(menu_point((COLOR_ENABLE) ? "Color Correction[Enable]" : "Color CorrectionW[Disable]", (COLOR_ENABLE) ? "input:color:0" : "input:color:1", "Toggle Color Correction"));
     }
     return NewMenu
 }

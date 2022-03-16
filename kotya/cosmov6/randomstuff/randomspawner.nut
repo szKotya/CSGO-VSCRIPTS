@@ -128,7 +128,7 @@
 
             SpawnChest(10, 5, 5);
         }
-    
+        
         // for(local i = 0; i < ItemOrigin.len(); i++)
         // {
         //     DebugDrawCircle(ItemOrigin[i].origin, Vector(255,0,0), 64, 16, true, 180);
@@ -209,6 +209,17 @@
             TEMP_WIND, 
             TEMP_HEAL,];
 
+        if (EVENT_EXTRAITEMS)
+        {
+            local random = RandomInt(EVENT_EXTRAITEMS_COUNT[0], EVENT_EXTRAITEMS_COUNT[1]);
+            
+            count += random;
+            
+            for (local i = 0; i < random; i++)
+            {
+                items_list.push(items_list[RandomInt(0, items_list.len()-1)]);
+            }
+        }
         for(local i = 0; i < items_list.len(); i++)
         {
             temp = Entities.FindByName(null, items_list[i]);
@@ -339,7 +350,15 @@
 
         local temp;
         local maker;
-        
+
+        if (EVENT_EXTRACHEST)
+        {
+            local random = RandomInt(EVENT_EXTRACHEST_COUNT[0], EVENT_EXTRACHEST_COUNT[1]);
+            def += RandomInt(0, random);
+            green += RandomInt(0, random);
+            red += RandomInt(0, random);
+        }
+
         if(def > 0)
         {
             temp = Entities.FindByName(null, "chest_0");

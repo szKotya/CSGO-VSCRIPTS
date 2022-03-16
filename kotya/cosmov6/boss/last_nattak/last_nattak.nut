@@ -110,14 +110,17 @@ Status              <- "";
 	{
 		SubtractHP(80);
 
-		NadeCount++
-		NadeTickRate += NadeTime;
+		if(Stanblock)
+			return;
 
 		if(!Stanned)
-		{
-			if(NadeCount >= NadeNeed)
-				SetStanned();
-		}
+        {
+            NadeCount++
+            NadeTickRate += NadeTime;
+
+            if(NadeCount >= NadeNeed)
+                SetStanned();
+        }
 	}
 
 
@@ -163,7 +166,7 @@ Status              <- "";
 		EntFire("EndNattak_Timer_Bar", "Kill", "", 0);
 
 		EntFire("EndNattak_Model", "FireUser4", "", 0);
-		EntFire("EndNattak_Phys", "Kill", "", 0);
+		EntFire("EndNattak_Phys", "Break", "", 0);
 
 		EntFire("EndNattak_Hurt", "Kill", "", 0);
 		
@@ -191,6 +194,7 @@ Status              <- "";
 //      Stun settings    
 // ▚▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▞
 {
+	Stanblock           <- true;
 	Stanned             <- false;
 	StanTime            <- 5;
 	StanDamage          <- 5;
@@ -242,7 +246,7 @@ Status              <- "";
 		{
 			cancast_heal = false;
 
-			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using heal");
+			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using Heal");
 
 			//ScriptPrintMessageChatAll("UseHeal");
 			//EntFire("Gi_Nattak_Heal_Sound", "PlaySound", "", 0);
@@ -272,7 +276,7 @@ Status              <- "";
 		{
 			cancast_poison = false;
 
-			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using\x04 poison");
+			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using\x04 Poison");
 
 			local origin = Model.GetOrigin() + Vector(0, 0, 420) + (Model.GetForwardVector() * 250);
 			EntFire("poison_temp", "AddOutPut", "origin "+origin.x+" "+origin.y+" "+origin.z, 0);
@@ -367,7 +371,7 @@ Status              <- "";
 		{
 			cancast_shield = false;
 
-			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using\x0C shield");
+			ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using\x0C Shield");
 
 			//ScriptPrintMessageChatAll("UseShield");
 
@@ -422,6 +426,7 @@ Status              <- "";
 		EntFire("EndNattak_Appear", "Stop", "", 1.5);
 		EntFire("EndNattak_Model", "FireUser3", "", 0);
 
+		EntFire("Name_Texture", "SetTextureIndex", ""+1, 0.2);
 		EntFire("Name_Texture", "AddOutPut", "target EndNattak_Name_Bar", 0);
 		EntFire("Timer_Texture", "AddOutPut", "target EndNattak_Timer_Bar", 0);
 		EntFire("Special_HealthTexture", "AddOutPut", "target EndNattak_HP_Bar", 0);
@@ -481,7 +486,7 @@ Status              <- "";
 
 		ShowBossStatus();
 		
-		DrawTriggers();
+		//DrawTriggers();
 
 		EntFireByHandle(self, "RunScriptCode", "Tick()", tickrate, null, null);
 	}
@@ -499,6 +504,7 @@ Status              <- "";
 		else tickrate_use += tickrate;
 	}
 
+	
 	use_array <- [];
 
 	function Use()

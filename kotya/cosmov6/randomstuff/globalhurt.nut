@@ -100,14 +100,15 @@ function GetWinner()
     return PLAYERS_GIVE;
 }
 
-Nuked <- true;
+
 function Nuke(Team = 2)
 {
     local fade = Entities.FindByName(null, "Nuke_fade");
+    local g_round = Entities.FindByName(null, "round_end");
     local handle = null;
     local alive = false;
-    if(Nuked)
-        EntFire("zamok_ct", "RunScriptCode", "Stop()", 0);
+    
+    EntFire("zamok_ct", "RunScriptCode", "Stop()", 0);
     
     if(Team == 2)
     {
@@ -129,10 +130,9 @@ function Nuke(Team = 2)
             }  
 
             EntFireByHandle(handle, "SetDamageFilter", "", 0.9, null, null);
-            EntFireByHandle(handle, "SetHealth", "-1", 1, null, null);
+            EntFireByHandle(handle, "SetHealth", "-1", 2.0, null, null);
         }
 
-        EntFireByHandle(self, "RunScriptCode", "Nuke(2);", tickrate, null, null);
     }
     else
     {
@@ -148,26 +148,25 @@ function Nuke(Team = 2)
                 continue;
 
             EntFireByHandle(handle, "SetDamageFilter", "", 0.9, null, null);
-            EntFireByHandle(handle, "SetHealth", "-1", 1, null, null);
+            EntFireByHandle(handle, "SetHealth", "-1", 2.0, null, null);
         }
     }
 
-    if(Nuked)
+    EntFireByHandle(fade, "Fade", "", 2, null, null);
+
+    if(alive)
     {
-        Nuked = false;
-        EntFireByHandle(fade, "Fade", "", 2, null, null);
-
-        if(alive)
-        {
-            EntFireByHandle(self, "FireUser3", "", 0.00, null, null);
-            MainScript.GetScriptScope().Show_Credits_Passed();
-        }
-        else 
-        {
-            EntFireByHandle(self, "FireUser4", "", 0.00, null, null);
-            MainScript.GetScriptScope().Show_Credits_Failed();
-        }
+        EntFireByHandle(self, "FireUser3", "", 0.00, null, null);
+        EntFireByHandle(g_round, "EndRound_CounterTerroristsWin", "6", 1.8, null, null);
+        MainScript.GetScriptScope().Show_Credits_Passed();
     }
+    else 
+    {
+        EntFireByHandle(self, "FireUser4", "", 0.00, null, null);
+        EntFireByHandle(g_round, "EndRound_TerroristsWin", "6", 1.8, null, null);
+        MainScript.GetScriptScope().Show_Credits_Failed();
+    }
+
 }
 
 function Touch()

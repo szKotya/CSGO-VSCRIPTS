@@ -1,203 +1,163 @@
 
-Fade_In <- Entities.CreateByClassname("env_fade");
+camera_model <- "models/editor/camera.mdl"
+camera_mover <- null;
+camera_camera <- null;
+camera_start <- null;
+camera_end <- null;
+CameraPos <- [];
+
+class camerapos
 {
-    Fade_In.__KeyValueFromFloat("duration", 4.0);
-    Fade_In.__KeyValueFromFloat("holdtime", 0.8);
-    Fade_In.__KeyValueFromInt("renderamt", 200);
-    Fade_In.__KeyValueFromInt("spawnflags", 7);
-    Fade_In.__KeyValueFromVector("rendercolor", Vector(28, 184, 227));
-}
-Fade_Out <- Entities.CreateByClassname("env_fade");
-{
-    Fade_Out.__KeyValueFromFloat("duration", 2.0);
-    Fade_Out.__KeyValueFromFloat("holdtime", 0.2);
-    Fade_Out.__KeyValueFromInt("renderamt", 200);
-    Fade_Out.__KeyValueFromInt("spawnflags", 7);
-    Fade_Out.__KeyValueFromVector("rendercolor", Vector(28, 184, 227));
-}
-
-Overlay <- null;
-//Overlay <- "Rafuron/LMS_Other/cinematic_overlay"
-//ent_fire map_script_camera runscriptcode "SpawnCamera(Vector(0,0,0), Vector(0,0,0), 5, Vector(100,100,100), Vector(50,50,50), 5, 10)"
-//ent_fire viewtarget runscriptcode "self.SetOrigin(Vector(-100, -100, -100))"
-
-ARRAY_CAMERA <- [];
-viewcontrol <- null;
-viewtarget <- null;
-
-class class_camera_path
-{
-    camera0 = null;
-    camera1 = null;
-    flytime = 0.0;
-
-    constructor(_camera0, _camera1, _flytime)
+    origin = null;
+    angles = null;
+    staytime = null;
+    flytime = null;
+    constructor(origin_, angles_, flytime_, staytime_)
     {
-        this.camera0 = _camera0;
-        this.camera1 = _camera1;
-        this.flytime = 0.0 + _flytime;
+        this.origin = origin_;
+        this.angles = angles_;
+        this.flytime = flytime_;
+        this.staytime = staytime_;
     }
 }
 
-class class_camera 
+EntFireByHandle(self, "RunScriptCode", "Init()", 0.01, null, null);
+
+function Init()
 {
-    origin = Vector(0, 0, 0);
-    angles = Vector(0, 0, 0);
-    hold = 0.0;
+    self.PrecacheModel(camera_model);
 
-    constructor(_origin, _angles, _hold)
-    {
-        this.origin = _origin;
-        this.angles = _angles;
-        this.hold = 0.0 + _hold;
-    }
+    EntFire("viewcontrol*", "Disable", "", 0.00, null);
+    EntFire("viewcontrol*", "Kill", "", 0.01, null);
 
-    function SetPos(h)
-    {
-        h.SetOrigin(this.origin);
-        h.SetAngles(this.angles.x, this.angles.y, this.angles.z)
-    }
+    EntFireByHandle(self, "RunScriptCode", "InitEnd()", 0.01, null, null);
 }
 
+function InitEnd()
 {
-    local value1 = class_camera( Vector(0, 0, 20), Vector(111, 111, 0), 2);
-    local value2 = class_camera( Vector(250, 250, 50), Vector(0, 0, 0), 2);
+    camera_camera = Entities.CreateByClassname("point_viewcontrol_multiplayer");
+    camera_mover = EntityGroup[0];
+    camera_start = EntityGroup[1];
+    camera_end = EntityGroup[2];
 
-    ARRAY_CAMERA.push(class_camera_path(value1, value2, 3));
+    camera_camera.__KeyValueFromString("targetname", "viewcontrol");
+    camera_camera.SetOrigin(camera_mover.GetOrigin());
 
-    value1 = class_camera( Vector(250, 250, 50), Vector(0, 0, 0), 2);
-    value2 = class_camera( Vector(0, 0, 20), Vector(111, 111, 0), 2);
+    EntFireByHandle(camera_start, "SetParent", "!activator", 0.00, camera_mover, camera_mover);
+    EntFireByHandle(camera_camera, "SetParent", "!activator", 0.00, camera_mover, camera_mover);
 
-    ARRAY_CAMERA.push(class_camera_path(value1, value2, 3));
+    EntFireByHandle(self, "RunScriptCode", "DrawC()", 0.05, camera_mover, camera_mover);
+    EntFireByHandle(self, "RunScriptCode", "DrawC()", 0.05, camera_start, camera_start);
+    EntFireByHandle(self, "RunScriptCode", "DrawC()", 0.05, camera_end, camera_end);
 }
 
-function SpawnPreset()
+function PushCamera(origin = null, angles = null, flytime = 0.2, staytime = 1)
 {
-    viewcontrol = Entities.CreateByClassname("point_viewcontrol_multiplayer");
-    viewtarget = Entities.CreateByClassname("info_target");
-    viewcontrol.__KeyValueFromString("targetname", "viewcontrol");
-    viewtarget.__KeyValueFromString("targetname", "viewtarget");
-    viewcontrol.__KeyValueFromString("target_entity", "viewtarget");
+    if(origin == null)
+        origin = activator.GetOrigin() + Vector(0, 0, 64);
 
-    EntFireByHandle(viewcontrol, "Enable", "", 0, viewcontrol, viewcontrol);
+    if(angles == null)
+        angles = activator.GetAngles();
 
-    local fKill = 0.00;
-    local fMove = 0.01;
-    local bend = false;
+    CreateModel(origin, angles, 5, camera_model);
+    CameraPos.push(camerapos(origin, angles, flytime, staytime))
+}
 
+function StartCamera()
+{
+    if(CameraPos.len() < 1)
+        return;
     local origin;
     local angles;
+    local time;
+    local flytime;
+
+    origin = CameraPos[0].origin;
+    angles = CameraPos[0].angles;
+
+    camera_end.SetOrigin(origin);
+    camera_mover.SetOrigin(origin);
+    camera_camera.SetAngles(angles.x, angles.y, angles.z);
     
-    for(local i = 0; i < ARRAY_CAMERA.len(); i++)
-    {
-        EntFireByHandle(viewcontrol, "AddOutPut", "interp_time " + ARRAY_CAMERA[i].flytime, fKill, null, null);
-        
-        origin = ARRAY_CAMERA[i].camera0.origin;
-        angles = ARRAY_CAMERA[i].camera0.origin;
-
-        EntFireByHandle(viewcontrol, "RunScriptCode", "self.SetOrigin(Vector(" + origin.x + "," + origin.y + "," + origin.z + "));self.SetAngles(" + angles.x + "," + angles.y + "," + angles.z + ")", fMove - 0.01, null, null);
-        
-        if(ARRAY_CAMERA[i].camera1 != null)
-        {
-            origin = ARRAY_CAMERA[i].camera1.origin;
-            angles = ARRAY_CAMERA[i].camera1.origin;
-        }
-
-        EntFireByHandle(viewtarget, "RunScriptCode", "self.SetOrigin(Vector(" + origin.x + "," + origin.y + "," + origin.z + "));self.SetAngles(" + angles.x + "," + angles.y + "," + angles.z + ")", fMove - 0.01, null, null);
-
-        fKill += ARRAY_CAMERA[i].flytime;
-        
-        if(ARRAY_CAMERA[i].camera1 != null)
-        {
-            origin = ARRAY_CAMERA[i].camera0.origin;
-            angles = ARRAY_CAMERA[i].camera0.origin;
-
-            fMove += ARRAY_CAMERA[i].camera0.hold;
-            if(i != 0)
-            {
-                EntFireByHandle(viewcontrol, "Disable", "", fMove, viewcontrol, viewcontrol);
-                EntFireByHandle(viewcontrol, "Enable", "", fMove, viewcontrol, viewcontrol);
-            }
-            EntFireByHandle(viewcontrol, "StartMovement", "", fMove, viewcontrol, viewcontrol);
-            
-            fMove += ARRAY_CAMERA[i].camera1.hold;
-            fMove += ARRAY_CAMERA[i].flytime;
-        }
-
-        if(ARRAY_CAMERA[i].camera0 != null)
-        {
-            fKill += ARRAY_CAMERA[i].camera0.hold; 
-        }
-            
-        if(ARRAY_CAMERA[i].camera1 != null)
-        {
-            fKill += ARRAY_CAMERA[i].camera1.hold;   
-        }
-    }
-
-    EntFireByHandle(self, "RunScriptCode", "KillCamera()", fKill, null, null);
+    time = CameraPos[0].staytime;
+    //EntFireByHandle(camera_camera, "Enable", "", 0, null, null);
+    
+    flytime = CameraPos[0].flytime;
+    EntFireByHandle(self, "RunScriptCode", "CameraMoveNextPoint(" + 1 +")", flytime + time, null, null);
 }
 
-function KillCamera()
+function CameraMoveNextPoint(index)
 {
-    if(viewcontrol != null && viewcontrol.IsValid())
-    {
-        EntFireByHandle(viewcontrol, "Disable", "", 0, null, null);
-        EntFireByHandle(viewcontrol, "Kill", "", 0.01, null, null);
-    }
+    local origin;
+    local angles;
+    local time;
+    local flytime;
+    local speed;
 
-    if(viewtarget != null && viewtarget.IsValid())
-    {
-        EntFireByHandle(viewtarget, "Kill", "", 0.01, null, null);
-    }
+    origin = CameraPos[index].origin;
+    angles = CameraPos[index].angles;
+
+    // speed = GetDistance3D(camera_mover.GetOrigin(), origin);
+
+    // camera_mover.__KeyValueFromInt("speed", speed);
+    // camera_mover.__KeyValueFromInt("startspeed", speed);
+    camera_start.SetOrigin(origin);
+
+    EntFireByHandle(camera_mover, "startbackward", "", 0.00, null, null);
+
+    time = CameraPos[index].staytime;
+    flytime = CameraPos[index].flytime;
+
+    if(CameraPos.len() > ++index)
+        EntFireByHandle(self, "RunScriptCode", "CameraMoveNextPoint(" + index + ")", flytime + time, null, null);
+    else
+        EntFireByHandle(camera_camera, "Disable", "", flytime + time, null, null);
 }
 
-// function SpawnCamera_V2(o1, a1, time1, o2, a2, time2, flytime)
+// function ChangeAnglesCamera(NeedAngles)
 // {
-//     local viewcontrol = Entities.CreateByClassname("point_viewcontrol_multiplayer");
-//     local viewtarget = Entities.CreateByClassname("info_target");
-//     viewcontrol.__KeyValueFromString("targetname", "viewcontrol");
-//     viewtarget.__KeyValueFromString("targetname", "viewtarget");
-//     viewtarget.SetAngles(a2.x, a2.y, a2.z);
-//     viewtarget.SetOrigin(o2);
-//     viewcontrol.SetAngles(a1.x, a1.y, a1.z);
-//     viewcontrol.SetOrigin(o1);
-//     viewcontrol.__KeyValueFromString("target_entity", "viewtarget");
-//     viewcontrol.__KeyValueFromFloat("interp_time", flytime);
-//     EntFireByHandle(viewcontrol, "Enable", "", 0, viewcontrol, viewcontrol);
-//     EntFireByHandle(viewcontrol, "StartMovement", "", 0.01 + time1, viewcontrol, viewcontrol);
-//     EntFireByHandle(viewcontrol, "Disable", "", time1+time2+flytime - 0.01, viewcontrol, viewcontrol);
-//     EntFireByHandle(viewcontrol, "Kill", "", time1+time2+flytime, viewcontrol, viewcontrol);
-//     EntFireByHandle(viewtarget, "Kill", "", time1+time2+flytime, viewtarget, viewtarget);
+//     local angles;
+//     angles = camera_camera.GetAngles;
+//     if(NeedAngles.x <= angles.x + 0.01)
+
+//     else
+
 // }
 
-function FadeIn()
+
+function ClearCamera()
 {
-    local handle = null;
-    while(null != (handle = Entities.FindByClassname(handle, "player")))
-	{
-        if(!handle.IsValid())
-            continue;
-
-        if(Fade_In != null && Fade_In.IsValid())
-            EntFireByHandle(Fade_In, "Fade", "", 0.00, handle, handle);
-
-        if(Overlay != null)
-            EntFire("point_clientcommand", "Command", "r_screenoverlay " + OverLayName, 0, handle); 
-    }
+    CameraPos.clear();
 }
 
-function FadeOut()
+// ▞▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▚
+//      Support Function 
+// ▚▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▞
 {
-    local handle = null;
-    while(null != (handle = Entities.FindByClassname(handle, "player")))
-	{
-        if(!handle.IsValid())
-            continue;
+    function CreateModel(origin, angles, time, model)
+    {
+        local handle;
+        handle = Entities.CreateByClassname("prop_dynamic");
 
-        if(Fade_Out != null && Fade_Out.IsValid())
-            EntFireByHandle(Fade_Out, "Fade", "", 0.00, handle, handle);
+        handle.SetAngles(angles.x ,angles.y ,angles.z);
+        handle.SetOrigin(origin);
+        handle.SetModel(camera_model);
 
-        EntFire("point_clientcommand", "Command", "r_screenoverlay clear", 0, handle); 
+        EntFireByHandle(handle, "Kill", "", time, null, null);
     }
+
+    function DrawC()
+    {
+        DrawAxis(activator.GetOrigin(), 16, true, 0.21);
+        EntFireByHandle(self, "RunScriptCode", "DrawC()", 0.2, activator, activator);
+    }
+
+    function DrawAxis(pos,s = 16,nocull = true,time = 1)
+    {
+        DebugDrawLine(Vector(pos.x-s,pos.y,pos.z), Vector(pos.x+s,pos.y,pos.z), 255, 0, 0, nocull, time);
+        DebugDrawLine(Vector(pos.x,pos.y-s,pos.z), Vector(pos.x,pos.y+s,pos.z), 0, 255, 0, nocull, time);
+        DebugDrawLine(Vector(pos.x,pos.y,pos.z-s), Vector(pos.x,pos.y,pos.z+s), 0, 0, 255, nocull, time);
+    }
+
+    function GetDistance3D(v1,v2)return sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y)+(v1.z-v2.z)*(v1.z-v2.z)); 
 }

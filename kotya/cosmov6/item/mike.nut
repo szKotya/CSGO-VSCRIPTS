@@ -38,7 +38,7 @@ function Tick()
 {
     try
     {
-        if(Owner == null || !(Owner.IsValid()) || Owner.GetHealth() <= 0)
+        if(Owner == null || !(Owner.IsValid()) || Owner.GetHealth() <= 0 || Owner.GetTeam() != 3)
             return SetDeath();
 
         if(!Spawning)
@@ -77,16 +77,19 @@ function Tick()
 function SetDeath()
 {
     UnFreeze();
-    if(Owner != null && Owner.IsValid() && Owner.GetHealth() > 0)
+
+    MainScript.GetScriptScope().GetPlayerClassByHandle(Owner).mike = false;
+
+    if(Owner != null && Owner.IsValid() && Owner.GetHealth() > 0 && Owner.GetTeam() == 3)
     {
-        MainScript.GetScriptScope().GetPlayerClassByHandle(Owner).mike = false;
-        
-        EntFireByHandle(self,"Kill","",0.00,null,null);
-        EntFireByHandle(Freeze, "ModifySpeed", "1", 0.1, Owner, Owner);
-        EntFireByHandle(Owner, "SetDamageFilter", "", 0.1, null, null);
         EntFireByHandle(Owner, "AddOutput", "rendermode 0", 0.1, null, null);
         EntFireByHandle(Owner, "SetHealth", "-1", 0.15, null, null);
     }
+
+    EntFireByHandle(Owner, "SetDamageFilter", "", 0.1, null, null);
+    EntFireByHandle(self, "Kill","",0.5,null,null);
+    EntFireByHandle(Freeze, "ModifySpeed", "1", 0.1, Owner, Owner);
+
     for (local i = 0; i < Model.len(); i++)
     {
         if(Model[i].IsValid())
@@ -246,7 +249,7 @@ function SetIdel()
 
 function Freeze()
 {
-   Owner.__KeyValueFromInt("movetype" 5);
+   Owner.__KeyValueFromInt("movetype" 7);
 }
 
 function UnFreeze()

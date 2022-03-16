@@ -1,7 +1,7 @@
 /*
 ▞▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▚
     Gi Nattack script by Kotya[STEAM_1:1:124348087]
-    test branch update 09.06.2021 
+    test branch update 29.11.2021 
 ▚▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▞
 */
 
@@ -11,7 +11,7 @@
 {
     CenterArea <- Vector(-1888, 5120, 276);
     InArena_Radius <- 704;
-    NearBoss_Radius <- 350;
+    NearBoss_Radius <- 250;
 
     smart_system        <- false;
 
@@ -288,7 +288,7 @@ Status              <- "";
             EntFire("Gi_Nattak_Heal_Effect", "Start", "", 0);
             EntFire("Gi_Nattak_Heal_Effect", "Stop", "", 3);
 
-            local hp = ((50 * CountAlive()) / 7).tostring();
+            local hp = ((228 * CountAlive()) / 7).tostring();
 
             EntFireByHandle(self, "RunScriptCode", "AddHP(" + hp + ")", 0.5, null, null);
             EntFireByHandle(self, "RunScriptCode", "AddHP(" + hp + ")", 1, null, null);
@@ -541,9 +541,17 @@ Status              <- "";
             last_attack = "FireNova";
 
             ScriptPrintMessageChatAll(Scan_pref + "\x07Gi Nattak\x01 is using\x02 Fire Nova");
+            if(Global_Target != null && Global_Target.IsValid() && Global_Target.GetHealth() > 0 && Global_Target.GetTeam() == 3)
+            {
+                local gto = Global_Target.GetOrigin();
+                FireNova_Maker.SpawnEntityAtLocation(Vector(gto.x, gto.y , 276), Vector(0,0,0));
+                return false;
+            }
 
             local h = null;
             local list = [];
+            local array = [];
+
             while(null != (h = Entities.FindByClassname(h, "player")))
             {
                 if(h == null)
@@ -555,11 +563,31 @@ Status              <- "";
                 if(h.GetTeam() != 3)
                     continue;
 
+                local luck = MainScript.GetScriptScope().GetPlayerClassByHandle(h)
+                if(luck != null)
+                {
+                    luck = luck.perkluck_lvl;
+                    if(luck > 0)
+                    {
+                        if(RandomInt(1, 100) > luck * perkluck_luckperlvl)
+                        {
+                            array.push(h);
+                            continue;
+                        }  
+                    }     
+                }
+
                 list.push(h);
             }
             if(list.len() <= 0)
-                return true;
-            h = list[RandomInt(0, list.len() - 1)].GetOrigin();
+            {
+                if(array.len() <= 0)
+                    return true;
+                else 
+                h = array[RandomInt(0, array.len() - 1)].GetOrigin();
+            }
+            else 
+                h = list[RandomInt(0, list.len() - 1)].GetOrigin();
             FireNova_Maker.SpawnEntityAtLocation(Vector(h.x, h.y , 276), Vector(0,0,0));
             return false;
         }
@@ -679,8 +707,6 @@ Status              <- "";
 {
     function Init()
     {
-        return;
-        
         EntFire("Camera_old", "RunScriptCode", "SetOverLay(Overlay)", 9.05);
         
         if(RandomInt(0,1))
@@ -719,9 +745,10 @@ Status              <- "";
         EntFire("Gi_Nattak_Model", "FireUser1", "", 13);
         EntFire("Gi_Nattak_Nade_Explode", "SetParent", "Gi_Nattak_Model", 0);
 
-        EntFire("Name_Texture", "FireUser1", "", 0);
-        EntFire("Timer_Texture", "FireUser1", "", 0);
-        EntFire("Special_HealthTexture", "FireUser1", "", 0);
+        EntFire("Name_Texture", "SetTextureIndex", ""+1, 0.2);
+        EntFire("Name_Texture", "AddOutPut", "target Boss_Name_Bar", 0);
+        EntFire("Timer_Texture", "AddOutPut", "target Boss_Timer_Bar", 0);
+        EntFire("Special_HealthTexture", "AddOutPut", "target Boss_HP_Bar", 0);
 
         Model = Entities.FindByName(null,"Gi_Nattak_Model");
         FireNova_Maker = Entities.FindByName(null, "Gi_Nattak_Nova_Maker");
@@ -776,7 +803,7 @@ Status              <- "";
         local stage = map_brush.GetScriptScope().Stage;
         if(stage == 1)
         {
-            if(RandomInt(0,9) == 0)
+            if(RandomInt(0,3) == 0)
                 smart_system = true;
 
             minion_useDef = [18,21];
@@ -789,13 +816,13 @@ Status              <- "";
         }
         else if(stage == 2)
         {
-            if(RandomInt(0,4) == 0)
+            if(RandomInt(0,1))
                 smart_system = true;
 
             minion_useDef = [15,18];
             minion_use = RandomInt(minion_useDef[0], minion_useDef[1]);
 
-            if(!smart_system)
+            if(smart_system)
                 EntFireByHandle(self, "RunScriptCode", "PushGravity()", RandomInt(40, 80), null, null);
             else 
                 allow_gravity = true;
@@ -814,8 +841,8 @@ Status              <- "";
             minion_useDef = [12,15];
             minion_use = RandomInt(minion_useDef[0], minion_useDef[1]);
 
-             if(!smart_system)
-                EntFireByHandle(self, "RunScriptCode", "PushGravity()", RandomInt(40, 50), null, null);
+            if(smart_system)
+                EntFireByHandle(self, "RunScriptCode", "PushGravity()", RandomInt(39, 51), null, null);
             else 
                 allow_gravity = true;
 
@@ -904,14 +931,6 @@ Status              <- "";
                 use_array.push("Ultima");
         }
 
-        local text = "";
-        
-        for(local i = 0 ; i < use_array.len(); i++)
-        {
-            text = use_array[i];
-            ScriptPrintMessageChatAll(text);
-        }
-
         if(SetCastTimeByOneAttack)
         {
             SetCastTimeByOneAttack = false;
@@ -969,6 +988,7 @@ Status              <- "";
         local use_index = -1;
         
         //COMBO USE
+        if(last_attack != null && GetChance(75))
         {
             if(last_attack == "Silence")
             {
@@ -977,12 +997,18 @@ Status              <- "";
 
             else if(last_attack == "Ultima")
             {
-                use_index = InArray("Fire", use_array);
+                if(GetChance(25))
+                    use_index = InArray("Fire", use_array);
 
-                if(use_index == -1)
+                if(use_index == -1 && GetChance(10))
                     use_index = InArray("FireNova", use_array);
                 if(use_index == -1)
                     use_index = InArray("Silence", use_array);
+            }
+
+            else if(last_attack == "Gravity")
+            {
+                use_index = InArray("SuperAttack", use_array);
             }
 
             else if(last_attack == "Gravity")
@@ -999,15 +1025,52 @@ Status              <- "";
             {
                 use_index = InArray("Wind", use_array);
             }
-        }
-        
-        local text = "smart";
-        ScriptPrintMessageChatAll(text);
 
-        for(local i = 0 ; i < use_array.len(); i++)
+        }
+        //BEST USE
+        if(use_index == -1 && GetChance(80))
         {
-            text = use_array[i];
-            ScriptPrintMessageChatAll(text);
+            local iInArena = InArena();
+            local iCountAlive = CountAlive();
+
+            if(HP_BARS <= 5)
+            {
+                if(use_index == -1)
+                    use_index = InArray("Shield", use_array);
+            }
+
+            if(HP_BARS <= 12)
+            {
+                if(use_index == -1)
+                    use_index = InArray("Heal", use_array);
+            }
+        
+            if(iInArena > (iCountAlive / 4) && GetChance(60))
+            {
+                if(use_index == -1)
+                    use_index = InArray("Fire", use_array);
+                
+                if(use_index == -1)
+                    use_index = InArray("FireNova", use_array);
+            }
+
+            if(OutArena() > (iCountAlive / 6) && GetChance(80))
+            {
+                if(use_index == -1)
+                    use_index = InArray("Wind", use_array);
+            }
+
+            if(NearBoss() > (iCountAlive / 8))
+            {
+                if(use_index == -1)
+                    use_index = InArray("Poison", use_array);
+
+                if(use_index == -1)
+                    use_index = InArray("Gravity", use_array);
+
+                if(use_index == -1)
+                    use_index = InArray("Wind", use_array);
+            }
         }
 
         if(SetCastTimeByOneAttack)
@@ -1172,6 +1235,7 @@ Status              <- "";
 
         ScriptPrintMessageCenterAll(message);
     }
+
     minion_useDef <- [2,4];
     minion_use <- RandomInt(minion_useDef[0], minion_useDef[1]);
     function TickMinion()
@@ -1258,8 +1322,6 @@ Status              <- "";
 
     function InArena(TEAM = 3)
     {
-        DebugDrawCircle(CenterArea, Vector(255,255,255), InArena_Radius, 36, true, 3)
-
         local handle = null;
         local counter = 0;
 
@@ -1274,10 +1336,9 @@ Status              <- "";
 
     function NearBoss(TEAM = 3)
     {
-        DebugDrawCircle(Model.GetOrigin(), Vector(255,255,255), NearBoss_Radius, 36, true, 3)
-
         local handle = null;
         local counter = 0;
+
         while (null != (handle = Entities.FindInSphere(handle , Model.GetOrigin(), NearBoss_Radius)))
         {
             if(handle.GetTeam() == TEAM && handle.GetHealth() > 0)counter++;

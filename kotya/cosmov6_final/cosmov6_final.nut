@@ -15,6 +15,18 @@ function RoundStart()
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/player_movement.nut");
 	AOP(h, "targetname", "map_script_player_movement");
 
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/menu_controller.nut");
+	AOP(h, "targetname", "map_script_menu_controller");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/menu_builder.nut");
+	AOP(h, "targetname", "map_script_menu_builder");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/test_menu.nut");
+	AOP(h, "targetname", "map_script_menu_test");
+	EF("map_script_menu_test", "RunScriptCode", "Spawn()");
 
 	//DEBUG
 	SendToConsole("sv_cheats 1");
@@ -24,6 +36,7 @@ function RoundStart()
 	// EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
 }
 SendToConsole("mp_restartgame 1");
+
 ::class_pos <- class
 {
 	origin = Vector(0, 0, 0);
@@ -557,7 +570,7 @@ function RegItemInfo()
 {
 	if (typeof item == "string")
 	{
-		EntFire(item, "addoutput", key + " " + value, d);
+		EntFire(item, "AddOutPut", key + " " + value, d);
 	}
 	else if (typeof item == "instance")
 	{
@@ -574,6 +587,10 @@ function RegItemInfo()
 			else if (typeof value == "integer")
 			{
 				item.__KeyValueFromInt(key, value);
+			}
+			else if (typeof value == "float")
+			{
+				item.__KeyValueFromFloat(key, value);
 			}
 			else
 			{

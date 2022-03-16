@@ -1,5 +1,5 @@
 num_max <- "1";
-num_need <- 20;
+num_need <- 10;
 
 texture <- [];
 ignore <- null;
@@ -42,10 +42,10 @@ function add_score(i = 1)
 
     MainScript.GetScriptScope().AddCashAll(1);
     
-    tick();
+    tick(true);
 }
 
-function tick()
+function tick(up = false)
 {
     local lim = 10;
 	local temp_num = ScoreBass;
@@ -58,9 +58,11 @@ function tick()
 
 		temp_num = temp_num / lim;
 	}
-
-    if (ScoreBass >= num_need)
-	{
-		EntFireByHandle(self, "FireUser1", "", 0, null, null);
-	}
+    if(up)
+    {
+        if(ScoreBass % num_need == 0)
+        {
+            EntFireByHandle(self, "FireUser1", "", 0, null, null);
+        }
+    }
 }

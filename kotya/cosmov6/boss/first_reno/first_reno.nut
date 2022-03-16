@@ -177,28 +177,26 @@
                 {
                     origin = Vector(0, 0, 0);
                     angles = Vector(0, 0, 0);
-                    midlehurt = false;
-                    constructor(_o, _a, _e)
+                    constructor(_o, _a)
                     {
                         this.origin = _o;
                         this.angles = _a;
-                        this.midlehurt = _e;
                     }
                 }
                 Laser_Array <- [
                     
-                    laser_preset(Vector(-9982,-935,1860), Vector(180,5,90), false),
-                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1865), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1870), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1872), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1880), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1885), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1890), Vector(180,0,0), false),
-                    laser_preset(Vector(-9982,-935,1895), Vector(180,0,0), false),
+                    laser_preset(Vector(-9982,-935,1860), Vector(180,5,90)),
+                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1865), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1870), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1872), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1880), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1885), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1890), Vector(180,0,0)),
+                    laser_preset(Vector(-9982,-935,1895), Vector(180,0,0)),
 
-                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,11), true),
-                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,-11), true),
+                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,11)),
+                    laser_preset(Vector(-9982,-935,1860), Vector(180,0,-11)),
                 ]
                 Laser_Origin <- [
                     Vector(-9982,-935,1860), //Нижний
@@ -233,34 +231,60 @@
 
             function SpawnYLaser()
             {
-                    local array = [];
+                local array = [];
+                local array1 = [];
+                local y = -935;
+
+                if(Global_Target != null && Global_Target.IsValid() && Global_Target.GetHealth() > 0 && Global_Target.GetTeam() == 3)
+                {
+                    array.push(Global_Target);
+                }
+                else
+                {
+                    local origin = Entities.FindByName(null, "End_Platform_Move").GetOrigin();
                     local handle = null;
-                    local y = -935;
-                    while((handle = Entities.FindByClassname(handle, "player")) != null)
+                    while(null != (handle = Entities.FindByClassnameWithin(handle, "player", origin, 300)))
                     {
-                        if(handle == null)
-                            continue;
                         if(!handle.IsValid())
                             continue;
                         if(handle.GetHealth() <= 0)
                             continue;
-                        if(handle.GetTeam() == 2 || handle.GetTeam() == 1)
+                        if(handle.GetTeam() != 3)
                             continue;
+                        
+                        local luck = MainScript.GetScriptScope().GetPlayerClassByHandle(handle)
+                        if(luck != null)
+                        {
+                            luck = luck.perkluck_lvl;
+                            if(luck > 0)
+                            {
+                                if(RandomInt(1, 100) > luck * perkluck_luckperlvl)
+                                {
+                                    array1.push(handle);
+                                    continue;
+                                }  
+                            }
+
+                        }
+
                         array.push(handle);
                     }
-                    if(array.len() != 0)
-                        y = GetTwoVectYaw(Vector(-9982,-935,1860), array[RandomInt(0, array.len() - 1)].GetOrigin())
-                    Laser_Maker.SpawnEntityAtLocation(Vector(-9982,-935,1860), Vector(180, y, 90));
+                }
+                
+                if(array.len() > 0)
+                    y = GetTwoVectYaw(Vector(-9982,-935,1860), array[RandomInt(0, array.len() - 1)].GetOrigin())
+                else if(array1.len() > 0)
+                {
+                    y = GetTwoVectYaw(Vector(-9982,-935,1860), array1[RandomInt(0, array1.len() - 1)].GetOrigin())
+                }
+                Laser_Maker.SpawnEntityAtLocation(Vector(-9982,-935,1860), Vector(180, y, 90));
             }
 
             function SpawnLaser(id)
             {
+                id = id.tointeger();
+
                 Laser_Maker.SpawnEntityAtLocation(Laser_Array[id].origin, Laser_Array[id].angles);
-                if(Laser_Array[id].midlehurt)
-                {
-                    EntFire("Laser_Move*", "AddOutPut", "OnUser2 !self:FireUser3::0:1", 0.0);
-                }
-                    
             }
         }
     }
