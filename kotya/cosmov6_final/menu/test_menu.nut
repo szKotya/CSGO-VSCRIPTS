@@ -5,15 +5,15 @@ function Spawn()
 	local array = [];
 	local obj;
 
-	obj = class_menu_input();
-	obj.name = "S";
-	obj.input = test1();
+	obj = class_menu_input("Q", test1, true);
 	array.push(obj);
 
-	obj = class_menu_input();
-	obj.name = "F";
-	obj.input = test2();
+	obj = class_menu_input("W", test1, true);
 	array.push(obj);
+
+	obj = class_menu_input("E", test2, true);
+	array.push(obj);
+	
 }
 
 function test1()

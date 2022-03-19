@@ -8,7 +8,35 @@ const TICKRATE = 10.0;
 {
 	name = "";
 	input = null;
+	clickcable = true;
+
+	constructor(_name, _input, _clickcable)
+	{
+		this.name = _name;
+		this.input = _input;
+		this.clickcable = _clickcable;
+	}
 }
+
+::class_menu_pointer <- class
+{
+	menupoints = [];
+
+	function AddMenuPoints(point)
+	{
+		// if (typeof point == array)
+		// {
+		// 	foreach ( in point) {
+				
+		// 	}
+		// }
+		// else
+		// {
+		// 	this.
+		// }
+	}
+}
+
 
 class class_menu
 {

@@ -10,6 +10,7 @@
 ::Knife_Maker <- null;
 ::Trigger_Maker <- null;
 ::Measure_Maker <- null;
+::Movelinear_Maker <- null;
 ::ID_MAKER <- 0;
 
 function Start()
@@ -62,6 +63,10 @@ function Start()
 		else if (szName == "prespawn_logic_measure_movement")
 		{
 			Measure_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_func_movelinear")
+		{
+			Movelinear_Maker = point_template.GetScriptScope();
 		}
 		printl(point_template);
 	}

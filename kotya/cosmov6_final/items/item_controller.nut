@@ -115,7 +115,7 @@ g_hEntWatch <- null;
 		local iteminfo = GetItemInfoByName(this.name)
 
 		local bdouble = false;
-		local ilvl = 1;
+		local ilvl = 3;
 
 		if (iteminfo.type == 1 || iteminfo.type == 3)
 		{
@@ -350,7 +350,7 @@ function PressItem()
 	}
 	if (item_class.Use())
 	{
-		ScriptPrintMessageChatAll("DO ITEM");
+		ScriptPrintMessageChatAll("DO ITEM: " + item_class.name);
 		//SetCDItem(item_class);
 
 		if (item_class.name == "Bio")
@@ -769,6 +769,78 @@ function StartItemTriggerTick(trigger)
 		g_bTicking_ItemTrigger = true;
 		TickItemTrigger();
 	}
+}
+// 99 543 -33 (65) (95) (33)
+// 32 448 0
+264
+// -29 417 -31 
+function UseEarth(item_class, item_info)
+{
+	
+	local ilvlstaff = item_class.use_lvl - 1;
+	ScriptPrintMessageChatAll("Earth : " + ilvlstaff);
+	local fDuration = item_info.GetDuration(ilvlstaff);
+	
+	local temp = item_class.gun.GetOrigin();
+	temp += item_class.gun.GetForwardVector() * item_info.GetCastRangeForward(ilvlstaff);
+	temp += item_class.gun.GetUpVector() * item_info.GetCastRangeUp(ilvlstaff);
+	temp += item_class.gun.GetLeftVector() * item_info.GetCastRangeLeft(ilvlstaff);
+
+	local time = 0.00;
+	local origin = temp;
+	local ang = Vector(item_class.gun.GetAngles().x, item_class.gun.GetAngles().y + 90, 35);
+
+	temp += Vector(0, 0, -70);
+
+	for (local i = -1; i < ilvlstaff; i++)
+	{
+		origin = class_pos(temp, ang);
+		EF(CreateEarth(origin, item_info.use_model_name[0], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(65 + RandomInt(-5, 5), 65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(65 + RandomInt(-5, 5), 0 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(0 + RandomInt(-5, 5), 65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(-65 + RandomInt(-5, 5), -65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(-65 + RandomInt(-5, 5), 0 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(0 + RandomInt(-5, 5), -65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(65 + RandomInt(-5, 5), -65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		origin = class_pos(temp + Vector(-65 + RandomInt(-5, 5), 65 + RandomInt(-5, 5), -33), ang + Vector(0, RandomInt(-15, 15), RandomInt(-15, 15)));
+		EF(CreateEarth(origin, item_info.use_model_name[1], time += 0.01), "Kill", "", fDuration);
+		
+		time += 0.20;
+		temp += item_class.gun.GetForwardVector() * 214;
+	}
+}
+
+function CreateEarth(pos, model, time)
+{
+	local earth;
+	local kv = {};
+	kv["model"] <- model;
+	kv["pos"] <- pos;
+	kv["solid"] <- 6;
+	earth = Prop_dynamic_Glow_Maker.CreateEntity(kv);
+	
+	local mover;
+	local kv = {};
+	kv["pos"] <- pos;
+	kv["spawnflags"] <- 1;
+	kv["movedir"] <- "-90 0 0";
+	kv["movedistance"] <- 70;
+	kv["speed"] <- 350;
+	
+	mover = Movelinear_Maker.CreateEntity(kv);
+
+	EntFireByHandle(earth, "SetParent", "!activator", 0, mover, mover);
+	EF(mover, "Open", "", time);
+	
+	return mover;
 }
 
 function TickItemTrigger()

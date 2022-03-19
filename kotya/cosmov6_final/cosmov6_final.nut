@@ -33,7 +33,7 @@ function RoundStart()
 	SendToConsole("bot_stop 1");
 	SendToConsole("mp_freezetime 0");
 	SendToConsole("mp_warmuptime 999999999");
-	// EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
+	EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
 }
 SendToConsole("mp_restartgame 1");
 
@@ -411,6 +411,8 @@ function RegItemInfo()
 	obj.Cast_SetCD("80 75 70");
 	obj.Cast_SetDamage("500 1000 2000");
 	obj.Cast_SetDuration("5 6 7");
+	obj.Cast_SetCastRangeForward("180");
+	obj.Cast_SetCastRangeUp("92");
 	obj.type = 1;
 	obj.can_silence = true;
 	obj.transfer_ban_double = true;
@@ -418,7 +420,7 @@ function RegItemInfo()
 	obj.use_regen = true;
 	obj.cast_count_double = 1;
 	obj.info = "Creates a breakable rock wall";
-	obj.use_model_name = "models/kmodels/cosmo/cosmocanyon/earth.mdl";
+	obj.use_model_name = ["models/kmodels/cosmo/props_wasteland/rockcliff01c.mdl", "models/kmodels/cosmo/props_wasteland/rockcliff01j.mdl"];
 	obj.gun_particle_name = "custom_particle_020";
 	obj.gun_particle_light_color = "157 79 0";
 	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
