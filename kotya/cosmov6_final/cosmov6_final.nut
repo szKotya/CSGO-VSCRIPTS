@@ -16,8 +16,8 @@ function RoundStart()
 	AOP(h, "targetname", "map_script_player_movement");
 
 	h = Entities.CreateByClassname("logic_script");
-	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/menu_controller.nut");
-	AOP(h, "targetname", "map_script_menu_controller");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/controller.nut");
+	AOP(h, "targetname", "map_script_controller");
 
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/menu_builder.nut");
@@ -26,7 +26,7 @@ function RoundStart()
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/test_menu.nut");
 	AOP(h, "targetname", "map_script_menu_test");
-	EF("map_script_menu_test", "RunScriptCode", "Spawn()");
+	// EF("map_script_menu_test", "RunScriptCode", "Spawn()");
 
 	//DEBUG
 	SendToConsole("sv_cheats 1");
@@ -594,6 +594,10 @@ function RegItemInfo()
 			{
 				item.__KeyValueFromFloat(key, value);
 			}
+			else if (typeof value == "vector")
+			{
+				item.__KeyValueFromVector(key, value);
+			}
 			else
 			{
 				EntFireByHandle(item, "AddOutPut", key + " " + value, d, item, item);
@@ -702,6 +706,11 @@ function RegItemInfo()
 	}
 	return yaw;
 }
+//(orig, dir, maxd, filter)
+::Trace <- function(origin, dir, distance = 4096, filter = null)
+{
+	return  origin + (dir * (distance * TraceLine(origin, origin + dir * distance, filter)));
+}
 
 ::TargerValid <- function(target)
 {
@@ -718,5 +727,18 @@ function RegItemInfo()
 }
 
 ::damagetype_item <- "item";
+
+::ValueLimiter <- function(Value, Min = null, Max = null)
+{
+	if (Value > Max && Max != null)
+	{
+		return Max;
+	}
+	else if (Value < Min && Min != null)
+	{
+		return Min;
+	}
+	return Value;
+}
 
 RegItemInfo();

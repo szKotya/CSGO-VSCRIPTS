@@ -102,6 +102,7 @@ g_hEntWatch <- null;
 
 	function PickUpItem(player_class)
 	{
+		printl("SetNewOwner" + player_class);
 		this.owner = player_class;
 
 		// if (this.owner != this.lastowner)
@@ -337,6 +338,7 @@ function PressItem()
 {
 	ScriptPrintMessageChatAll("PressItem");
 	local item_class = GetItemByButton(caller);
+	printl(item_class.name + " : " + caller);
 	if (item_class == null || item_class.owner != activator)
 	{
 		printl("NOT OWNER " +  item_class + " : " + item_class.owner);
@@ -963,35 +965,6 @@ function CreateHook(gun, owner)
 	// EntFireByHandle(self, "RunScriptCode", "PickUpItem()", 0.00, owner, gun);
 
 	AOP(item_class.button, "OnPressed map_script_item_controller:RunScriptCode:PressItem():0:-1", null);
-}
-
-function CreateEyeParent(owner = null)
-{
-	if (owner == null)
-	{
-		owner = activator;
-	}
-
-	local kv = {};
-	local measure;
-	local nparent = CreateTempParent();
-	nparent.SetOrigin(owner.EyePosition());
-
-	EntFireByHandle(nparent, "SetParent", "!activator", 0.00, owner, owner);
-	if (owner.GetName() == "")
-	{
-		AOP(owner, "targetname", "owner" + ID_MAKER++);
-	}
-
-	kv["TargetScale"] <- 300;
-	kv["Target"] <- nparent.GetName();
-	kv["TargetReference"] <- nparent.GetName();
-	kv["MeasureTarget"] <- owner.GetName();
-	kv["MeasureReference"] <- nparent.GetName();
-
-	measure = Measure_Maker.CreateEntity(kv);
-
-	return [measure, nparent];
 }
 
 function PickUpItem()

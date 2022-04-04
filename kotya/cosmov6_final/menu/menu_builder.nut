@@ -1,135 +1,243 @@
 const TICKRATE = 10.0;
+const TICKRATE_REDRAW = 1.0;
 
-::Menu_Build_Script <- self.GetScriptScope();
+::Menu_Script_Handle <- self;
+::Menu_Script <- self.GetScriptScope();
 
-::PLAYERS_MENU <- [];
-
-::class_menu_input <- class
+::class_menu_item <- class
 {
-	name = "";
+	displayname = "";
 	input = null;
 	clickcable = true;
 
-	constructor(_name, _input, _clickcable)
+	constructor(_input = "", _displayname = "", _clickcable = true)
 	{
-		this.name = _name;
+		this.displayname = _displayname;
 		this.input = _input;
 		this.clickcable = _clickcable;
 	}
-}
-
-::class_menu_pointer <- class
-{
-	menupoints = [];
-
-	function AddMenuPoints(point)
+	function Use_Input()
 	{
-		// if (typeof point == array)
-		// {
-		// 	foreach ( in point) {
-				
-		// 	}
-		// }
-		// else
-		// {
-		// 	this.
-		// }
+		if (this.input != null)
+		{
+			this.input();
+		}
 	}
 }
 
-
-class class_menu
+::class_menu <- class
 {
-	handle = null;
+	items = null;
+	function AddItem(_input = null, _displayname = "", _clickcable = true)
+	{
+		if (this.items == null)
+		{
+			this.items = [];
+		}
+		this.items.push(class_menu_item(_input, _displayname, _clickcable));
+	}
+}
+
+::PLAYERS_MENU <- [];
+::g_iMax_Menu_Draws <- 5;
+::class_menu_draw <- class
+{
+	activator = null;
 	game_text = null;
+	controller = null;
+
+	active_menu = null;
+	back_menu = null;
 
 	selectID = 0;
 
-	PressedAttack = null;
-	PressedAttack2 = null;
-
-	PressedForward = null;
-	PressedBack = null;
-	PressedMoveLeft = null;
-	PressedMoveRight = null;
-
-	PlayerOff = null;
-	PlayerOn = null;
-
-	function PressedAttack()
+	function constructor(_handle, _active_menu)
 	{
-		if (this.PressedAttack != null)
+		this.activator = _handle;
+		this.controller = CreateController(this.activator, Menu_Script_Handle, g_iDefault_GameUIFlags);
+
+		this.game_text = Entities.CreateByClassname("game_text");
+		AOP(this.game_text, "spawnflags", 0);
+		AOP(this.game_text, "channel", 3);
+		AOP(this.game_text, "color", Vector(255, 255, 255));
+		AOP(this.game_text, "y", -1.0);
+		AOP(this.game_text, "x", 0.0);
+		AOP(this.game_text, "holdtime", 5.0);
+
+		this.active_menu = _active_menu;
+		this.Draw();
+	}
+
+	function Draw()
+	{
+		local szMessage = "";
+
+		// if (this.active_menu.items.len() > g_iMax_Menu_Draws)
+		// {
+			for (local i = 0; i < this.active_menu.items.len(); i++)
+			{
+				if (i == this.selectID)
+				{
+						szMessage += "> "
+				}
+
+				szMessage += this.active_menu.items[i].displayname;
+
+				if (i == this.selectID)
+				{
+						szMessage += " <"
+				}
+				szMessage += "\n";
+			}
+		// }
+
+		this.Display(szMessage);
+	}
+
+	function Display(szMessage)
+	{
+		EntFireByHandle(this.game_text, "SetText", szMessage, 0, this.activator, this.activator);
+		EntFireByHandle(this.game_text, "Display", "", 0, this.activator, this.activator);
+	}
+	
+	function GiveItemID(ID)
+	{
+		if (ID < 0)
 		{
-			this.PressedAttack;
+			return this.GiveItemID(this.active_menu.items.len() + ID); 
+		}
+		else if (ID > this.active_menu.items.len() - 1)
+		{
+			return this.GiveItemID(ID % this.active_menu.items.len()); 
+		}
+		else
+		{
+			return ID;
 		}
 	}
 
-	function PressedAttack2()
+	function MoveUp()
 	{
-		if (this.PressedAttack2 != null)
+		for (local i = 0; i < 128; i++)
 		{
-			
+			this.selectID -= 1;
+			if (this.selectID < 0)
+			{
+				this.selectID += 1;
+			}
+
+			if (this.active_menu.items[this.selectID].clickcable)
+			{
+				break;
+			}
+		}
+
+		this.Draw();
+	}
+
+	function MoveDown()
+	{
+		for (local i = 0; i < 128; i++)
+		{
+			this.selectID += 1
+			if (this.selectID >= this.active_menu.items.len())
+			{
+				this.selectID -= 1;
+			}
+
+			if (this.active_menu.items[this.selectID].clickcable)
+			{
+				break;
+			}
+		}
+
+		this.Draw();
+	}
+
+	function Forward()
+	{
+		this.active_menu.items[this.selectID].Use_Input();
+	}
+	function Backward()
+	{
+		if (this.back_menu == null)
+		{
+			this.SelfClose(true);
 		}
 	}
 
-	function PressedForward()
+	function ExitGameUI()
 	{
-		if (this.PressedForward != null)
-		{
-			
-		}
+		this.SelfClose(false);
 	}
-
-	function PressedBack()
+	function SelfClose(byMenu = true)
 	{
-		if (this.PressedBack != null)
+		foreach (index, menu_draw_class in PLAYERS_MENU)
 		{
-			
-		}
-	}
+			if (this == menu_draw_class)
+			{
+				if (byMenu)
+				{
+					if (TargerValid(this.activator)) 
+					{
+						if (TargerValid(this.controller.game_ui))
+						{
+							ScriptPrintMessageChatAll("SelfClose");
+							this.controller.press_off = null;
+							EF(this.controller.game_ui, "Deactivate");
+						}
+					}
+					EntFire("map_script_controller", "RunScriptCode","PlayerOff()", 0, this.activator);
+				}
 
-	function PressedMoveLeft()
-	{
-		if (this.PressedMoveLeft != null)
-		{
-			
-		}
-	}
+				if (TargerValid(this.activator)) 
+				{
+					this.Display("");
+					EF(this.game_text, "Kill");
+				}
 
-	function PressedMoveRight()
-	{
-		if (this.PressedMoveRight != null)
-		{
-			
-		}
-	}
-
-	function PlayerOff()
-	{
-		if (this.PlayerOff != null)
-		{
-			
-		}
-	}
-
-	function PlayerOn()
-	{
-		if (this.PlayerOn != null)
-		{
-			
+				return PLAYERS_MENU.remove(index);
+			}
 		}
 	}
 }
 
+::DisplayMenuForPlayer <- function(player, menu)
+{
+	local menu_draw_class = class_menu_draw(player, menu);
+	PLAYERS_MENU.push(menu_draw_class);
+
+	menu_draw_class.controller.press_w = Menu_Script.Use_MoveUp;
+	menu_draw_class.controller.press_s = Menu_Script.Use_MoveDown;
+
+	menu_draw_class.controller.press_off = Menu_Script.Use_ExitGameUI;
+
+	menu_draw_class.controller.press_attack = Menu_Script.Use_Forward;
+	menu_draw_class.controller.press_attack2 = Menu_Script.Use_Backward;
+
+	if (PLAYERS_MENU.len() == 1)
+	{
+		Menu_Script.Tick();
+		Menu_Script.TickDraw()
+	}
+}
 
 function Tick() 
 {
 	for (local i = 0; i < PLAYERS_MENU.len(); i++)
 	{
-		if (!TargerValid(PLAYERS_MENU[i].handle))
+		if (!TargerValid(PLAYERS_MENU[i].activator))
 		{
-			PLAYERS_MENU.remove(i);
-			i--;
+			if (TargerValid(PLAYERS_MENU[i].game_text))
+			{
+				PLAYERS_MENU[i].game_text.Destroy();
+			}
+			if (TargerValid(PLAYERS_MENU[i].controller))
+			{
+				PLAYERS_MENU[i].game_text.Destroy();
+			}
+
+			PLAYERS_MENU.remove(i--);
 		}
 	}
 	
@@ -137,4 +245,122 @@ function Tick()
 	{
 		CallFunction("Tick()", TICKRATE);
 	}
+}
+
+function TickDraw() 
+{
+	if (PLAYERS_MENU.len() > 0)
+	{
+		foreach (menu_draw_class in PLAYERS_MENU)
+		{
+			if (TargerValid(menu_draw_class.activator))
+			{
+				menu_draw_class.Draw();
+			}
+		}
+
+		CallFunction("TickDraw()", TICKRATE_REDRAW);
+	}
+}
+
+function Use_MoveUp()
+{
+	local menu_draw_class = GetPlayerMenuClassByPlayer(activator);
+	if (menu_draw_class == null)
+	{
+		return;
+	}
+	menu_draw_class.MoveUp();
+}
+
+function Use_MoveDown()
+{
+	local menu_draw_class = GetPlayerMenuClassByPlayer(activator);
+	if (menu_draw_class == null)
+	{
+		return;
+	}
+	menu_draw_class.MoveDown();
+}
+
+function Use_ExitGameUI()
+{
+	local menu_draw_class = GetPlayerMenuClassByPlayer(activator);
+	if (menu_draw_class == null)
+	{
+		return;
+	}
+	menu_draw_class.ExitGameUI();
+}
+
+function Use_Forward()
+{
+	local menu_draw_class = GetPlayerMenuClassByPlayer(activator);
+	if (menu_draw_class == null)
+	{
+		return;
+	}
+	menu_draw_class.Forward();
+}
+
+function Use_Backward()
+{
+	local menu_draw_class = GetPlayerMenuClassByPlayer(activator);
+	if (menu_draw_class == null)
+	{
+		return;
+	}
+	menu_draw_class.Backward();
+}
+
+::GetPlayerMenuDrawClassByController <- function(controller)
+{
+	foreach (menu_draw in PLAYERS_MENU)
+	{
+		if (controller == menu_draw.controller)
+		{
+			return menu_draw;
+		}
+	}
+
+	return null;
+}
+
+::GetPlayerMenuDrawClassByGameUI <- function(game_ui)
+{
+	foreach (menu_draw in PLAYERS_MENU)
+	{
+		if (game_ui == menu_draw.controller.game_ui)
+		{
+			return menu_draw;
+		}
+	}
+
+	return null;
+}
+
+::GetPlayerMenuDrawClassByGameText <- function(game_text)
+{
+	foreach (menu_draw in PLAYERS_MENU)
+	{
+		if (game_text == menu_draw.game_text)
+		{
+			return menu_draw;
+		}
+	}
+
+	return null;
+}
+
+::GetPlayerMenuClassByPlayer <- function(handle)
+{
+	foreach (menu_draw in PLAYERS_MENU)
+	{
+		if (handle == menu_draw.activator)
+		{
+			return menu_draw;
+		}
+	}
+	
+	return null;
 }

@@ -11,6 +11,7 @@
 ::Trigger_Maker <- null;
 ::Measure_Maker <- null;
 ::Movelinear_Maker <- null;
+::GameUI_Maker <- null;
 ::ID_MAKER <- 0;
 
 function Start()
@@ -67,6 +68,10 @@ function Start()
 		else if (szName == "prespawn_func_movelinear")
 		{
 			Movelinear_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_game_ui")
+		{
+			GameUI_Maker = point_template.GetScriptScope();
 		}
 		printl(point_template);
 	}
@@ -238,7 +243,7 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 	temp = class_pos(temp, Vector(0, 0, 0)); 
 	kv["pos"] <- temp;
 	kv["parentname"] <- elite.GetName();
-	kv["model"] <- "*" + 1;
+	kv["model"] <- "*" + 6;
 	kv["spawnflags"] <- 17409;
 	kv["wait"] <- 0.1;
 	button = Button_Maker.CreateEntity(kv);
@@ -357,8 +362,8 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 	item_class.status_allow_silence = ITEM_INFO[ID].can_silence;
 	item_class.status_allow_transfer_ban = ITEM_INFO[ID].transfer_ban_double;
 
-	AOP(item_class.gun, "OnPlayerPickup map_script_item_controller:RunScriptCode:PickUpItem():0:-1", null);
-	AOP(item_class.button, "OnPressed map_script_item_controller:RunScriptCode:PressItem():0:-1", null);
+	AOP(item_class.gun, "OnPlayerPickup", "map_script_item_controller:RunScriptCode:PickUpItem():0:-1", 0.01);
+	AOP(item_class.button, "OnPressed", "map_script_item_controller:RunScriptCode:PressItem():0:-1", 0.01);
 	ITEMS.push(item_class);
 }
 
@@ -462,4 +467,34 @@ function S(ID = 0)
 
 	return Prop_dynamic_Glow_Maker.CreateEntity(kv);
 }
+
+::CreateEyeParent <- function(owner = null)
+{
+	if (owner == null)
+	{
+		owner = activator;
+	}
+
+	local kv = {};
+	local measure;
+	local nparent = CreateTempParent();
+	nparent.SetOrigin(owner.EyePosition());
+
+	EntFireByHandle(nparent, "SetParent", "!activator", 0.00, owner, owner);
+	if (owner.GetName() == "")
+	{
+		AOP(owner, "targetname", "owner" + ID_MAKER++);
+	}
+
+	kv["TargetScale"] <- 300;
+	kv["Target"] <- nparent.GetName();
+	kv["TargetReference"] <- nparent.GetName();
+	kv["MeasureTarget"] <- owner.GetName();
+	kv["MeasureReference"] <- nparent.GetName();
+
+	measure = Measure_Maker.CreateEntity(kv);
+
+	return [measure, nparent];
+}
+
 Start();
