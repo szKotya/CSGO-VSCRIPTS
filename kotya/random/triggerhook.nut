@@ -23,16 +23,19 @@ switch (myclass)
     }
     case "trigger_multiple":
     {
+        self.ConnectOutput("OnStartTouch", "ShowPos")
         mycolor = Vector(255,255,0); //yellow
         break;
     }
     case "trigger_hurt":
     {
+        self.ConnectOutput("OnStartTouch", "ShowPos")
         mycolor = Vector(255,0,0); //red
         break;
     }
     case "trigger_teleport":
     {
+        self.ConnectOutput("OnStartTouch", "ShowPos")
         mycolor = Vector(0,255,0); //green
         break;
     }

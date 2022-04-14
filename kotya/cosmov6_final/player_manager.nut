@@ -1,4 +1,4 @@
-::PLAYERS <- [];
+::PLAYERS_NET <- [];
 PL_HANDLE <- [];
 MAPPER_SID <- ["STEAM_1:1:124348087"];
 
@@ -12,7 +12,7 @@ ADMIN_ROOM_ORIGIN <- null;
 SCRIPT_VERSION <- "07.02.22 - 0:12";
 COMMAND_PREF <- "!mc_"
 
-class class_player
+class class_player_connect
 {
 	userid = null;
 	name = null;
@@ -83,7 +83,7 @@ function RoundStart()
 		EVENT_PROXE.__KeyValueFromInt("StartDisabled", 0);
 	}
 
-	for(local i = 0; i < PLAYERS.len(); i++){PLAYERS[i].ClearClassData();}
+	for(local i = 0; i < PLAYERS_NET.len(); i++){PLAYERS_NET[i].ClearClassData();}
 
 	LoopPlayerCheck();
 }
@@ -98,11 +98,11 @@ function LoopPlayerCheck()
 
 function CheckValidInArr()
 {
-	if (PLAYERS.len() > 0)
+	if (PLAYERS_NET.len() > 0)
 	{
-		for(local i = 0; i < PLAYERS.len(); i++)
+		for(local i = 0; i < PLAYERS_NET.len(); i++)
 		{
-			if (!PLAYERS[i].ValidThisH() && PLAYERS[i].GetCheckedCPl() >= 3){PLAYERS.remove(i);}
+			if (!PLAYERS_NET[i].ValidThisH() && PLAYERS_NET[i].GetCheckedCPl() >= 3){PLAYERS_NET.remove(i);}
 		}
 	}
 	SetDataAM();
@@ -110,15 +110,15 @@ function CheckValidInArr()
 
 function SetDataAM()
 {
-	if (PLAYERS.len() > 0 && MAPPER_SID.len() > 0)
+	if (PLAYERS_NET.len() > 0 && MAPPER_SID.len() > 0)
 	{
-		for(local i = 0; i < PLAYERS.len(); i++)
+		for(local i = 0; i < PLAYERS_NET.len(); i++)
 		{
 			for(local a = 0; a < MAPPER_SID.len(); a++)
 			{
-				if (PLAYERS[i].steamid == MAPPER_SID[a])
+				if (PLAYERS_NET[i].steamid == MAPPER_SID[a])
 				{
-					PLAYERS[i].SetMapperData();
+					PLAYERS_NET[i].SetMapperData();
 				}
 			}
 		}
@@ -135,7 +135,7 @@ function Set_Player()
 
 function ValidHandleArr(h)
 {
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERS_NET)
 	{
 		if (p.handle == h)
 		{
@@ -170,27 +170,27 @@ function PlayerConnect()
 	local userid = EVENT_LIST.GetScriptScope().event_data.userid;
 	local name = EVENT_LIST.GetScriptScope().event_data.name;
 	local steamid = EVENT_LIST.GetScriptScope().event_data.networkid;
-	local p = class_player(userid,name,steamid);
-	PLAYERS.push(p);
+	local p = class_player_connect(userid,name,steamid);
+	PLAYERS_NET.push(p);
 }
 
 function PlayerInfo()
 {
 	local userid = EVENT_INFO.GetScriptScope().event_data.userid;
-	if (PLAYERS.len() > 0)
+	if (PLAYERS_NET.len() > 0)
 	{
-		for(local i=0; i < PLAYERS.len(); i++)
+		for(local i=0; i < PLAYERS_NET.len(); i++)
 		{
-			if (PLAYERS[i].userid == userid)
+			if (PLAYERS_NET[i].userid == userid)
 			{
-				PLAYERS[i].handle = TEMP_HANDLE;
+				PLAYERS_NET[i].handle = TEMP_HANDLE;
 				return;
 			}
 		}
 	}
-	local p = class_player(userid,"NOT GETED","NOT GETED");
+	local p = class_player_connect(userid,"NOT GETED","NOT GETED");
 	p.handle = TEMP_HANDLE;
-	PLAYERS.push(p);
+	PLAYERS_NET.push(p);
 }
 
 function PlayerSay()
@@ -200,7 +200,7 @@ function PlayerSay()
 		if (EVENT_SAY == null || EVENT_SAY != null && !EVENT_SAY.IsValid()){EVENT_SAY = Entities.FindByName(null, "map_eventlistener_player_say");}
 		local userid = EVENT_SAY.GetScriptScope().event_data.userid;
 		local msg = EVENT_SAY.GetScriptScope().event_data.text;
-		local player_class = GetPlayerClassByUserID(userid);
+		local player_class = GetPlayerNetClassByUserID(userid);
 
 		if (player_class == null)
 			return;
@@ -229,9 +229,9 @@ function PlayerSpawned()
 
 }
 
-::GetPlayerClassByHandle <- function(handle)
+::GetPlayerNetClassByHandle <- function(handle)
 {
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERS_NET)
 	{
 		if (p.handle == handle)
 		{
@@ -241,9 +241,9 @@ function PlayerSpawned()
 	return null;
 }
 
-::GetPlayerClassByUserID <- function(uid)
+::GetPlayerNetClassByUserID <- function(uid)
 {
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERS_NET)
 	{
 		if (p.userid == uid)
 		{
@@ -258,7 +258,7 @@ function TeleportAdminRoom(player_class = null)
 	if (ADMIN_ROOM_ORIGIN == null){return;}
 	if (player_class == null)
 	{
-		player_class = GetPlayerClassByHandle(activator);
+		player_class = GetPlayerNetClassByHandle(activator);
 		if (player_class == null){return;}
 		if (!player_class.ReturnMapper()){return;}
 	}

@@ -12,13 +12,16 @@
 ::Measure_Maker <- null;
 ::Movelinear_Maker <- null;
 ::GameUI_Maker <- null;
+::Beam_Maker <- null;
+::Explosion_Maker <- null;
+::Ambient_Generic_Maker <- null;
 ::ID_MAKER <- 0;
 
 function Start()
 {
 	local point_template;
 	local szName;
-	while((point_template = Entities.FindByClassname(point_template,"point_template")) != null)
+	while ((point_template = Entities.FindByClassname(point_template,"point_template")) != null)
 	{
 		szName = point_template.GetName();
 		if (szName == "prespawn_sprite")
@@ -73,9 +76,22 @@ function Start()
 		{
 			GameUI_Maker = point_template.GetScriptScope();
 		}
+		else if (szName == "prespawn_env_beam")
+		{
+			Beam_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_env_explosion")
+		{
+			Explosion_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_ambient_generic")
+		{
+			Ambient_Generic_Maker = point_template.GetScriptScope();
+		}
 		printl(point_template);
 	}
 }
+
 ANIM_ID <- 0;
 function test(ID = -1)
 {
@@ -139,7 +155,7 @@ function test(ID = -1)
 	// {
 	//     ID = "exp1_1"
 	// }
-	// else if(ID == 1) 
+	// else if(ID == 1)
 	// {
 	//     ID = "exp2_1"
 	// }
@@ -153,17 +169,17 @@ function test(ID = -1)
 	// EF(particle_main, "Start");
 }
 
-function ITEMALL() 
+function ITEMALL()
 {
 	local start = Vector(380, 0, 0);
 	for(local i = 0; i < 14; i++)
 	{
 		ITEM(i, start);
 		start.x -= 65;
-	}    
+	}
 }
 
-function CreateHook(origin = Vector(-55, 138, 39)) 
+function CreateHook(origin = Vector(-55, 138, 39))
 {
 	local item_info = GetItemInfoByName("Hook");
 
@@ -173,12 +189,12 @@ function CreateHook(origin = Vector(-55, 138, 39))
 	local trigger;
 	local temp = origin;
 	local isize = Vector(16, 16, 16);
-	
+
 	kv["CanBePickedUp"] <- 0;
 	kv["spawnflags"] <- 1;
 	kv["pos"] <- class_pos(temp);
 	knife = Knife_Maker.CreateEntity(kv);
-	
+
 	kv = {};
 	kv["pos"] <- class_pos(temp);
 	kv["parentname"] <- knife.GetName();
@@ -187,18 +203,18 @@ function CreateHook(origin = Vector(-55, 138, 39))
 	trigger = Trigger_Maker.CreateEntity(kv);
 	trigger.SetSize(Vector(-isize.x, -isize.y, -isize.z), isize);
 	AOP(trigger, "solid", 3);
-	
+
 	local item_trigger = class_item_trigger();
 	item_trigger.name = item_info.name;
 	item_trigger.gun = knife;
 	item_trigger.trigger = trigger;
-	
+
 	ITEMS_PICK.push(item_trigger);
 
 	AOP(item_trigger.trigger, "OnStartTouch map_script_item_controller:RunScriptCode:PickUpItemTrigger():0:-1", null);
 	// AOP(item_trigger.trigger, "OnStartTouch map_script_item_controller:RunScriptCode:PickUpItemTrigger():0:-1", null);
 	AOP(item_trigger.gun, "OnPlayerPickup map_script_item_controller:RunScriptCode:PickUpItemTriggerLast():0:-1", null);
-	
+
 
 	local item_class = class_item();
 
@@ -207,7 +223,7 @@ function CreateHook(origin = Vector(-55, 138, 39))
 	ITEMS.push(item_class);
 }
 
-function ITEM(ID = 0, origin = Vector(-55, 138, 39)) 
+function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 {
 	local kv = {};
 	local elite;
@@ -230,8 +246,8 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 	{
 		ID = 0;
 	}
-	
-	local pos = class_pos(origin, Vector(0, 0, 0)); 
+
+	local pos = class_pos(origin, Vector(0, 0, 0));
 	local temp;
 
 	kv["pos"] <- pos;
@@ -240,14 +256,14 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 
 	kv = {};
 	temp = elite.GetOrigin() + (elite.GetForwardVector() * 40) + (elite.GetUpVector() * 45);
-	temp = class_pos(temp, Vector(0, 0, 0)); 
+	temp = class_pos(temp, Vector(0, 0, 0));
 	kv["pos"] <- temp;
 	kv["parentname"] <- elite.GetName();
 	kv["model"] <- "*" + 6;
 	kv["spawnflags"] <- 17409;
 	kv["wait"] <- 0.1;
 	button = Button_Maker.CreateEntity(kv);
-	
+
 	if (ITEM_INFO[ID].gun_particle_name != null)
 	{
 		kv = {};
@@ -285,7 +301,7 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 			kv["glowstyle"] <- 1;
 			kv["glowenabled"] <- 1;
 		}
-		
+
 		kv["model"] <- ITEM_INFO[ID].gun_model;
 		kv["solid"] <- 0;
 
@@ -311,7 +327,7 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 			temp = button.GetOrigin() + (button.GetForwardVector() * -7) + (button.GetUpVector() * -11);
 		}
 		else temp = button.GetOrigin() + (button.GetForwardVector() * 7) + (button.GetUpVector() * -11);
-		
+
 		temp = class_pos(temp, Vector(0, 0, 0));
 		kv["pos"] <- temp;
 		kv["parentname"] <- elite.GetName();
@@ -321,7 +337,7 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 		kv["pitch"] <- 90;
 		particle_light = Light_Maker.CreateEntity(kv);
 	}
-	
+
 	if (ITEM_INFO[ID].gun_particle_sprite_color != null)
 	{
 		kv = {};
@@ -333,16 +349,16 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 		{
 			temp = button.GetOrigin() + (button.GetForwardVector() * 7) + (button.GetUpVector() * -11);
 		}
-		
+
 		temp = class_pos(temp, Vector(0, 0, 0));
 		kv["pos"] <- temp;
 		kv["parentname"] <- elite.GetName();
 		kv["rendercolor"] <- color;
 		//kv["model"] <- "sprites/glow04.vmt"
-		kv["rendermode"] <- 7;
+		kv["rendermode"] <- 3;
 		kv["spawnflags"] <- 1;
 		particle_sprite = Sprite_Maker.CreateEntity(kv);
-		AOP(particle_sprite, "renderamt", 10);
+		AOP(particle_sprite, "renderamt", 50);
 		AOP(particle_sprite, "scale", 0.5);
 		EF(particle_sprite, "ShowSprite");
 	}
@@ -367,11 +383,11 @@ function ITEM(ID = 0, origin = Vector(-55, 138, 39))
 	ITEMS.push(item_class);
 }
 
-function A() 
+function A()
 {
 	local kv = {};
 	local trigger;
-	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0)); 
+	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0));
 
 	local size = Vector(64, 64, 64);
 
@@ -382,20 +398,20 @@ function A()
 	AOP(trigger, "OnStartTouch !self:RunScriptCode:ScriptPrintMessageChatAll(activator.tostring()):0:-1", null);
 }
 
-function C() 
+function C()
 {
 	local kv = {};
-	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0)); 
+	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0));
 	kv["model"] <- "models/props/de_dust/hr_dust/dust_crates/dust_crate_style_02_64x64x64.mdl";
 	kv["modelscale"] <- 0.5;
 	Prop_dynamic_Glow_Maker.CreateEntity(kv);
 }
 
-function D(ID = 0) 
+function D(ID = 0)
 {
 	local kv = {};
 	local Button;
-	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0)); 
+	kv["pos"] <- class_pos(Vector(-55, 138, 39), Vector(0, -41, 0));
 	local size = Vector(256, 256, 256);
 	//kv["model"] <- "*" + ID;
 	kv["spawnflags"] <- 17409;
@@ -460,10 +476,10 @@ function S(ID = 0)
 ::CreateTempParent <- function()
 {
 	local kv = {};
-	kv["model"] <- "models/editor/playerstart.mdl"; 
-	kv["solid"] <- 0; 
-	kv["disableshadows"] <- 1; 
-	kv["rendermode"] <- 10; 
+	kv["model"] <- "models/editor/playerstart.mdl";
+	kv["solid"] <- 0;
+	kv["disableshadows"] <- 1;
+	kv["rendermode"] <- 10;
 
 	return Prop_dynamic_Glow_Maker.CreateEntity(kv);
 }
@@ -495,6 +511,84 @@ function S(ID = 0)
 	measure = Measure_Maker.CreateEntity(kv);
 
 	return [measure, nparent];
+}
+
+::CreateBeamToPoints <- function(kv, origin1, origin2)
+{
+	local temp1 = CreateTempParent();
+	local temp2 = CreateTempParent();
+	temp1.SetOrigin(origin1);
+	temp2.SetOrigin(origin2);
+
+	return CreateBeamToTargets(kv, temp1, temp2);
+}
+
+::CreateBeamToTargets <- function(kv, target1, target2)
+{
+	if (target1.GetName() == "")
+	{
+		AOP(target1, "targetname", "parent" + ID_MAKER++);
+	}
+	if (target2.GetName() == "")
+	{
+		AOP(target2, "targetname", "parent" + ID_MAKER++);
+	}
+	kv["LightningEnd"] <- target1.GetName();
+	kv["LightningStart"] <- target2.GetName();
+	local beam = Beam_Maker.CreateEntity(kv); 
+	return [beam, target1, target2]; 
+}
+
+::CreateTrigger <- function(kv)
+{
+	local iSize = kv["size"].slice();
+	KVremoveK(kv, "size");
+
+	local trigger = Trigger_Maker.CreateEntity(kv);
+
+	trigger.SetSize(iSize[0], iSize[1]);
+	AOP(trigger, "solid", 3);
+	return trigger;
+}
+
+::CreateExplosion <- function(origin, radius, damage, particle)
+{
+	local kv = {};
+	
+	local temp = origin;
+
+	local shake;
+	local particle;
+	local light;
+	local sound;
+
+	kv = {};
+
+	kv["radius"] <- radius;
+
+	if (damage > 0)
+	{
+		local player;
+		local distance;
+		while ((player = FindByClassnameWithin(player, "player", origin, radius)) != null)
+		{
+			if (player.IsValid() && 
+			player.GetHealth() > 0)
+			{
+				if (InSight(player.EyePosition(), origin))
+				{
+					distance = GetDistance3D(player.EyePosition(), origin) / radius;
+					DamagePlayer(player, (damage + ((distance > 0.35) ? distance : 0) * damage));
+				}
+
+			}
+		}
+	}
+
+	EF(shake, "Kill");
+	EF(particle, "Kill");
+	EF(light, "Kill");
+	EF(sound, "Kill");
 }
 
 Start();

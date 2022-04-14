@@ -12,8 +12,8 @@ function RoundStart()
 	AOP(h, "targetname", "map_script_item_controller");
 
 	h = Entities.CreateByClassname("logic_script");
-	EF(h, "RunScriptFile", "kotya/cosmov6_final/player_movement.nut");
-	AOP(h, "targetname", "map_script_player_movement");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/map_manager.nut");
+	AOP(h, "targetname", "map_script_map_manager");
 
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/controller.nut");
@@ -26,14 +26,19 @@ function RoundStart()
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/menu/test_menu.nut");
 	AOP(h, "targetname", "map_script_menu_test");
-	// EF("map_script_menu_test", "RunScriptCode", "Spawn()");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/triggers.nut");
+	AOP(h, "targetname", "map_script_trigger");
+	// EF("map_script_trigger", "RunScriptCode", "Spawn_Trigger()");
 
 	//DEBUG
 	SendToConsole("sv_cheats 1");
 	SendToConsole("bot_stop 1");
+	SendToConsole("bot_kick");
 	SendToConsole("mp_freezetime 0");
 	SendToConsole("mp_warmuptime 999999999");
-	EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
+	// EF("map_script_prespawn_controller", "RunScriptCode", "ITEMALL()");
 }
 SendToConsole("mp_restartgame 1");
 
@@ -275,7 +280,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_113 custom_particle_110 custom_particle_107");
 	obj.gun_particle_name = "custom_particle_005";
 	obj.gun_particle_light_color = "23 226 255";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -298,7 +303,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_124 custom_particle_123 custom_particle_122");
 	obj.gun_particle_name = "custom_particle_001";
 	obj.gun_particle_light_color = "72 249 130";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -321,7 +326,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_150 custom_particle_152 custom_particle_153");
 	obj.gun_particle_name = "custom_particle_017";
 	obj.gun_particle_light_color = "160 66 255";
-	//obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -342,7 +347,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_139 custom_particle_135 custom_particle_131");
 	obj.gun_particle_name = "custom_particle_014";
 	obj.gun_particle_light_color = "231 102 24";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -363,7 +368,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_129 custom_particle_127 custom_particle_125");
 	obj.gun_particle_name = "custom_particle_026";
 	obj.gun_particle_light_color = "255 255 0";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -373,6 +378,7 @@ function RegItemInfo()
 	obj.Cast_SetDuration("5 6 7");
 	obj.Cast_SetRadius("360 430 512");
 	obj.Cast_SetTime("0.15 0.2 0.25");
+	obj.vscripts = "kotya/cosmov6_final/items/item_trigger_electro.nut";
 	obj.type = 3;
 	obj.can_silence = true;
 	obj.transfer_ban_double = true;
@@ -383,7 +389,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_145 custom_particle_144 custom_particle_143");
 	obj.gun_particle_name = "custom_particle_011";
 	obj.gun_particle_light_color = "7 50 248";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -403,7 +409,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_120 custom_particle_118 custom_particle_116");
 	obj.gun_particle_name = "custom_particle_029";
 	obj.gun_particle_light_color = "128 255 255";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -423,7 +429,7 @@ function RegItemInfo()
 	obj.use_model_name = ["models/kmodels/cosmo/props_wasteland/rockcliff01c.mdl", "models/kmodels/cosmo/props_wasteland/rockcliff01j.mdl"];
 	obj.gun_particle_name = "custom_particle_020";
 	obj.gun_particle_light_color = "157 79 0";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -443,7 +449,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_080 custom_particle_181 custom_particle_182");
 	obj.gun_particle_name = "custom_particle_032";
 	obj.gun_particle_light_color = "221 251 76";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -463,7 +469,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_193 custom_particle_188 custom_particle_183");
 	obj.gun_particle_name = "custom_particle_023";
 	obj.gun_particle_light_color = "32 255 0";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -481,7 +487,7 @@ function RegItemInfo()
 	obj.SetParticle("custom_particle_154 custom_particle_157 custom_particle_158");
 	obj.gun_particle_name = "custom_particle_008";
 	obj.gun_particle_light_color = "255 255 255";
-	obj.gun_particle_sprite_color = obj.gun_particle_light_color;
+	obj.gun_particle_sprite_color = null;//obj.gun_particle_light_color;
 	ITEM_INFO.push(obj);
 
 	obj = class_iteminfo();
@@ -730,15 +736,56 @@ function RegItemInfo()
 
 ::ValueLimiter <- function(Value, Min = null, Max = null)
 {
-	if (Value > Max && Max != null)
+	if (Max != null && Value > Max)
 	{
 		return Max;
 	}
-	else if (Value < Min && Min != null)
+	else if (Min != null && Value < Min)
 	{
 		return Min;
 	}
 	return Value;
+}
+
+::GetSizeByWLH <- function(v1)
+{
+	ScriptPrintMessageChatAll("type : " + typeof v1);
+	if (typeof v1 == "Vector")
+	{
+		return [Vector(-v1.x * 0.5, -v1.y * 0.5, -v1.z * 0.5), Vector(v1.x * 0.5, v1.y * 0.5, v1.z * 0.5)]
+	}
+	else
+	{
+		return [Vector(-v1 * 0.5, -v1 * 0.5, -v1 * 0.5), Vector(v1 * 0.5, v1 * 0.5, v1 * 0.5)]
+	}
+}
+
+::KVremoveK <- function(kv, key)
+{
+	local newkv = {};
+	foreach (k, v in kv)
+	{
+		printl(k + " : " + v);
+		if (k == key)
+		{
+			continue;
+		}
+		newkv[k] <- v;
+	}
+	return newkv;
+}
+
+::KVhaveK <- function(kv, key)
+{
+	foreach(k,v in kv)
+	{
+		if (k == key)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 RegItemInfo();

@@ -1,3 +1,51 @@
+function Start()
+{
+
+}
+
+function Spawn_Shop()
+{
+
+}
+
+function Spawn_Trigger()
+{
+	local trigger;
+	local kv = {};
+
+	kv["pos"] <- class_pos(Vector(1384, -2246, 997));
+	kv["size"] <- GetSizeByWLH(Vector(111, 253, 136));
+	kv["vscripts"] <- "kotya/random/triggerhook.nut"
+
+	trigger = CreateTrigger(kv);
+
+	AOP(trigger, "OnStartTouch", "map_script_trigger:RunScriptCode:Trigger_Right_Side_Path():0:1", 0.01);
+	AOP(trigger, "OnStartTouch", "!self:Kill::0:1", 0.01);
+
+	kv = {};
+
+	kv["pos"] <- class_pos(Vector(2969, -4137.5, 337.5));
+	kv["size"] <- GetSizeByWLH(Vector(438, 1035, 531));
+	kv["vscripts"] <- "kotya/random/triggerhook.nut"
+
+	trigger = CreateTrigger(kv);
+
+	AOP(trigger, "OnStartTouch", "map_script_trigger:RunScriptCode:Trigger_City_Gate():0:1", 0.01);
+	AOP(trigger, "OnStartTouch", "!self:Kill::0:1", 0.01);
+}
+
+function Trigger_Right_Side_Path()
+{
+	local timer = 13.0
+	local text;
+
+	text = "The path open in "+timer+" seconds"
+	ServerChat(Chat_pref + text);
+
+	EntFire("Hold1_2_Clip", "Break", "", timer);
+
+	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(1455,-2230,976),180,99)", timer - 0.1);
+}
 
 function Trigger_City_Gate()
 {
@@ -27,19 +75,6 @@ function Trigger_Left_Side_Path()
 	EntFire("Hold1_0_Clip", "Break", "", timer);
 
 	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(1706,-4718,907),180,99)", timer - 0.1);
-}
-
-function Trigger_Right_Side_Path()
-{
-	local timer = 13.0
-	local text;
-
-	text = "The path open in "+timer+" seconds"
-	ServerChat(Chat_pref + text);
-
-	EntFire("Hold1_2_Clip", "Break", "", timer);
-
-	EntFire("explosion", "RunScriptCode", "CreateExplosion(Vector(1455,-2230,976),180,99)", timer - 0.1);
 }
 
 function Trigger_Cave_Bar_Lower_Path()

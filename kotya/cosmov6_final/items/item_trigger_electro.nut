@@ -1,34 +1,23 @@
-
-class FirePlayer
-{
-	handle = null;
-	time = 0;
-}
-
 g_ahPlayers <- [];
 g_iDamage <- 0;
-g_fFireRate <- 0;
-
+g_fSlow <- 0;
 function Tick()
 {
 	if (g_ahPlayers.len() > 0)
 	{
-		local fDamage;
 		foreach (p in g_ahPlayers)
 		{
-			if (p.handle.IsValid() && p.handle.GetTeam() == 2 && p.handle.GetHealth() > 0 )
+			if (p.IsValid() && p.GetTeam() == 2 && p.GetHealth() > 0 )
 			{
 				local spos = self.GetOrigin();
-				local apos = p.handle.GetOrigin();
+				local apos = p.GetOrigin();
 
 				local dist = GetDistance2D(spos, apos);
 
 				if (dist < self.GetBoundingMaxs().x)
 				{
-					EF(p.handle, "IgniteLifeTime", "3.0");
-					fDamage = (g_iDamage * (1.00 + p.time));
-					DamagePlayer(p.handle, fDamage, damagetype_item);
-					p.time += g_fFireRate;
+					DamagePlayer(p, g_iDamage, damagetype_item);
+					SetSpeed(p, g_fSlow, TICKRATE_ITEMWORK)
 				}
 			}
 		}
@@ -38,9 +27,7 @@ function Tick()
 
 function Touch()
 {
-	local obj = FirePlayer();
-	obj.handle = activator;
-	g_ahPlayers.push(obj);
+	g_ahPlayers.push(activator);
 }
 
 function EndTouch()
@@ -49,7 +36,7 @@ function EndTouch()
 	{
 		for (local i = 0; i < g_ahPlayers.len(); i++)
 		{
-			if (g_ahPlayers[i].handle == activator)
+			if (g_ahPlayers[i] == activator)
 			{
 				return g_ahPlayers.remove(i);
 			}

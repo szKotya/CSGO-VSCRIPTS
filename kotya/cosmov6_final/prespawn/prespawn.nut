@@ -25,12 +25,16 @@ CreateEntity <- function(kv)
 	{
 		KV[k] <- v;
 	}
-	if (CheckPos())
+	if (!KVhaveK(kv, "pos"))
 	{
 		KV["pos"] <- class_pos(self.GetOrigin());
 	}
 
-	Maker.SpawnEntityAtLocation(KV["pos"].origin, KV["pos"].angles);
+	local origin = KV["pos"].origin;
+	local angles = KV["pos"].angles;
+	KVremoveK(KV, "pos");
+
+	Maker.SpawnEntityAtLocation(origin, angles);
 	hEntity = Entities.FindByName(null, KV["targetname"]);
 
 	ID_MAKER++;
@@ -41,17 +45,4 @@ CreateEntity <- function(kv)
 function PreSpawnInstance(entityClass, entityName)
 {
 	return KV
-}
-
-function CheckPos() 
-{
-	foreach(k,v in KV)
-	{
-		if (k == "pos")
-		{
-			return false;
-		}
-	}
-
-	return true;    
 }

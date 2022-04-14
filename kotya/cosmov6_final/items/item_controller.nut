@@ -2,7 +2,8 @@ const TICKRATE_ITEMCHECK = 0.1;
 
 const TICKRATE_ENTWATCH = 1.0;
 
-const TICKRATE_ITEMWORK = 0.05;
+::TICKRATE_ITEMWORK <- 0.05;
+
 g_bTicking_ItemCheck <- false;
 g_bTicking_EntWatch <- false;
 g_bTicking_ItemTrigger <- false;
@@ -116,7 +117,7 @@ g_hEntWatch <- null;
 		local iteminfo = GetItemInfoByName(this.name)
 
 		local bdouble = false;
-		local ilvl = 3;
+		local ilvl = 1;
 
 		if (iteminfo.type == 1 || iteminfo.type == 3)
 		{
@@ -357,77 +358,77 @@ function PressItem()
 
 		if (item_class.name == "Bio")
 		{
-			return UseBio(item_class, item_info);
+			return UseBio(item_class);
 		}
 
 		if (item_class.name == "Wind")
 		{
-			return UseWind(item_class, item_info);
+			return UseWind(item_class);
 		}
 
 		if (item_class.name == "Gravity")
 		{
-			return UseGravity(item_class, item_info);
+			return UseGravity(item_class);
 		}
 
 		if (item_class.name == "Fire")
 		{
-			return UseFire(item_class, item_info);
+			return UseFire(item_class);
 		}
 
 		if (item_class.name == "Summon")
 		{
-			return UseSummon(item_class, item_info);
+			return UseSummon(item_class);
 		}
 
 		if (item_class.name == "Electro")
 		{
-			return UseElectro(item_class, item_info);
+			return UseElectro(item_class);
 		}
 
 		if (item_class.name == "Ice")
 		{
-			return UseIce(item_class, item_info);
+			return UseIce(item_class);
 		}
 
 		if (item_class.name == "Earth")
 		{
-			return UseEarth(item_class, item_info);
+			return UseEarth(item_class);
 		}
 
 		if (item_class.name == "Poison")
 		{
-			return UsePoison(item_class, item_info);
+			return UsePoison(item_class);
 		}
 
 		if (item_class.name == "Ultima")
 		{
-			return UseUltima(item_class, item_info);
+			return UseUltima(item_class);
 		}
 
 		if (item_class.name == "Heal")
 		{
-			return UseHeal(item_class, item_info);
+			return UseHeal(item_class);
 		}
 
 		if (item_class.name == "Potion")
 		{
-			return UsePotion(item_class, item_info);
+			return UsePotion(item_class);
 		}
 
 		if (item_class.name == "Ammo")
 		{
-			return UseAmmo(item_class, item_info);
+			return UseAmmo(item_class);
 		}
 
 		if (item_class.name == "Phoenix")
 		{
-			return UsePhoenix(item_class, item_info);
+			return UsePhoenix(item_class);
 		}
 
 		if (item_class.name == "Hook")
 		{
-			return UseHook(item_class, item_info);
+			return UseHook(item_class);
 		}
 	}
 }
@@ -545,8 +546,14 @@ function TickSilenceItem()
 	}
 }
 
-function UseHook(item_class, item_info)
+function UseHook(item_class)
 {
+	local item_info = GetItemInfoByName("Hook");
+	if (item_info == null)
+	{
+		return;
+	}
+
 	local ilvlstaff = item_class.use_lvl - 1;
 
 	local kv = {};
@@ -555,15 +562,14 @@ function UseHook(item_class, item_info)
 	local fRadius = item_info.GetRadius(ilvlstaff);
 	local iSpeed = item_info.GetTime(ilvlstaff);
 
-	local iSize = 16;
-	iSize = Vector(iSize, iSize, iSize);
+	local iSize = GetSizeByWLH(16);
 
 	kv["pos"] <- class_pos(item_class.parent_entity.GetOrigin());
+	kv["size"] <- GetSizeByWLH(iSize)
 	kv["vscripts"] <- item_info.vscripts;
 
-	trigger = Trigger_Maker.CreateEntity(kv);
-	trigger.SetSize(Vector(-iSize.x, -iSize.y, -iSize.z), iSize);
-	AOP(trigger, "solid", 3);
+	trigger = CreateTrigger(kv);
+
 	trigger.SetForwardVector(item_class.parent_entity.GetForwardVector());
 
 	item_class.model.ValidateScriptScope();
@@ -587,8 +593,13 @@ function UseHook(item_class, item_info)
 	EntFireByHandle(item_class.model, "SetParent", "!activator", 0, item_class.parent_entity, item_class.parent_entity);
 }
 
-function UseBio(item_class, item_info)
+function UseBio(item_class)
 {
+	local item_info = GetItemInfoByName("Bio");
+	if (item_info == null)
+	{
+		return;
+	}
 	local ilvlstaff = item_class.use_lvl - 1;
 
 	local kv = {};
@@ -597,7 +608,6 @@ function UseBio(item_class, item_info)
 
 	local fDuration = item_info.GetDuration(ilvlstaff);
 	local fRadius = item_info.GetRadius(ilvlstaff);
-	fRadius = Vector(fRadius, fRadius, fRadius);
 
 	local iDamage = (item_info.GetDamage(ilvlstaff) * TICKRATE_ITEMWORK).tointeger();
 
@@ -607,6 +617,7 @@ function UseBio(item_class, item_info)
 	temp += item_class.gun.GetLeftVector() * item_info.GetCastRangeLeft(ilvlstaff);
 
 	kv["pos"] <- class_pos(temp);
+	kv["size"] <- GetSizeByWLH(fRadius);
 	kv["effect_name"] <- item_info.GetParticle(ilvlstaff);
 
 	particle = Particle_Maker.CreateEntity(kv);
@@ -616,9 +627,7 @@ function UseBio(item_class, item_info)
 	kv["pos"] <- class_pos(temp);
 	kv["vscripts"] <- item_info.vscripts;
 
-	trigger = Trigger_Maker.CreateEntity(kv);
-	trigger.SetSize(Vector(-fRadius.x, -fRadius.y, -fRadius.z), fRadius);
-	AOP(trigger, "solid", 3);
+	trigger = CreateTrigger(kv);
 
 	trigger.GetScriptScope().g_iDamage = iDamage;
 
@@ -628,8 +637,13 @@ function UseBio(item_class, item_info)
 	EF(trigger, "Kill", "", fDuration);
 }
 
-function UseWind(item_class, item_info)
+function UseWind(item_class)
 {
+	local item_info = GetItemInfoByName("Wind");
+	if (item_info == null)
+	{
+		return;
+	}
 	local ilvlstaff = item_class.use_lvl - 1;
 
 	local kv = {};
@@ -639,7 +653,6 @@ function UseWind(item_class, item_info)
 	local fDuration = item_info.GetDuration(ilvlstaff);
 	local fRadius = item_info.GetRadius(ilvlstaff);
 	local fRadiusf = fRadius + fRadius * item_info.GetTime(ilvlstaff);
-	fRadiusf = Vector(fRadiusf, fRadiusf, fRadius);
 
 	local iPower = item_info.GetDamage(ilvlstaff).tointeger();
 
@@ -658,9 +671,7 @@ function UseWind(item_class, item_info)
 	kv["pos"] <- class_pos(temp + Vector(0, 0, fRadiusf.z));
 	kv["vscripts"] <- item_info.vscripts;
 
-	trigger = Trigger_Maker.CreateEntity(kv);
-	trigger.SetSize(Vector(-fRadiusf.x, -fRadiusf.y, -fRadiusf.z), fRadiusf);
-	AOP(trigger, "solid", 3);
+	trigger = CreateTrigger(kv);
 
 	trigger.GetScriptScope().g_iPower = iPower;
 	trigger.GetScriptScope().g_fRadius = fRadius;
@@ -673,8 +684,13 @@ function UseWind(item_class, item_info)
 	EF(trigger, "Kill", "", fDuration);
 }
 
-function UseGravity(item_class, item_info)
+function UseGravity(item_class)
 {
+	local item_info = GetItemInfoByName("Gravity");
+	if (item_info == null)
+	{
+		return;
+	}
 	local ilvlstaff = item_class.use_lvl - 1;
 
 	local kv = {};
@@ -703,10 +719,8 @@ function UseGravity(item_class, item_info)
 	kv["pos"] <- class_pos(temp);
 	kv["vscripts"] <- item_info.vscripts;
 
-	trigger = Trigger_Maker.CreateEntity(kv);
-	trigger.SetSize(Vector(-fRadiusf.x, -fRadiusf.y, -fRadiusf.z), fRadiusf);
-	AOP(trigger, "solid", 3);
-
+	trigger = CreateTrigger(kv);
+	
 	trigger.GetScriptScope().g_iPower = iPower;
 	trigger.GetScriptScope().g_fRadius = fRadius;
 	trigger.GetScriptScope().Init();
@@ -718,13 +732,19 @@ function UseGravity(item_class, item_info)
 	EF(trigger, "Kill", "", fDuration);
 }
 
-function UseFire(item_class, item_info)
+function UseFire(item_class)
 {
+	local item_info = GetItemInfoByName("Fire");
+	if (item_info == null)
+	{
+		return;
+	}
 	local ilvlstaff = item_class.use_lvl - 1;
 
 	local kv = {};
 	local particle;
 	local trigger;
+	local particle_light;
 
 	local fDuration = item_info.GetDuration(ilvlstaff);
 	local fRadius = item_info.GetRadius(ilvlstaff);
@@ -745,22 +765,88 @@ function UseFire(item_class, item_info)
 	EF(particle, "Start");
 
 	kv = {};
+	kv["pos"] <- class_pos(temp + Vector(0, 0, 50));
+	kv["_light"] <- item_info.gun_particle_light_color + " 100";
+	kv["brightness"] <- 7;
+	kv["distance"] <- fRadius.x * 2;
+	kv["pitch"] <- 90;
+	particle_light = Light_Maker.CreateEntity(kv);
+
+	kv = {};
 	kv["pos"] <- class_pos(temp);
 	kv["vscripts"] <- item_info.vscripts;
 
-	trigger = Trigger_Maker.CreateEntity(kv);
-	trigger.SetSize(Vector(-fRadius.x, -fRadius.y, -fRadius.z), fRadius);
-	AOP(trigger, "solid", 3);
+	trigger = CreateTrigger(kv);
 
 	trigger.GetScriptScope().g_iDamage = iDamage;
 	trigger.GetScriptScope().g_fFireRate = fFireRate;
 
 	EntFireByHandle(particle, "SetParent", "!activator", 0, item_class.gun, item_class.gun);
 	EntFireByHandle(trigger, "SetParent", "!activator", 0, item_class.gun, item_class.gun);
+	EntFireByHandle(particle_light, "SetParent", "!activator", 0, item_class.gun, item_class.gun);
 	StartItemTriggerTick(trigger);
 
 	EF(particle, "Kill", "", fDuration);
 	EF(trigger, "Kill", "", fDuration);
+	EF(particle_light, "Kill", "", fDuration);
+}
+
+function UseElectro(item_class)
+{
+	local item_info = GetItemInfoByName("Electro");
+	if (item_info == null)
+	{
+		return;
+	}
+	local ilvlstaff = item_class.use_lvl - 1;
+
+	local kv = {};
+	local particle;
+	local trigger;
+	local particle_light;
+
+	local fDuration = item_info.GetDuration(ilvlstaff);
+	local fRadius = item_info.GetRadius(ilvlstaff);
+	fRadius = Vector(fRadius, fRadius, fRadius);
+
+	local iDamage = (item_info.GetDamage(ilvlstaff) * TICKRATE_ITEMWORK).tointeger();
+	local fSlow = -(item_info.GetTime(ilvlstaff));
+
+	local temp = item_class.gun.GetOrigin();
+	temp += item_class.gun.GetForwardVector() * item_info.GetCastRangeForward(ilvlstaff);
+	temp += item_class.gun.GetUpVector() * item_info.GetCastRangeUp(ilvlstaff);
+	temp += item_class.gun.GetLeftVector() * item_info.GetCastRangeLeft(ilvlstaff);
+
+	kv["pos"] <- class_pos(temp);
+	kv["effect_name"] <- item_info.GetParticle(ilvlstaff);
+
+	particle = Particle_Maker.CreateEntity(kv);
+	EF(particle, "Start");
+
+	kv = {};
+	kv["pos"] <- class_pos(temp + Vector(0, 0, 50));
+	kv["_light"] <- item_info.gun_particle_light_color + " 100";
+	kv["brightness"] <- 7;
+	kv["distance"] <-  fRadius.x * 2;;
+	kv["pitch"] <- 90;
+	particle_light = Light_Maker.CreateEntity(kv);
+
+	kv = {};
+	kv["pos"] <- class_pos(temp);
+	kv["vscripts"] <- item_info.vscripts;
+
+	trigger = CreateTrigger(kv);
+
+	trigger.GetScriptScope().g_iDamage = iDamage;
+	trigger.GetScriptScope().g_fSlow = fSlow;
+
+	// EntFireByHandle(particle, "SetParent", "!activator", 0, item_class.gun, item_class.gun);
+	// EntFireByHandle(trigger, "SetParent", "!activator", 0, item_class.gun, item_class.gun);
+	StartItemTriggerTick(trigger);
+
+	EF(particle, "Kill", "", fDuration);
+	EF(trigger, "Kill", "", fDuration + TICKRATE_ITEMWORK);
+	EF(particle_light, "Kill", "", fDuration);
 }
 
 function StartItemTriggerTick(trigger)
@@ -772,13 +858,15 @@ function StartItemTriggerTick(trigger)
 		TickItemTrigger();
 	}
 }
-// 99 543 -33 (65) (95) (33)
-// 32 448 0
-264
-// -29 417 -31 
-function UseEarth(item_class, item_info)
+
+function UseEarth(item_class)
 {
-	
+	local item_info = GetItemInfoByName("Earth");
+	if (item_info == null)
+	{
+		return;
+	}
+
 	local ilvlstaff = item_class.use_lvl - 1;
 	ScriptPrintMessageChatAll("Earth : " + ilvlstaff);
 	local fDuration = item_info.GetDuration(ilvlstaff);
@@ -826,13 +914,15 @@ function CreateEarth(pos, model, time)
 	local kv = {};
 	kv["model"] <- model;
 	kv["pos"] <- pos;
-	kv["solid"] <- 6;
+	kv["solid"] <- 2;
+	kv["glowenabled"] <- 0;
+	
 	earth = Prop_dynamic_Glow_Maker.CreateEntity(kv);
 	
 	local mover;
 	local kv = {};
 	kv["pos"] <- pos;
-	kv["spawnflags"] <- 1;
+	kv["spawnflags"] <- 8;
 	kv["movedir"] <- "-90 0 0";
 	kv["movedistance"] <- 70;
 	kv["speed"] <- 350;
@@ -859,14 +949,12 @@ function TickItemTrigger()
 			}
 			else
 			{
-				ITEMS_TRIGGERS.remove(i);
-				i--;
+				ITEMS_TRIGGERS.remove(i--);
 			}
 		}
 		if (g_bTicking_ItemTrigger)
 		{
 			CallFunction("TickItemTrigger()", TICKRATE_ITEMWORK);
-			// EF(self, "RunScriptCode", "TickItemTrigger();", TICKRATE_ITEMWORK);
 		}
 	}
 }
@@ -1099,7 +1187,7 @@ function EntWatch()
 						text += " - " + "[" + ITEMS[i].use_count[ID] + "]";
 					}
 				}
-				ScriptPrintMessageChatAll(text);
+				// ScriptPrintMessageChatAll(text);
 			}
 		}
 

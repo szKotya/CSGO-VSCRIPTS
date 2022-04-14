@@ -11,13 +11,15 @@
 
 ::SpeedMod <- Entities.CreateByClassname("player_speedmod");
 
-g_ahPlayers_movement <- [];
-class class_player_movement
+::PLAYERS <- [];
+::class_player <- class
 {
 	handle = null;
+
 	fSpeed = 1.00;
 	fGravity = 1.00;
-	movetype = MOVETYPE_WALK;
+
+	iMovetype = MOVETYPE_WALK;
 
 	constructor (_handle)
 	{
@@ -26,7 +28,7 @@ class class_player_movement
 
 	function SetSpeed(fSpeed)
 	{
-		this.fSpeed += 0.00 + fSpeed;
+		this.fSpeed += (0.00 + fSpeed);
 		this.fSpeed = ValueLimiter(this.fSpeed, 0.00);
 		EntFireByHandle(SpeedMod, "ModifySpeed", "" + this.fSpeed, 0.00, this.handle, this.handle);
 	}
@@ -45,12 +47,12 @@ class class_player_movement
 		return;
 	}
 
-	local player_movement_class = GetPlayerMovementClass(handle, true);
+	local player_movement_class = GetPlayerClassByHandle(handle, true);
 	player_movement_class.SetSpeed(fSpeed);
 
 	if (fTime > 0.00)
 	{
-		CallFunction("SetSpeedByActivator(" + (-fSpeed) + ", 0.00)", fTime, handle);
+		EntFire("map_script_map_manager", "RunScriptCode", "SetSpeedByActivator(" + (-fSpeed) + ", 0.00)", fTime, handle);
 	}
 }
 
@@ -61,12 +63,12 @@ class class_player_movement
 		return;
 	}
 
-	local player_movement_class = GetPlayerMovementClass(handle, true);
+	local player_movement_class = GetPlayerClassByHandle(handle, true);
 	player_movement_class.SetGravity(fGravity);
 
 	if (fTime > 0.00)
 	{
-		CallFunction("SetGravityByActivator(" + (-fGravity) + ", 0.00)", fTime, handle);
+		EntFire("map_script_map_manager", "RunScriptCode", "SetSpeedByActivator(" + (-fSpeed) + ", 0.00)", fTime, handle);
 	}
 }
 
@@ -80,9 +82,9 @@ class class_player_movement
 	SetGravity(activator, fGravity, fTime);
 }
 
-::GetPlayerMovementClass <- function(handle, bCreate = false)
+::GetPlayerClassByHandle <- function(handle, bCreate = false)
 {
-	foreach(player_movement in g_ahPlayers_movement)
+	foreach(player_movement in PLAYERS)
 	{
 		if (player_movement.handle == handle)
 		{
@@ -92,8 +94,8 @@ class class_player_movement
 
 	if (bCreate)
 	{
-		local obj = class_player_movement(handle);
-		g_ahPlayers_movement.push(obj);
+		local obj = class_player(handle);
+		PLAYERS.push(obj);
 		return obj;
 	}
 	return null;
@@ -104,7 +106,7 @@ function Tick()
 {
 	if (g_bTicking)
 	{
-		ScriptPrintMessageCenterAll(g_ahPlayers_movement[0].fSpeed + "\n" + g_ahPlayers_movement[0].fGravity);
+		ScriptPrintMessageCenterAll(PLAYERS[0].fSpeed + "\n" + PLAYERS[0].fGravity);
 		CallFunction("Tick()", 0.1);
 	}
 }
