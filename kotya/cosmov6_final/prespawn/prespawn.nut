@@ -32,7 +32,7 @@ CreateEntity <- function(kv)
 
 	local origin = KV["pos"].origin;
 	local angles = KV["pos"].angles;
-	KVremoveK(KV, "pos");
+	KV = KVremoveK(KV, "pos");
 
 	Maker.SpawnEntityAtLocation(origin, angles);
 	hEntity = Entities.FindByName(null, KV["targetname"]);

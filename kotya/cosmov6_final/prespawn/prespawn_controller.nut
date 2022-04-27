@@ -13,7 +13,7 @@
 ::Movelinear_Maker <- null;
 ::GameUI_Maker <- null;
 ::Beam_Maker <- null;
-::Explosion_Maker <- null;
+::Shake_Maker <- null;
 ::Ambient_Generic_Maker <- null;
 ::ID_MAKER <- 0;
 
@@ -80,9 +80,9 @@ function Start()
 		{
 			Beam_Maker = point_template.GetScriptScope();
 		}
-		else if (szName == "prespawn_env_explosion")
+		else if (szName == "prespawn_env_shake")
 		{
-			Explosion_Maker = point_template.GetScriptScope();
+			Shake_Maker = point_template.GetScriptScope();
 		}
 		else if (szName == "prespawn_ambient_generic")
 		{
@@ -541,11 +541,11 @@ function S(ID = 0)
 
 ::CreateTrigger <- function(kv)
 {
+	printl(kv["size"][0] + " : " + kv["size"][1]);
 	local iSize = kv["size"].slice();
-	KVremoveK(kv, "size");
+	kv = KVremoveK(kv, "size");
 
 	local trigger = Trigger_Maker.CreateEntity(kv);
-
 	trigger.SetSize(iSize[0], iSize[1]);
 	AOP(trigger, "solid", 3);
 	return trigger;
@@ -554,8 +554,6 @@ function S(ID = 0)
 ::CreateExplosion <- function(origin, radius, damage, particle)
 {
 	local kv = {};
-	
-	local temp = origin;
 
 	local shake;
 	local particle;
@@ -564,31 +562,59 @@ function S(ID = 0)
 
 	kv = {};
 
-	kv["radius"] <- radius;
+	kv["pos"] <- class_pos(origin);
+	kv["radius"] <- radius * 2.0;
+	kv["amplitude"] <- 14;
+	kv["duration"] <- 1.0;
+	kv["frequency"] <- 10;
+	kv["spawnflags"] <- 28;
+
+	shake = Shake_Maker.CreateEntity(kv);
+	EF(shake, "StartShake");
 
 	if (damage > 0)
 	{
 		local player;
 		local distance;
-		while ((player = FindByClassnameWithin(player, "player", origin, radius)) != null)
+		while ((player = Entities.FindByClassnameWithin(player, "player", origin, radius)) != null)
 		{
 			if (player.IsValid() && 
 			player.GetHealth() > 0)
 			{
-				if (InSight(player.EyePosition(), origin))
+				if (InSight(player.GetOrigin() + Vector(0, 0, 45), origin))
 				{
 					distance = GetDistance3D(player.EyePosition(), origin) / radius;
-					DamagePlayer(player, (damage + ((distance > 0.35) ? distance : 0) * damage));
+					DamagePlayer(player, (damage - ((distance > 0.25) ? distance : 0) * damage), DamageType_Explosion);
 				}
-
 			}
 		}
 	}
+	
+	kv = {};
+	kv["pos"] <- class_pos(origin);
+	kv["effect_name"] <- "exp1_1";
+	particle = Particle_Maker.CreateEntity(kv);
+	EF(particle, "Start");
 
-	EF(shake, "Kill");
-	EF(particle, "Kill");
-	EF(light, "Kill");
-	EF(sound, "Kill");
+	kv = {};
+	kv["pos"] <- class_pos(origin);
+	kv["_light"] <- "255 255 255 100";
+	kv["brightness"] <- 5;
+	kv["distance"] <- radius * 2.0;
+	kv["pitch"] <- 90;
+	light = Light_Maker.CreateEntity(kv);
+
+	kv = {};
+	kv["pos"] <- class_pos(origin);
+	kv["radius"] <- radius * 5.0;
+	kv["message"] <- "weapons/flashbang/flashbang_explode1.wav";
+	sound = Ambient_Generic_Maker.CreateEntity(kv);
+	EF(sound, "PlaySound");
+
+	EF(shake, "Kill", "", 0.5);
+	EF(particle, "Kill", "", 0.5);
+	EF(light, "Kill", "", 0.5);
+	EF(sound, "Kill", "", 0.5);
 }
 
 Start();

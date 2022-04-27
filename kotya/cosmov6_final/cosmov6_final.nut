@@ -30,6 +30,12 @@ function RoundStart()
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/triggers.nut");
 	AOP(h, "targetname", "map_script_trigger");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/cosmov6_final/boss/airbuster/airbuster.nut");
+	AOP(h, "targetname", "map_script_aircringe");
+
+	EF("map_script_aircringe", "RunScriptCode", "Start()");
 	// EF("map_script_trigger", "RunScriptCode", "Spawn_Trigger()");
 
 	//DEBUG
@@ -53,7 +59,7 @@ SendToConsole("mp_restartgame 1");
 	ay = 0;
 	az = 0;
 
-	constructor(_origin, _angles = Vector(0, 0, 0))
+	constructor(_origin = Vector(0, 0, 0), _angles = Vector(0, 0, 0))
 	{
 		this.origin = _origin;
 		this.ox = _origin.x;
@@ -732,7 +738,8 @@ function RegItemInfo()
 	EntFireByHandle(self, "RunScriptCode", "" + func_name, fdelay, activator, caller);
 }
 
-::damagetype_item <- "item";
+::DamageType_Item <- 0;
+::DamageType_Explosion <- 1;
 
 ::ValueLimiter <- function(Value, Min = null, Max = null)
 {
@@ -749,7 +756,6 @@ function RegItemInfo()
 
 ::GetSizeByWLH <- function(v1)
 {
-	ScriptPrintMessageChatAll("type : " + typeof v1);
 	if (typeof v1 == "Vector")
 	{
 		return [Vector(-v1.x * 0.5, -v1.y * 0.5, -v1.z * 0.5), Vector(v1.x * 0.5, v1.y * 0.5, v1.z * 0.5)]
