@@ -3,7 +3,7 @@ self.ConnectOutput("OnEndTouch", "EndTouch")
 
 
 myname <- self.GetName();
-if(myname == "")myname = "NULL" 
+if(myname == "")myname = "NULL"
 myclass <- self.GetClassname();
 myorigin <- self.GetOrigin();
 mycolor <- Vector(255,255,255);
@@ -43,7 +43,7 @@ switch (myclass)
 
 const glowTick = 2;
 SPAWN <- true;
-if(mysize >= 2048) SPAWN = false;
+
 EntFireByHandle(self, "RunScriptCode", "OnPostSpawn()", 0.1, null, null);
 
 function OnPostSpawn()
@@ -52,13 +52,13 @@ function OnPostSpawn()
     EntFireByHandle(self, "RunScriptCode", "OnPostSpawn()", glowTick, null, null);
 }
 
-function Toggle() 
+function Toggle()
 {
     if(SPAWN)SPAWN = false;
-    else SPAWN = true;    
+    else SPAWN = true;
 }
 
-function StartTouch() 
+function StartTouch()
 {
     local howtrigger = activator;
 
@@ -72,10 +72,10 @@ function StartTouch()
         ScriptPrintMessageChatAll("================================");
         if(myclass != "trigger_once")EntFireByHandle(self, "RunScriptCode", "MesT_Can = true;", MesT_CD, null, null);
     }
-    
+
 }
 
-function EndTouch() 
+function EndTouch()
 {
     local howtrigger = activator;
 
@@ -91,7 +91,7 @@ function EndTouch()
     }
 }
 
-function Sup() 
+function Sup()
 {
     ScriptPrintMessageChatAll("Name: "+myname);
     ScriptPrintMessageChatAll("Class: "+myclass);
@@ -99,15 +99,15 @@ function Sup()
     ScriptPrintMessageChatAll("Size: "+mysize);
 }
 
-function PrintInfo(center = true) 
+function PrintInfo(center = true)
 {
     if(center)ScriptPrintMessageCenterAll("Name: "+myname+"\nClass: "+myclass+"\nOrigin: "+myorigin.x+" "+myorigin.y+" "+myorigin.z+"\nSize: "+mysize);
     Sup();
     ScriptPrintMessageChatAll("================================");
 }
 
-function ShowPos() 
-{ 
+function ShowPos()
+{
     local holdtime = 20;
     local Origin = self.GetOrigin();
     local Maxs = self.GetBoundingMaxs();
@@ -168,5 +168,5 @@ function ShowPos()
     text3.SetOrigin(Origin-Vector(0,0,45));
     text3.SetAngles(Angles.x,Angles.y,Angles.z);
     EntFireByHandle(text3, "kill", "", holdtime, null, null);
-    
+
 }

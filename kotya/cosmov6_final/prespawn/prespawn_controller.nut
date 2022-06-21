@@ -60,10 +60,6 @@ function Start()
 		{
 			Knife_Maker = point_template.GetScriptScope();
 		}
-		else if (szName == "prespawn_weapon_knife")
-		{
-			Knife_Maker = point_template.GetScriptScope();
-		}
 		else if (szName == "prespawn_logic_measure_movement")
 		{
 			Measure_Maker = point_template.GetScriptScope();
@@ -535,8 +531,8 @@ function S(ID = 0)
 	}
 	kv["LightningEnd"] <- target1.GetName();
 	kv["LightningStart"] <- target2.GetName();
-	local beam = Beam_Maker.CreateEntity(kv); 
-	return [beam, target1, target2]; 
+	local beam = Beam_Maker.CreateEntity(kv);
+	return [beam, target1, target2];
 }
 
 ::CreateTrigger <- function(kv)
@@ -578,7 +574,7 @@ function S(ID = 0)
 		local distance;
 		while ((player = Entities.FindByClassnameWithin(player, "player", origin, radius)) != null)
 		{
-			if (player.IsValid() && 
+			if (player.IsValid() &&
 			player.GetHealth() > 0)
 			{
 				if (InSight(player.GetOrigin() + Vector(0, 0, 45), origin))
@@ -589,7 +585,7 @@ function S(ID = 0)
 			}
 		}
 	}
-	
+
 	kv = {};
 	kv["pos"] <- class_pos(origin);
 	kv["effect_name"] <- "exp1_1";
