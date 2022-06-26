@@ -6,12 +6,12 @@
 ::MOVETYPE_VPHYSICS <- 6		//Physics movetype (prop models etc.)
 ::MOVETYPE_PUSH <- 7				//No clip to world, but pushes and crushes things.
 ::MOVETYPE_NOCLIP <- 8				//Noclip, behaves exactly the same as console command.
-::MOVETYPE_LADDER <- 9				//For players, when moving on a ladder.
+::MOVETYPE_LADDER <- 9				//For PLAYERS_MOVEMENT, when moving on a ladder.
 ::MOVETYPE_OBSERVER <- 10		//Spectator movetype. DO NOT use this to make player spectate.
 
 ::SpeedMod <- Entities.CreateByClassname("player_speedmod");
 
-::PLAYERS <- [];
+::PLAYERS_MOVEMENT <- [];
 ::class_player <- class
 {
 	handle = null;
@@ -47,7 +47,7 @@
 		return;
 	}
 
-	local player_movement_class = GetPlayerClassByHandle(handle, true);
+	local player_movement_class = GetPlayerMovementClassByHandle(handle, true);
 	player_movement_class.SetSpeed(fSpeed);
 
 	if (fTime > 0.00)
@@ -63,7 +63,7 @@
 		return;
 	}
 
-	local player_movement_class = GetPlayerClassByHandle(handle, true);
+	local player_movement_class = GetPlayerMovementClassByHandle(handle, true);
 	player_movement_class.SetGravity(fGravity);
 
 	if (fTime > 0.00)
@@ -82,9 +82,9 @@
 	SetGravity(activator, fGravity, fTime);
 }
 
-::GetPlayerClassByHandle <- function(handle, bCreate = false)
+::GetPlayerMovementClassByHandle <- function(handle, bCreate = false)
 {
-	foreach(player_movement in PLAYERS)
+	foreach(player_movement in PLAYERS_MOVEMENT)
 	{
 		if (player_movement.handle == handle)
 		{
@@ -95,10 +95,24 @@
 	if (bCreate)
 	{
 		local obj = class_player(handle);
-		PLAYERS.push(obj);
+		PLAYERS_MOVEMENT.push(obj);
 		return obj;
 	}
 	return null;
+}
+
+::RemovePlayerMovementClassByHandle <- function(handle)
+{
+	foreach(index, player_movement in PLAYERS_MOVEMENT)
+	{
+		if (player_movement.handle == handle)
+		{
+			EntFireByHandle(SpeedMod, "ModifySpeed", "1.0", 0.00, player_movement.handle, player_movement.handle);
+			AOP(player_movement.handle, "gravity", 1.0);
+			PLAYERS_MOVEMENT.remove(index);
+			return
+		}
+	}
 }
 
 function TouchSpawn()

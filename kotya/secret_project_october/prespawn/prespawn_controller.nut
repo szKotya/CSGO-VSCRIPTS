@@ -5,6 +5,7 @@
 ::Prop_dynamic_Glow_Maker <- null;
 ::Particle_Maker <- null;
 ::Physbox_Maker <- null;
+::Physbox_multiplayer_Maker <- null;
 ::Button_Maker <- null;
 ::Elite_Maker <- null;
 ::Knife_Maker <- null;
@@ -43,6 +44,10 @@ function Start()
 		else if (szName == "prespawn_func_physbox")
 		{
 			Physbox_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_func_physbox_multiplayer")
+		{
+			Physbox_multiplayer_Maker = point_template.GetScriptScope();
 		}
 		else if (szName == "prespawn_func_button")
 		{
@@ -175,6 +180,20 @@ function Start()
 	trigger.SetSize(iSize[0], iSize[1]);
 	AOP(trigger, "solid", 3);
 	return trigger;
+}
+
+::CreatePhysBoxMulti <- function(origin, addkv = null)
+{
+	local kv = {};
+	kv["pos"] <- class_pos(origin);
+
+	if (addkv != null)
+	{
+		KVmerge(kv, addkv);
+	}
+
+	local physbox = Physbox_multiplayer_Maker.CreateEntity(kv);
+	return physbox;
 }
 
 ::CreateKnife <- function(origin, fly = true, canpickup = false)
