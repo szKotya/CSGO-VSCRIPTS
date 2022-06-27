@@ -117,10 +117,8 @@ function Start()
 	nparent.SetOrigin(owner.EyePosition());
 
 	EntFireByHandle(nparent, "SetParent", "!activator", 0.00, owner, owner);
-	if (owner.GetName() == "")
-	{
-		AOP(owner, "targetname", "owner" + ID_MAKER++);
-	}
+
+	CheckTargetNameOrSet(owner);
 
 	kv["TargetScale"] <- 300;
 	kv["Target"] <- nparent.GetName();
@@ -143,6 +141,16 @@ function Start()
 	return CreateBeamToTargets(kv, temp1, temp2);
 }
 
+::CheckTargetNameOrSet <- function(ent)
+{
+	if (ent.GetName() == "")
+	{
+		AOP(ent, "targetname", "owner" + ID_MAKER++);
+		return "owner" + ID_MAKER;
+	}
+	return ent.GetName();
+}
+
 ::CreateBeamToTargets <- function(kv, target1, target2)
 {
 	if (target1.GetName() == "")
@@ -157,6 +165,31 @@ function Start()
 	kv["LightningStart"] <- target2.GetName();
 	local beam = Beam_Maker.CreateEntity(kv);
 	return [beam, target1, target2];
+}
+
+::CreateGlowSkin <- function(activator)
+{
+	local kv = {};
+
+
+	kv["glowdist"] <- 512;
+	kv["effects"] <- 18433;
+	kv["glowenabled"] <- 1;
+	kv["rendermode"] <- 6;
+	kv["solid"] <- 0;
+	kv["DisableBoneFollowers"] <- 1;
+	kv["model"] <- activator.GetModelName();
+
+	kv["glowcolor"] <- Vector(0, 0, 200);
+	kv["glowstyle"] <- 0;
+
+	local glow = Prop_dynamic_Glow_Maker.CreateEntity(kv);
+	glow.SetOrigin(activator.GetOrigin());
+
+	EntFireByHandle(glow, "SetParent", "!activator", 0.00, activator, activator);
+	EntFireByHandle(glow, "SetParentAttachment", "primary", 0.00, activator, activator);
+
+	return glow;
 }
 
 ::CreateTrigger <- function(origin, scale, vscripts = null, addkv = null)

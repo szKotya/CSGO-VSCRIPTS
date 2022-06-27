@@ -2,10 +2,14 @@ const TICKRATE = 0.05;
 const TICKRATE_HP = 1.00;
 const TICKRATE_KNIFE1 = 0.2;
 
+
 const KNIFE1_DELAY = 0.5;
-const JUMP_DELAY = 2.0
-;
+const JUMP_DELAY = 2.0;
+
+::REGEN_HP_FOR_HIT <- 20;
+::DAMAGE_KNIFE1 <- 25;
 ::SPEED <- 0.3;
+
 const PHYSBOX_HP = 9999999
 const MAX_HP = 700
 
@@ -27,7 +31,7 @@ g_bTickRate_KNIFE1 <- 0.0;
 	hp = MAX_HP;
 	hp_max = MAX_HP;
 	last_hp = PHYSBOX_HP;
-
+	last_dps_player = null;
 
 	trigger_hand = null;
 	controller = null;
@@ -53,12 +57,12 @@ g_bTickRate_KNIFE1 <- 0.0;
 		this.controller.press_attack = Zombie_Script.PressedAttack1;
 		this.controller.unpress_attack = Zombie_Script.UnPressedAttack1;
 
-		this.trigger_hand = CreateTrigger(this.eye.GetOrigin() + this.eye.GetForwardVector() * 20, Vector(48, 80, 48), null, {filtername = "filter_team_ct", parentname = this.eye.GetName()});
+		this.trigger_hand = CreateTrigger(this.eye.GetOrigin() + this.eye.GetForwardVector() * 20, Vector(48, 80, 48), null, {filtername = "filter_team_only_ct", parentname = this.eye.GetName()});
 		this.trigger_hand.SetForwardVector(this.eye.GetForwardVector());
 
 		AOP(this.trigger_hand, "OnStartTouch", "map_script_zombie_controller:RunScriptCode:TouchZombieAttackTrigger():0:-1", 0.01);
 
-		this.physbox = CreatePhysBoxMulti(_handle.GetOrigin() + Vector(0, 0, 38), {model = "*6", damagefilter = "filter_team_not_t", parentname = _handle.GetName(), spawnflags = 62464, health = PHYSBOX_HP, disableflashlight = 1, material = 10, disableshadowdepth = 1, disableshadows = 1});
+		this.physbox = CreatePhysBoxMulti(_handle.GetOrigin() + Vector(0, 0, 38), {model = "*2", damagefilter = "filter_team_not_t", parentname = _handle.GetName(), spawnflags = 62464, health = PHYSBOX_HP, disableflashlight = 1, material = 10, disableshadowdepth = 1, disableshadows = 1});
 		AOP(this.physbox, "CollisionGroup", 16);
 		AOP(this.physbox, "OnHealthChanged", "map_script_zombie_controller:RunScriptCode:DamageZombieByPhysBox():0:-1", 0.01);
 
@@ -84,6 +88,7 @@ g_bTickRate_KNIFE1 <- 0.0;
 		EF(this.trigger_hand, "Enable");
 		EF(this.trigger_hand, "Disable", "", 0.01);
 	}
+
 	function JumpCheck()
 	{
 		local vecVelocity = this.handle.GetVelocity();
@@ -93,11 +98,29 @@ g_bTickRate_KNIFE1 <- 0.0;
 		}
 	}
 
-	function DamageZombie()
+	function RegenHP()
+	{
+		if (this.fknife_time > Time())
+		{
+			return;
+		}
+		this.hp += REGEN_HP_FOR_HIT;
+		if (this.hp > MAX_HP)
+		{
+			this.hp = MAX_HP;
+		}
+
+		UpDateHP();
+	}
+
+	function DamageZombie(dps = null)
 	{
 		local idamage = this.last_hp - this.physbox.GetHealth();
 		this.last_hp = this.physbox.GetHealth();
 		this.hp -= idamage;
+
+		this.last_dps_player = dps;
+
 		this.UpDateHP();
 	}
 	function UpDateHP()
@@ -105,39 +128,50 @@ g_bTickRate_KNIFE1 <- 0.0;
 		if (this.hp < 1)
 		{
 			this.hp = -69;
+			local vecDir = Vector(0, 0, 0);
+			if (TargetValid(this.last_dps_player))
+			{
+				vecDir = this.last_dps_player.GetOrigin() - this.handle.GetOrigin();
+				vecDir.Norm();
+			}
+			DispatchParticleEffect("blood_impact_headshot", this.handle.EyePosition(), vecDir);
 		}
-		EF(this.handle, "SetHealth", "" + this.hp);
+
+		if (this.hp != this.handle.GetHealth())
+		{
+			EF(this.handle, "SetHealth", "" + this.hp);
+		}
 	}
 
 	function SelfDestroy()
 	{
 		printl("destroy");
 
-		if (TargerValid(this.knife))
+		if (TargetValid(this.knife))
 		{
 			this.knife.Destroy();
 		}
-		if (TargerValid(this.trigger_hand))
+		if (TargetValid(this.trigger_hand))
 		{
 			this.trigger_hand.Destroy();
 		}
-		if (TargerValid(this.eye))
+		if (TargetValid(this.eye))
 		{
 			this.eye.Destroy();
 		}
-		if (TargerValid(this.measure))
+		if (TargetValid(this.measure))
 		{
 			this.measure.Destroy();
 		}
-		if (TargerValid(this.physbox))
+		if (TargetValid(this.physbox))
 		{
 			this.physbox.Destroy();
 		}
-		if (TargerValid(this.controller.game_ui))
+		if (TargetValid(this.controller.game_ui))
 		{
 			EF(this.controller.game_ui, "Kill");
 		}
-		if (TargerValid(this.handle))
+		if (TargetValid(this.handle))
 		{
 			AOP(this.handle, "targetname", "");
 		}
@@ -164,7 +198,7 @@ function TickZombie()
 
 	foreach (index, zombie in ZOMBIE_OWNERS)
 	{
-		if (!TargerValid(zombie.handle) ||
+		if (!TargetValid(zombie.handle) ||
 		zombie.handle.GetTeam() != CS_TEAM_T ||
 		zombie.handle.GetHealth() < 1)
 		{
@@ -173,8 +207,8 @@ function TickZombie()
 			continue;
 		}
 
-		DrawBoundingBox(zombie.trigger_hand, Vector(255, 0, 0), TICKRATE + 0.01);
-		DrawBoundingBox(zombie.physbox, Vector(0, 255, 0), TICKRATE + 0.01);
+		// DrawBoundingBox(zombie.trigger_hand, Vector(255, 0, 0), TICKRATE + 0.01);
+		// DrawBoundingBox(zombie.physbox, Vector(0, 255, 0), TICKRATE + 0.01);
 
 		zombie.JumpCheck();
 
@@ -210,9 +244,9 @@ function PickZombieKnife()
 	}
 }
 
-function CreateZombie()
+::CreateZombie <- function(origin)
 {
-	local origin = Vector(-480, 0, 16);
+	// local origin = Vector(-480, 0, 16);
 	local knife = CreateKnife(origin, true, false);
 	local trigger = CreateTrigger(origin, Vector(16, 16, 16), null, {parentname = knife.GetName(), filtername = "filter_team_only_t"});
 
@@ -231,6 +265,7 @@ function TouchZombieTrigger()
 	local knife = caller.GetMoveParent();
 	local ownerknife = GetPlayerKnifeByOwner(activator);
 
+	EF(caller, "Disable");
 	EF(caller, "Kill");
 	if (ownerknife != null && ownerknife.IsValid())
 	{
@@ -284,14 +319,15 @@ function TouchZombieAttackTrigger()
 		return;
 	}
 
+	zombie_owner_class.RegenHP();
 	zombie_owner_class.fknife_time = Time() + KNIFE1_DELAY;
 
 	DispatchParticleEffect("blood_impact_goop_heavy", activator.GetOrigin() + Vector(0, 0, 48), zombie_owner_class.handle.GetForwardVector());
-	DamagePlayer(activator, 20);
+	DamagePlayer(activator, DAMAGE_KNIFE1);
 
-	if (activator.GetHealth() - 20 < 1)
+	if (activator.GetHealth() - DAMAGE_KNIFE1 < 1)
 	{
-		DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 48), Vector(0, 0, 0));
+		DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 32), Vector(0, 0, 0));
 	}
 }
 
@@ -304,7 +340,7 @@ function DamageZombieByPhysBox()
 		return;
 	}
 
-	zombie_owner_class.DamageZombie();
+	zombie_owner_class.DamageZombie(activator);
 }
 
 ::GetZombieOwnerClassByHitBox <- function(hitbox)
@@ -395,9 +431,15 @@ function t2(ID = null)
 	printl("ID " + particlelist[t1] + " : " + t1);
 }
 
+fdelay <- 0.5;
+function t3()
+{
+	DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 32), Vector(0, 0, 0));
+	CallFunction("t3()", fdelay, activator, activator);
+}
+
 function Init()
 {
-	CreateZombie();
-
+	// CreateZombie();
 }
 Init();

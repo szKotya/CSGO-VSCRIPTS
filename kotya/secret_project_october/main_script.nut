@@ -23,8 +23,12 @@ function RoundStart()
 	AOP(h, "targetname", "map_script_menu_builder");
 
 	h = Entities.CreateByClassname("logic_script");
-	EF(h, "RunScriptFile", "kotya/secret_project_october/zombie/controller.nut");
+	EF(h, "RunScriptFile", "kotya/secret_project_october/zombie/zombie_controller.nut");
 	AOP(h, "targetname", "map_script_zombie_controller");
+
+	h = Entities.CreateByClassname("logic_script");
+	EF(h, "RunScriptFile", "kotya/secret_project_october/human/human_controller.nut");
+	AOP(h, "targetname", "map_script_human_controller");
 
 	//DEBUG
 	SendToConsole("sv_cheats 1");
@@ -36,9 +40,9 @@ function RoundStart()
 
 function RoundStartPost()
 {
-	local fdelay = 2.0;
+	local fdelay = 0.5;
 	local h;
-	h = CreateTrigger(Vector(-7496, 8552, 48), Vector(272, 272, 96));
+	h = CreateTrigger(Vector(-7488, 8568, 16), Vector(384, 384, 160));
 	AOP(h, "OnStartTouch", "map_script_map_manager:RunScriptCode:TouchSpawn():0:-1", fdelay);
 	EF(h, "Enable", "", fdelay);
 }
@@ -274,7 +278,7 @@ SendToConsole("mp_restartgame 1");
 	return  origin + (dir * (distance * TraceLine(origin, origin + dir * distance, filter)));
 }
 
-::TargerValid <- function(target)
+::TargetValid <- function(target)
 {
 	if (target == null || !target.IsValid())
 	{

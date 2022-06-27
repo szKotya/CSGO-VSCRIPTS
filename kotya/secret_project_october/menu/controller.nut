@@ -340,7 +340,7 @@ enum GameUI_Flags
 			{
 				controller.Use_Off();
 
-				if (TargerValid(controller.game_ui))
+				if (TargetValid(controller.game_ui))
 				{
 					ScriptPrintMessageChatAll("GAME_UI_KILL");
 					EF(controller.game_ui, "Kill");
@@ -392,9 +392,9 @@ function Tick()
 {
 	for (local i = 0; i < PLAYERS_CONTROLLERS.len(); i++)
 	{
-		if (!TargerValid(PLAYERS_CONTROLLERS[i].activator))
+		if (!TargetValid(PLAYERS_CONTROLLERS[i].activator))
 		{
-			if (TargerValid(PLAYERS_CONTROLLERS[i].game_ui))
+			if (TargetValid(PLAYERS_CONTROLLERS[i].game_ui))
 			{
 				ScriptPrintMessageChatAll("GAME_UI_Destroy");
 				// PLAYERS_CONTROLLERS[i].game_ui.Destroy();

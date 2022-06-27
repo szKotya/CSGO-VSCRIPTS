@@ -67,6 +67,8 @@ EVENT_SAY <- null;
 EVENT_PLAYER_SPAWNED <- null;
 GLOBAL_ZONE <- null;
 
+::POINT_CLIENT_COMMAND <- null;
+::POINT_SERVER_COMMAND <- null;
 function RoundStart()
 {
 	if (EVENT_PLAYER_SPAWNED == null || EVENT_PLAYER_SPAWNED != null && !EVENT_PLAYER_SPAWNED.IsValid()){EVENT_PLAYER_SPAWNED = Entities.FindByName(null, "map_eventlistener_player_spawned");}
@@ -81,6 +83,17 @@ function RoundStart()
 		EVENT_PROXE.__KeyValueFromInt("range", 0);
 		EVENT_PROXE.__KeyValueFromInt("spawnflags", 1);
 		EVENT_PROXE.__KeyValueFromInt("StartDisabled", 0);
+	}
+
+	if (POINT_CLIENT_COMMAND == null || POINT_CLIENT_COMMAND != null && !POINT_CLIENT_COMMAND.IsValid())
+	{
+		POINT_CLIENT_COMMAND = Entities.FindByClassname(null, "point_clientcommand");
+		if (POINT_CLIENT_COMMAND == null){POINT_CLIENT_COMMAND = Entities.CreateByClassname("point_clientcommand");}
+	}
+	if (POINT_SERVER_COMMAND == null || POINT_SERVER_COMMAND != null && !POINT_SERVER_COMMAND.IsValid())
+	{
+		POINT_SERVER_COMMAND = Entities.FindByClassname(null, "point_servercommand");
+		if (POINT_SERVER_COMMAND == null){POINT_SERVER_COMMAND = Entities.CreateByClassname("point_servercommand");}
 	}
 
 	for(local i = 0; i < PLAYERS_NET.len(); i++){PLAYERS_NET[i].ClearClassData();}

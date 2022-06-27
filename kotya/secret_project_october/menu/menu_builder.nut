@@ -178,9 +178,9 @@ const TICKRATE_REDRAW = 1.0;
 			{
 				if (byMenu)
 				{
-					if (TargerValid(this.activator)) 
+					if (TargetValid(this.activator)) 
 					{
-						if (TargerValid(this.controller.game_ui))
+						if (TargetValid(this.controller.game_ui))
 						{
 							ScriptPrintMessageChatAll("SelfClose");
 							this.controller.press_off = null;
@@ -190,7 +190,7 @@ const TICKRATE_REDRAW = 1.0;
 					EntFire("map_script_controller", "RunScriptCode","PlayerOff()", 0, this.activator);
 				}
 
-				if (TargerValid(this.activator)) 
+				if (TargetValid(this.activator)) 
 				{
 					this.Display("");
 					EF(this.game_text, "Kill");
@@ -226,13 +226,13 @@ function Tick()
 {
 	for (local i = 0; i < PLAYERS_MENU.len(); i++)
 	{
-		if (!TargerValid(PLAYERS_MENU[i].activator))
+		if (!TargetValid(PLAYERS_MENU[i].activator))
 		{
-			if (TargerValid(PLAYERS_MENU[i].game_text))
+			if (TargetValid(PLAYERS_MENU[i].game_text))
 			{
 				PLAYERS_MENU[i].game_text.Destroy();
 			}
-			if (TargerValid(PLAYERS_MENU[i].controller))
+			if (TargetValid(PLAYERS_MENU[i].controller))
 			{
 				PLAYERS_MENU[i].game_text.Destroy();
 			}
@@ -253,7 +253,7 @@ function TickDraw()
 	{
 		foreach (menu_draw_class in PLAYERS_MENU)
 		{
-			if (TargerValid(menu_draw_class.activator))
+			if (TargetValid(menu_draw_class.activator))
 			{
 				menu_draw_class.Draw();
 			}

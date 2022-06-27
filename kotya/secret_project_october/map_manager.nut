@@ -42,7 +42,7 @@
 
 ::SetSpeed <- function(handle, fSpeed, fTime = 0.00)
 {
-	if (!TargerValid(handle) || handle.GetHealth() < 1)
+	if (!TargetValid(handle) || handle.GetHealth() < 1)
 	{
 		return;
 	}
@@ -58,7 +58,7 @@
 
 ::SetGravity <- function(handle, fGravity, fTime = 0.00)
 {
-	if (!TargerValid(handle) || handle.GetHealth() < 1)
+	if (!TargetValid(handle) || handle.GetHealth() < 1)
 	{
 		return;
 	}
@@ -115,15 +115,46 @@
 	}
 }
 
+::g_vecBaza <- [];
+::g_BazaID <- 0;
+
+function Init()
+{
+	g_vecBaza.clear();
+	local x = 0;
+	local y = 0;
+	for (x = 0; x < 8; x++)
+	{
+		for (y = 0; y < 8; y++)
+		{
+			g_vecBaza.push(Vector(-7640 + (64 * x), 8808 + (64 * y), 12));
+		}
+	}
+	// for (local i = 0; i < g_vecBaza.len(); i++)
+	// {
+	// 	DebugDrawCircle(GetOriginBAZA(), 48, 16, 20);
+	// }
+}
+::GetOriginBAZA <- function()
+{
+	return g_vecBaza[((g_BazaID >= g_vecBaza.len()) ? (g_BazaID = 0) : g_BazaID++)];
+}
+
 function TouchSpawn()
 {
+	local origin = GetOriginBAZA();
 	if (activator.GetTeam() == CS_TEAM_CT)
 	{
-		activator.SetOrigin(Vector(-704, -864, -12));
-		EF(activator, "SetDamageFilter", "filter_team_not_t");
+		CreateHuman(origin);
+		activator.SetOrigin(origin);
+		CallFunction("activator.SetOrigin(Vector(-613 + RandomInt(-64, 64), -709 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
 	else
 	{
-		activator.SetOrigin(Vector(-704, -320, -12));
+		CreateZombie(origin);
+		activator.SetOrigin(origin);
+		CallFunction("activator.SetOrigin(Vector(-704 + RandomInt(-64, 64), -165 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
 }
+
+Init();
