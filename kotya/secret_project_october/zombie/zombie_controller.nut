@@ -2,16 +2,7 @@ const TICKRATE = 0.05;
 const TICKRATE_HP = 1.00;
 const TICKRATE_KNIFE1 = 0.2;
 
-
-const KNIFE1_DELAY = 0.5;
-const JUMP_DELAY = 2.0;
-
-::REGEN_HP_FOR_HIT <- 20;
-::DAMAGE_KNIFE1 <- 25;
-::SPEED <- 0.3;
-
 const PHYSBOX_HP = 9999999
-const MAX_HP = 700
 
 g_bTicking_ZombieCheck <- false;
 
@@ -23,13 +14,27 @@ g_bTickRate_KNIFE1 <- 0.0;
 ::Zombie_Handle <- self;
 
 ::ZOMBIE_OWNERS <- [];
+
+::ZOMBIE_CLASS_DATA <- [];
+::class_zombie_info <- class
+{
+	speed = 0.0;
+	damage = 0.0;
+	hp = 700;
+	regen_hp_hit = 20;
+
+	name = "default";
+
+	knife_delay1 = 0.3;
+	ability_cd = 10;
+}
+
 ::class_zombie_owner <- class
 {
 	handle = null;
 	knife = null;
 
-	hp = MAX_HP;
-	hp_max = MAX_HP;
+	hp = 100;
 	last_hp = PHYSBOX_HP;
 	last_dps_player = null;
 
@@ -42,11 +47,15 @@ g_bTickRate_KNIFE1 <- 0.0;
 	fknife_time = 0;
 	bknife = false;
 
-	constructor(_handle, _knife)
+	class_id = 0;
+
+	constructor(_handle, _knife, _class_id = 0)
 	{
 		printl("constructor" + _handle);
 		this.handle = _handle;
 		this.knife = _knife;
+
+		this.class_id = _class_id;
 
 		local temp = CreateEyeParent(_handle);
 
@@ -67,14 +76,13 @@ g_bTickRate_KNIFE1 <- 0.0;
 		AOP(this.physbox, "OnHealthChanged", "map_script_zombie_controller:RunScriptCode:DamageZombieByPhysBox():0:-1", 0.01);
 
 		EF(_handle, "SetDamageFilter", "filter_team_only_t");
-		this.handle.SetMaxHealth(MAX_HP);
+		this.handle.SetMaxHealth(ZOMBIE_CLASS_DATA[_class_id].hp);
 
-		this.hp = MAX_HP;
-		this.hp_max = MAX_HP;
+		this.hp = ZOMBIE_CLASS_DATA[_class_id].hp;
 		this.last_hp = PHYSBOX_HP;
 		this.UpDateHP();
 
-		SetSpeed(_handle, SPEED);
+		SetSpeed(_handle, ZOMBIE_CLASS_DATA[_class_id].speed);
 	}
 
 	function KnifeCheck()
@@ -98,19 +106,32 @@ g_bTickRate_KNIFE1 <- 0.0;
 		}
 	}
 
-	function RegenHP()
+	function RegenHP_Knife()
 	{
 		if (this.fknife_time > Time())
 		{
 			return;
 		}
-		this.hp += REGEN_HP_FOR_HIT;
-		if (this.hp > MAX_HP)
+		this.hp += ZOMBIE_CLASS_DATA[this.class_id].regen_hp_hit;
+		if (this.hp > ZOMBIE_CLASS_DATA[this.class_id].hp)
 		{
-			this.hp = MAX_HP;
+			this.hp = ZOMBIE_CLASS_DATA[this.class_id].hp;
 		}
 
 		UpDateHP();
+	}
+
+	function DamageHuman_Knife(activator)
+	{
+		this.fknife_time = Time() + ZOMBIE_CLASS_DATA[this.class_id].knife_delay1;
+
+		DispatchParticleEffect("blood_impact_goop_heavy", activator.GetOrigin() + Vector(0, 0, 48), this.handle.GetForwardVector());
+		DamagePlayer(activator, ZOMBIE_CLASS_DATA[this.class_id].damage);
+
+		if (activator.GetHealth() - ZOMBIE_CLASS_DATA[this.class_id].damage < 1)
+		{
+			DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 32), Vector(0, 0, 0));
+		}
 	}
 
 	function DamageZombie(dps = null)
@@ -123,6 +144,7 @@ g_bTickRate_KNIFE1 <- 0.0;
 
 		this.UpDateHP();
 	}
+
 	function UpDateHP()
 	{
 		if (this.hp < 1)
@@ -233,10 +255,10 @@ function TickZombie()
 	}
 }
 
-function PickZombieKnife()
+function PickZombieKnife(zombie_info_class_id)
 {
 	printl("PickZombieKnife" + activator);
-	ZOMBIE_OWNERS.push(class_zombie_owner(activator, caller));
+	ZOMBIE_OWNERS.push(class_zombie_owner(activator, caller, zombie_info_class_id));
 	if (!g_bTicking_ZombieCheck)
 	{
 		g_bTicking_ZombieCheck = true;
@@ -244,18 +266,18 @@ function PickZombieKnife()
 	}
 }
 
-::CreateZombie <- function(origin)
+::CreateZombie <- function(origin, zombie_info_class_id)
 {
 	// local origin = Vector(-480, 0, 16);
 	local knife = CreateKnife(origin, true, false);
 	local trigger = CreateTrigger(origin, Vector(16, 16, 16), null, {parentname = knife.GetName(), filtername = "filter_team_only_t"});
 
 	// SetParentByActivator(trigger, knife);
-	AOP(trigger, "OnStartTouch", "map_script_zombie_controller:RunScriptCode:TouchZombieTrigger():0:-1", 0.01);
+	AOP(trigger, "OnStartTouch", "map_script_zombie_controller:RunScriptCode:TouchZombieTrigger(" + zombie_info_class_id + "):0:-1", 0.01);
 	EF(trigger, "Enable", "", 0.01);
 }
 
-function TouchZombieTrigger()
+function TouchZombieTrigger(zombie_info_class_id)
 {
 	printl("TouchZombieTrigger" + activator);
 	if (GetZombieOwnerClassByOwner(activator) != null)
@@ -272,7 +294,7 @@ function TouchZombieTrigger()
 		ownerknife.Destroy();
 	}
 
-	AOP(knife, "OnPlayerPickup", "map_script_zombie_controller:RunScriptCode:PickZombieKnife():0:1", 0.01);
+	AOP(knife, "OnPlayerPickup", "map_script_zombie_controller:RunScriptCode:PickZombieKnife(" + zombie_info_class_id + "):0:1", 0.01);
 	EF(knife, "ToggleCanBePickedUp", "", 0.01);
 	knife.SetOrigin(activator.GetOrigin());
 }
@@ -319,16 +341,8 @@ function TouchZombieAttackTrigger()
 		return;
 	}
 
-	zombie_owner_class.RegenHP();
-	zombie_owner_class.fknife_time = Time() + KNIFE1_DELAY;
-
-	DispatchParticleEffect("blood_impact_goop_heavy", activator.GetOrigin() + Vector(0, 0, 48), zombie_owner_class.handle.GetForwardVector());
-	DamagePlayer(activator, DAMAGE_KNIFE1);
-
-	if (activator.GetHealth() - DAMAGE_KNIFE1 < 1)
-	{
-		DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 32), Vector(0, 0, 0));
-	}
+	zombie_owner_class.RegenHP_Knife();
+	zombie_owner_class.DamageHuman_Knife(activator);
 }
 
 function DamageZombieByPhysBox()
@@ -382,64 +396,46 @@ function DamageZombieByPhysBox()
 	return null;
 }
 
-particlelist <- [
-"blood_impact_basic",
-"blood_impact_basic_fallback",
-"blood_impact_chunks1",
-"blood_impact_drops1",
-"blood_impact_dust",
-"blood_impact_goop_heavy",
-"blood_impact_goop_light",
-"blood_impact_goop_medium",
-"blood_impact_green_01",
-"blood_impact_headshot",
-"blood_impact_headshot_01b",
-"blood_impact_headshot_01c",
-"blood_impact_headshot_01d",
-"blood_impact_headshot_01e",
-"blood_impact_heavy",
-"blood_impact_light",
-"blood_impact_light_headshot",
-"blood_impact_medium",
-"blood_impact_mist1",
-"blood_impact_mist1_light",
-"blood_impact_mist_heavy",
-"blood_impact_red_01",
-"blood_impact_red_01_backspray",
-"blood_impact_red_01_chunk",
-"blood_impact_red_01_drops",
-"blood_impact_red_01_goop_a",
-"blood_impact_red_01_goop_a_backup",
-"blood_impact_red_01_goop_b",
-"blood_impact_red_01_goop_c",
-"blood_impact_red_01_mist",
-"blood_impact_yellow_01",
-"blood_pool",
-]
-::t1 <- 0;
-function t2(ID = null)
-{
-	if (ID == null)
-	{
-		t1++;
-	}
-	else
-	{
-		t1 = ID;
-	}
-	DispatchParticleEffect(particlelist[t1], activator.GetOrigin() + Vector(0, 0, 20) + activator.GetForwardVector() * 50, Vector(0, 0, 0));
-	printl("ID " + particlelist[t1] + " : " + t1);
-}
-
-fdelay <- 0.5;
-function t3()
-{
-	DispatchParticleEffect("blood_pool", activator.GetOrigin() + Vector(0, 0, 32), Vector(0, 0, 0));
-	CallFunction("t3()", fdelay, activator, activator);
-}
-
 function Init()
 {
-	// CreateZombie();
+	local obj;
+
+	obj = class_zombie_info();
+	obj.name = "default";
+
+	obj.hp = 700;
+	obj.speed = 0.3;
+	obj.damage = 25;
+	obj.regen_hp_hit = 20;
+
+	obj.knife_delay1 = 0.5;
+	obj.ability_cd = 10;
+	ZOMBIE_CLASS_DATA.push(obj);
+
+
+	obj = class_zombie_info();
+	obj.name = "tank";
+
+	obj.hp = 1200;
+	obj.speed = -0.2;
+	obj.damage = 35;
+	obj.regen_hp_hit = 50;
+
+	obj.knife_delay1 = 0.9;
+	obj.ability_cd = 10;
+	ZOMBIE_CLASS_DATA.push(obj);
+
+
+	obj = class_zombie_info();
+	obj.name = "smoker";
+
+	obj.hp = 500;
+	obj.speed = 0.2;
+	obj.damage = 20;
+	obj.regen_hp_hit = 20;
+
+	obj.knife_delay1 = 0.45;
+	obj.ability_cd = 10;
+	ZOMBIE_CLASS_DATA.push(obj);
 }
 Init();

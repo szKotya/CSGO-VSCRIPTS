@@ -151,7 +151,7 @@ function TouchSpawn()
 	}
 	else
 	{
-		CreateZombie(origin);
+		CreateZombie(origin, 2);
 		activator.SetOrigin(origin);
 		CallFunction("activator.SetOrigin(Vector(-704 + RandomInt(-64, 64), -165 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
