@@ -145,7 +145,7 @@ function TouchSpawn()
 	local origin = GetOriginBAZA();
 	if (activator.GetTeam() == CS_TEAM_CT)
 	{
-		CreateHuman(origin);
+		CreateHuman(origin, 0);
 		activator.SetOrigin(origin);
 		CallFunction("activator.SetOrigin(Vector(-613 + RandomInt(-64, 64), -709 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
