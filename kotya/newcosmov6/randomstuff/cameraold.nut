@@ -32,7 +32,7 @@ function SetOverLay(OverLayName = "clear")
             continue;
         if(OverLayName == "clear")
             EntFireByHandle(Fade, "Fade", "", 0.00, handle, handle);
-        EntFire("point_clientcommand", "Command", "r_screenoverlay " + OverLayName, 0, handle); 
+        EntFire("point_clientcommand", "Command", "r_screenoverlay " + OverLayName, 0, handle);
     }
 }
 

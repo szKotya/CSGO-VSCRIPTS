@@ -41,7 +41,7 @@ switch (myclass)
     }
 }
 
-const glowTick = 2;
+const glowTick = 0.1;
 SPAWN <- true;
 
 EntFireByHandle(self, "RunScriptCode", "OnPostSpawn()", 0.1, null, null);

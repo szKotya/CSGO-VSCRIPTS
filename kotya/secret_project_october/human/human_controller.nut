@@ -39,6 +39,8 @@ g_bTickRate_Fade <- 0.0;
 
 	class_id = 0;
 
+	grounded = false;
+
 	constructor(_handle, _knife, _class_id = 0)
 	{
 		printl("constructor" + _handle);
@@ -82,6 +84,9 @@ g_bTickRate_Fade <- 0.0;
 		RemovePlayerMovementClassByHandle(this.handle);
 	}
 
+	// Сделать привязку атаки по анимациям
+	// Доделать абилки
+	// Разрешить прыгать, но не бхопить
 	function JumpCheck()
 	{
 		if (this.handle.IsNoclipping())
@@ -89,13 +94,24 @@ g_bTickRate_Fade <- 0.0;
 			return;
 		}
 
-		local vecVelocity = this.handle.GetVelocity();
-		if (vecVelocity.z > 0)
+		if (InSight(this.handle.GetOrigin(), this.handle.GetOrigin() - Vector(0, 0, 8)))
 		{
-			this.handle.SetVelocity(Vector(vecVelocity.x, vecVelocity.y, 0));
+			this.grounded = false;
+		}
+		else
+		{
+			this.grounded = true;
+		}
+
+		if (!this.grounded)
+		{
+			local vecVelocity = this.handle.GetVelocity();
+			if (vecVelocity.z > 0)
+			{
+				this.handle.SetVelocity(Vector(vecVelocity.x, vecVelocity.y, 0));
+			}
 		}
 	}
-
 
 	function CheckBlood()
 	{
@@ -115,13 +131,13 @@ g_bTickRate_Fade <- 0.0;
 			local green = 222.0 - 222.0 * proccent;
 			local blue = 164.0 - 164.0 * proccent;
 
-			if (hp <=  ((maxhp * MIN_HP_FOR_SOUNDE) / 100).tointeger())
-			{
-				EntFireByHandle(POINT_CLIENT_COMMAND, "Command", "play player/heartbeat_noloop.wav", 0.00, this.handle, this.handle);
-			}
-
 			EntFireByHandle(g_hFade_LowHP, "Color", "255 " + green + " " + blue, 0, this.handle, this.handle);
 			EntFireByHandle(g_hFade_LowHP, "Fade", "", 0, this.handle, this.handle);
+		}
+
+		if (hp <=  ((maxhp * MIN_HP_FOR_SOUNDE) / 100).tointeger())
+		{
+			EntFireByHandle(POINT_CLIENT_COMMAND, "Command", "play player/heartbeat_noloop.wav", 0.00, this.handle, this.handle);
 		}
 
 	}
@@ -162,7 +178,7 @@ function TickHuman()
 			continue;
 		}
 
-		human .JumpCheck();
+		human.JumpCheck();
 
 		if (bUpdateBloody)
 		{

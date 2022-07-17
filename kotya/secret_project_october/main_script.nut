@@ -1,7 +1,12 @@
+IncludeScript("kotya/secret_project_october/vectors/vec_lib.nut", this);
+
 ::Main_Script <- self.GetScriptScope();
 
 ::CS_TEAM_CT <- 3;
 ::CS_TEAM_T <- 2;
+
+::MODEL_ZOMBIE_HITBOX <- Entities.FindByName(null, "brush_preset_hitbox").GetModelName();
+::MODEL_ZOMBIE_CUM <- Entities.FindByName(null, "brush_preset_zombie_cum").GetModelName();
 
 function RoundStart()
 {
@@ -208,6 +213,43 @@ SendToConsole("mp_restartgame 1");
 		if (i < vec_end.len()-1){DebugDrawLine(vec_end[i], vec_end[i+1], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
 		else{DebugDrawLine(vec_end[i], vec_end[0], Vector_RGB.x, Vector_RGB.y, Vector_RGB.z, true, duration);}
 	}
+}
+
+::GetPithXawFVect3D <- function(a, b)
+{
+	local deltaX = a.x - b.x;
+	local deltaY = a.y - b.y;
+	local deltaZ = a.z - b.z;
+	local yaw = atan2(deltaY,deltaX) * 180 / PI
+	local pitch = asin(deltaZ / sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)) * 180 / PI;
+	if(pitch > 0){pitch = -pitch;}
+	else{pitch = fabs(pitch);}
+	return Vector(pitch, yaw, 0);
+}
+
+::GetPredictionOriginTarget <- function(oShoot, oTarget, velTarget, iBullet, tickrate = 0.01, speedmodif = 50)
+{
+	local totarget = oTarget - oShoot;
+
+	local a = VectorDot(velTarget, velTarget) - (iBullet * iBullet / tickrate * speedmodif);
+
+	local b = 2 * VectorDot(velTarget, totarget);
+	local c = VectorDot(totarget, totarget);
+
+	local p = -b / (2 * a);
+	local q = (0.00 + sqrt( ( b * b ) -4 * a * c ) / ( 2 * a) );
+
+	local t1 = p - q;
+	local t2 = p + q;
+
+	local t;
+	if( t1 > t2 &&
+		t2 > 0)
+		t = t2;
+	else
+		t = t1;
+
+	return oTarget + velTarget * t;
 }
 
 ::DebugDrawAxis <- function(pos, s = 16, time = 10)

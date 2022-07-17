@@ -16,6 +16,7 @@
 ::Beam_Maker <- null;
 ::Shake_Maker <- null;
 ::Ambient_Generic_Maker <- null;
+::Thruster_Maker <- null;
 ::ID_MAKER <- 0;
 
 function Start()
@@ -88,6 +89,10 @@ function Start()
 		else if (szName == "prespawn_ambient_generic")
 		{
 			Ambient_Generic_Maker = point_template.GetScriptScope();
+		}
+		else if (szName == "prespawn_phys_thruster")
+		{
+			Thruster_Maker = point_template.GetScriptScope();
 		}
 		printl(point_template);
 	}

@@ -1,13 +1,6 @@
 
-::MOVETYPE_NONE <- 1				//Freezes the entity, outside sources can't move it.
+::MOVETYPE_NONE <- 0				//Freezes the entity, outside sources can't move it.
 ::MOVETYPE_WALK <- 2				//Default player (client) move type.
-::MOVETYPE_FLY <- 4						//Fly with no gravity.
-::MOVETYPE_FLYGRAVITY <- 5		//Fly with gravity.
-::MOVETYPE_VPHYSICS <- 6		//Physics movetype (prop models etc.)
-::MOVETYPE_PUSH <- 7				//No clip to world, but pushes and crushes things.
-::MOVETYPE_NOCLIP <- 8				//Noclip, behaves exactly the same as console command.
-::MOVETYPE_LADDER <- 9				//For PLAYERS_MOVEMENT, when moving on a ladder.
-::MOVETYPE_OBSERVER <- 10		//Spectator movetype. DO NOT use this to make player spectate.
 
 ::SpeedMod <- Entities.CreateByClassname("player_speedmod");
 
@@ -37,6 +30,15 @@
 		this.fGravity += 0.00 + fGravity;
 		this.fGravity = ValueLimiter(this.fGravity, 0.00);
 		AOP(this.handle, "gravity", this.fGravity);
+	}
+
+	function SetMoveTypeWalk()
+	{
+		AOP(this.handle, "movetype", this.iMovetype = MOVETYPE_WALK);
+	}
+	function SetMoveTypeFreeze()
+	{
+		AOP(this.handle, "movetype", this.iMovetype = MOVETYPE_NONE);
 	}
 }
 
@@ -130,10 +132,6 @@ function Init()
 			g_vecBaza.push(Vector(-7640 + (64 * x), 8808 + (64 * y), 12));
 		}
 	}
-	// for (local i = 0; i < g_vecBaza.len(); i++)
-	// {
-	// 	DebugDrawCircle(GetOriginBAZA(), 48, 16, 20);
-	// }
 }
 ::GetOriginBAZA <- function()
 {
@@ -156,5 +154,4 @@ function TouchSpawn()
 		CallFunction("activator.SetOrigin(Vector(-704 + RandomInt(-64, 64), -165 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
 }
-
 Init();
