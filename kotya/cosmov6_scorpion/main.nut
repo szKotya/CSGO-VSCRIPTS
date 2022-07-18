@@ -7,10 +7,13 @@ SendToConsole("mp_warmuptime 999999999");
 const TICKRATE = 0.15;
 const TICKRATE_TEXT = 1.00;
 
-const CD_ROAR = 15.0;
-const CD_JUMP = 10.0;
-const CD_DASH = 5.0;
-const CD_STRIKE = 2.0;
+// const CD_ROAR = 15.0;
+// const CD_JUMP = 10.0;
+
+const CD_ROAR = 2.0;
+const CD_JUMP = 2.0;
+const CD_DASH = 3.0;
+const CD_STRIKE = 5.0;
 
 g_szAnimList <- [
 	"attack",			// ТЫЧКА
@@ -26,9 +29,9 @@ g_szAnimList <- [
 g_iScroll_ID <- 0;
 g_aiAttacks <- [
 	"Strike",
-	"Dash",
-	"Ror",
+	"Poison",
 	"Jump",
+	"Roar",
 ]
 
 g_fTicking_Text <- 0.0;
@@ -36,15 +39,10 @@ enum EnumAnimStatus
 {
 	idle,
 	run,
+	casting,
 }
 
-MainScript <- null;
-
-
-g_fRoar_CD <- Time();
-g_fJump_CD <- Time();
-g_fDash_CD <- Time();
-g_fStrike_CD <- Time();
+g_fCD <- null;
 
 g_iHP <- 0;
 g_iHP_Init <- 0;
@@ -79,6 +77,13 @@ function Init()
 {
 	g_hBox = Entities.FindByName(null, "scorpion_hbox");
 	g_hKnife = Entities.FindByName(null, "scorpion_knife");
+
+	g_fCD = [
+	[Time(), CD_DASH, "Cast_Dash"],
+	[Time(), CD_STRIKE, "Cast_Strike"],
+	[Time(), CD_JUMP, "Cast_Jump"],
+	[Time(), CD_ROAR, "Cast_Roar"],];
+
 	CreateModel();
 	CreateCamera();
 	CreateGameUI();
@@ -162,11 +167,11 @@ function DisplayText()
 	{
 		if (i == g_iScroll_ID)
 		{
-			szMsg += ">>>" + g_aiAttacks[g_iScroll_ID] + GetCD(i) + "<<<";
+			szMsg += ">>>" + g_aiAttacks[g_iScroll_ID] + "[" + GetCDstring(GetCD(i)) + "]" + "<<<";
 		}
 		else
 		{
-			szMsg += g_aiAttacks[i] + GetCD(i) ;
+			szMsg += g_aiAttacks[i] + "[" + GetCDstring(GetCD(i)) + "]";
 		}
 		szMsg += "\n";
 	}
@@ -177,16 +182,21 @@ function DisplayText()
 
 function GetCD(ID)
 {
-	if (ID == 0){ID = g_fStrike_CD;}
-	else if (ID == 1){ID = g_fDash_CD;}
-	else if (ID == 2){ID = g_fRoar_CD;}
-	else if (ID == 3){ID = g_fJump_CD;}
-	local fTime = ID - Time().tointeger();
-	if (fTime < 0.9)
+	local fTime = g_fCD[ID][0] - Time().tointeger();
+	if (fTime <= 0.1)
 	{
-		return "[R]"
+		return 0;
 	}
-	return "[" + fTime.tointeger() + "]";
+	return fTime.tointeger();
+}
+
+function GetCDstring(CD)
+{
+	if (CD == 0)
+	{
+		return "R";
+	}
+	return ""+CD;
 }
 
 function Tick_Owner()
@@ -219,6 +229,11 @@ function BossDead()
 
 function Tick_Anim()
 {
+	if (g_iAnimStatus == EnumAnimStatus.casting)
+	{
+		return;
+	}
+
 	if (g_bPress_W ||
 	g_bPress_S ||
 	g_bPress_A ||
@@ -253,24 +268,66 @@ function Tick_HP()
 
 function Press_AT1()
 {
-	if (g_iScroll_ID == 0)
+	if (GetCD(g_iScroll_ID) != 0)
 	{
-		g_fStrike_CD = Time().tointeger() + CD_STRIKE;
+		return;
 	}
-	else if (g_iScroll_ID == 1)
+	if (g_iAnimStatus != EnumAnimStatus.idle &&
+	g_iAnimStatus != EnumAnimStatus.run)
 	{
-		g_fDash_CD = Time().tointeger() + CD_DASH;
+		return;
+
 	}
-	else if (g_iScroll_ID == 2)
-	{
-		g_fRoar_CD = Time().tointeger() + CD_ROAR;
-	}
-	else if (g_iScroll_ID == 3)
-	{
-		g_fJump_CD = Time().tointeger() + CD_JUMP;
-	}
+
+	g_iAnimStatus = EnumAnimStatus.casting;
+	EF(self, "RunScriptCode",  g_fCD[g_iScroll_ID][2] + "()");
+	g_fCD[g_iScroll_ID][0] = Time().tointeger() + g_fCD[g_iScroll_ID][1]
+
 	DisplayText();
 }
+function t()
+{
+	local velocity = activator.GetVelocity();
+	local length2D = velocity.Length2D();
+	printl("" + length2D);
+
+	local forward = activator.GetForwardVector();
+	local new_velocity = forward * length2D;
+
+	printl("" + new_velocity);
+	activator.SetVelocity(new_velocity);
+	// EF(self, "RunScriptCode", "t3()", 0);
+	// EF(self, "RunScriptCode", "t2()", 2);
+	// EF(self, "RunScriptCode", "t3()", 6);
+}
+
+function t1()
+{
+	local image1 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=32";
+	local image2 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=64";
+	local image3 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=128";
+	local sz1  = "<font> <img src='" + image1 + "' /></font>";
+	ScriptPrintMessageCenterAll(sz1);
+}
+
+function t2()
+{
+	local image1 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=32";
+	local image2 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=64";
+	local image3 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=128";
+	local sz1  = "<font> <img src='" + image2 + "' /></font>";
+	ScriptPrintMessageCenterAll(sz1);
+}
+
+function t3()
+{
+	local image1 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=32";
+	local image2 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=64";
+	local image3 = "https://cdn.discordapp.com/avatars/443948402062131203/9d95e23d9a41bd6f4bea31a9ba9d9681.png?size=128";
+	local sz1  = "<font> <img src='" + image3 + "' /></font>";
+	ScriptPrintMessageCenterAll(sz1);
+}
+
 
 function Press_AT2()
 {
@@ -281,6 +338,92 @@ function Press_AT2()
 	}
 	DisplayText();
 }
+
+function Cast_Strike()
+{
+	printl("Cast_Strike");
+	local start = 0.75;
+	local end = 1.95;
+
+	EF(g_hModel, "SetAnimation", "attack");
+
+	EF(self, "RunScriptCode", "g_iAnimStatus <- -1;", end);
+
+	EF(g_hOwner, "AddOutPut", "movetype 0", 0);
+	EF(g_hOwner, "AddOutPut", "movetype 2", end);
+
+	EF("scorpion_hurt_strike", "Enable", "", start);
+	EF("scorpion_hurt_strike", "Disable", "", end);
+}
+function Cast_Dash()
+{
+	printl("Cast_Dash");
+	local start = 0.3;
+	local end = 0.4;
+	EF(g_hModel, "SetAnimation", "attack2");
+
+	EF(self, "RunScriptCode", "g_iAnimStatus <- -1;", end);
+
+	EF("scorpion_hurt_dash", "Enable", "", start);
+	EF("scorpion_hurt_dash", "Disable", "", end);
+}
+function Cast_Jump()
+{
+	printl("Cast_Jump");
+	local start = 1.1;
+	local end = 15.5;
+
+	EF(g_hModel, "SetAnimation", "jump");
+	EF(g_hModel, "SetPlayBackRate", "0.3", 0.6);
+	// EF(g_hModel, "SetPlayBackRate", "1.0", start);
+
+	EF(g_hOwner, "AddOutPut", "movetype 0", 0);
+	EF(g_hOwner, "AddOutPut", "movetype 2", end);
+
+	EF(self, "RunScriptCode", "g_iAnimStatus <- -1;", end);
+
+	//	ПОДОГНАТЬ!
+	EF("scorpion_hurt_jump", "Enable", "", start);
+	EF("scorpion_hurt_jump", "Disable", "", start + 0.1);
+}
+function Cast_Roar()
+{
+	printl("Cast_Roar");
+	local start = 0.25;
+	local end = 2.5;
+	EF(g_hModel, "SetAnimation", "roar");
+
+	EF(self, "RunScriptCode", "Trigger_Roar();", start);
+
+	EF(self, "RunScriptCode", "g_iAnimStatus <- -1;", end);
+
+	EF(g_hOwner, "AddOutPut", "movetype 0", 0);
+	EF(g_hOwner, "AddOutPut", "movetype 2", end);
+}
+
+function Trigger_Roar()
+{
+	if (MainScript == null ||
+	!MainScript.IsValid())
+	{
+		return;
+	}
+
+	AddHP(-1);
+
+	local h;
+	while (null != (h = Entities.FindByClassnameWithin(h, "player", g_hKnife.GetOrigin(), 9999)))
+	{
+		if( h.IsValid() &&
+		h.GetHealth() > 0 &&
+		h.GetTeam() == 3)
+		{
+			EntFireByHandle(MainScript, "RunScriptCode", "SlowPlayer(0.9 5.0)", 0, h, h);
+		}
+	}
+	MainScript.GetScriptScope().UseSilence(10);
+}
+
 
 function Tick_BossStatus()
 {
@@ -335,7 +478,7 @@ function SetOwner()
 	AOP(g_hOwner, "gravity", 2.5);
 
 	g_hOwner.SetHealth(80000);
-	EF(g_hOwner, "SetDamageFilter", "No_Damage");
+	EF(g_hOwner, "SetDamageFilter", "filter_zombies");
 
 	EntFireByHandle(g_hGameUI, "Activate", "", 0, g_hOwner, g_hOwner);
 	EntFireByHandle(g_hCamera, "Enable", "", 0, g_hOwner, g_hOwner);
@@ -478,11 +621,6 @@ function RemoveSkin()
 		g_iAnimStatus = EnumAnimStatus.run;
 	}
 
-	function OnAnimationComplite()
-	{
-		return;
-	}
-
 	function CreateModel()
 	{
 		local modelpath = "models/microrost/cosmov6/ff7r/scorpion.mdl";
@@ -498,7 +636,7 @@ function RemoveSkin()
 		g_hModel.SetAngles(-90 , 90, 0);
 		g_hModel.SetOrigin(g_hKnife.GetOrigin() + g_hKnife.GetForwardVector() * -32 + g_hKnife.GetUpVector() * 5);
 
-		EntFireByHandle(g_hModel, "AddOutPut", "OnAnimationDone " + self.GetName() + ":RunScriptCode:OnAnimationComplite():0:-1", 0.01, null, null);
+		// EntFireByHandle(g_hModel, "AddOutPut", "OnAnimationDone " + self.GetName() + ":RunScriptCode:OnAnimationComplite():0:-1", 0.01, null, null);
 		EntFireByHandle(g_hModel, "SetParent", "!activator", 0.01, g_hKnife, g_hKnife);
 
 		SetAnimation_Idle();
