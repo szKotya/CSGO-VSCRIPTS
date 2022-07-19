@@ -337,6 +337,24 @@ SendToConsole("mp_restartgame 1");
 ::DamageType_Item <- 0;
 ::DamageType_Explosion <- 1;
 
+// ::GetFloor <- function(origin, back = 1000, ignorehandle = null)
+// {
+// 	local count = 0;
+// 	origin = origin;
+// 	local start = origin;
+
+// 	while(count < back)
+// 	{
+// 		if(!InSight(origin, origin - Vector(0, 0, 1), ignorehandle))
+// 		{
+// 			return origin;
+// 		}
+// 		origin = origin - Vector(0, 0, 1);
+// 		count++;
+// 	}
+// 	return start;
+// }
+
 ::ValueLimiter <- function(Value, Min = null, Max = null)
 {
 	if (Max != null && Value > Max)

@@ -94,7 +94,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
 
 {
-    function TickPickUp() 
+    function TickPickUp()
     {
         SearchOwner();
 
@@ -106,7 +106,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(self, "RunScriptCode", "TickPickUp();", TICKRATE_PICKUP, null, null);
     }
 
-    function SetHP(i) 
+    function SetHP(i)
     {
         local handle = null;
         while(null != (handle = Entities.FindByClassname(handle, "player")))
@@ -121,24 +121,24 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function Damage(i) 
+    function Damage(i)
     {
         g_iHP -= i;
         if(g_iHP <= 0)
         {
             return Death();
-        }    
+        }
     }
 
-    function Death() 
+    function Death()
     {
         g_bTicking = false;
-        EntFireByHandle(g_GargantuaLogic, "RunScriptCode", "End()", 0, g_hOwner, self);
+        // EntFireByHandle(g_GargantuaLogic, "RunScriptCode", "End()", 0, g_hOwner, self);
 
         EntFireByHandle(g_hModel, "ClearParent", "", 0, null, null);
         SetAnimation(A_Death);
         ResetOwner();
-        
+
         EntFireByHandle(g_hGameUI, "Deactivate", "", 0, g_hOwner, g_hOwner);
         EntFireByHandle(g_hGameUI, "Kill", "", 0.01, null, null);
         EntFireByHandle(g_hHitBox, "Kill", "", 0, null, null);
@@ -163,14 +163,14 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function SearchOwner() 
+    function SearchOwner()
     {
         local h = null;
         while(null != (h = Entities.FindInSphere(h, g_hKnife.GetOrigin(), 32)))
         {
-            if(h.GetClassname() == "player" && 
-            h.IsValid() && 
-            h.GetHealth() > 0 && 
+            if(h.GetClassname() == "player" &&
+            h.IsValid() &&
+            h.GetHealth() > 0 &&
             h.GetTeam() == 2)
             {
                 g_bPickup = true;
@@ -181,7 +181,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         return;
     }
 
-    function FindOwner() 
+    function FindOwner()
     {
         DestroyOwnerKnife();
         SetOwner();
@@ -190,10 +190,10 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         SetAnimSpawn();
         SetHP(200);
 
-        EntFireByHandle(g_GargantuaLogic, "RunScriptCode", "PickUp()", 0.8, g_hOwner, self);
+        // EntFireByHandle(g_GargantuaLogic, "RunScriptCode", "PickUp()", 0.8, g_hOwner, self);
     }
 
-    function DestroyOwnerKnife() 
+    function DestroyOwnerKnife()
     {
         local oldKnife = null;
         while((oldKnife = Entities.FindByClassname(oldKnife, "weapon_knife*")) != null)
@@ -203,7 +203,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
                 oldKnife.Destroy();
                 break;
             }
-        }    
+        }
     }
 
     function SetEyeParent()
@@ -211,7 +211,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         g_hEye.SetOrigin(g_hOwner.EyePosition())
         EntFireByHandle(g_hEye, "SetParent", "!activator", 0.01, g_hKnife, g_hKnife);
         EntFireByHandle(g_hEyeParent, "SetMeasureTarget", g_hOwner.GetName(), 0.01, null, null);
-        EntFireByHandle(g_hEyeParent, "Enable", "", 0.02, g_hOwner, g_hOwner);    
+        EntFireByHandle(g_hEyeParent, "Enable", "", 0.02, g_hOwner, g_hOwner);
     }
 
     function SetOwner()
@@ -219,7 +219,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         g_hOwner.__KeyValueFromString("targetname", "gargantua_owner" + Time());
         g_hOwner.__KeyValueFromInt("rendermode", 10);
         g_hOwner.__KeyValueFromFloat("gravity", 2.5);
-        
+
         g_hOwner.SetHealth(80000);
 
         EntFireByHandle(g_hOwner, "SetDamageFilter", "No_Damage", 0, null, null);
@@ -235,12 +235,12 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(g_hOwner, "SetHealth", "-1", 0, null, null);
     }
 
-    function ConnectGameUI() 
+    function ConnectGameUI()
     {
         EntFireByHandle(g_hGameUI, "Activate", "", 0.05, g_hOwner, g_hOwner);
     }
 
-    function Start() 
+    function Start()
     {
         local origin = g_hKnife.GetOrigin();
         local angles = g_hKnife.GetAngles();
@@ -255,7 +255,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
     }
 
     {
-        function SetParentParticle() 
+        function SetParentParticle()
         {
             local h = null;
             while(null != (h = Entities.FindInSphere(h, g_hHitBox.GetOrigin(), 64)))
@@ -264,17 +264,18 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
                 {
                     EntFireByHandle(h, "FireUser1", "", 0, g_hModel, g_hModel);
                     g_hFlame.push(h);
-                } 
+                }
             }
         }
 
-        function CreateEye() 
+        function CreateEye()
         {
             g_hEye = Entities.CreateByClassname("prop_dynamic")
             g_hEye.__KeyValueFromString("targetname", "gargantua_eye" + Time());
             g_hEye.__KeyValueFromInt("solid", 0);
             g_hEye.__KeyValueFromInt("rendermode", 10);
-            g_hEye.SetModel(Parent_Model);
+            self.PrecacheModel("models/editor/playerstart.mdl");
+            g_hEye.SetModel("models/editor/playerstart.mdl");
 
             g_hEyeParent = Entities.CreateByClassname("logic_measure_movement");
 
@@ -287,7 +288,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
 
 
-        function CreateGameUI() 
+        function CreateGameUI()
         {
             g_hGameUI = Entities.CreateByClassname("game_ui");
 
@@ -311,13 +312,14 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             EntFireByHandle(g_hGameUI, "AddOutPut", "UnPressedMoveRight " + self.GetName() + ":RunScriptCode:UnPress_D():0:-1", 0.01, null, null);
         }
 
-        function CreateModel(origin, angles) 
+        function CreateModel(origin, angles)
         {
             g_hModel = Entities.CreateByClassname("prop_dynamic")
             g_hModel.__KeyValueFromInt("solid", 0);
             g_hModel.__KeyValueFromInt("rendermode", 1);
             //g_hModel.__KeyValueFromInt("renderamt", 50);
-            g_hModel.SetModel(Gargantua_Model);
+            self.PrecacheModel("models/editor/playerstart.mdl");
+            g_hModel.SetModel("models/editor/playerstart.mdl");
 
             g_hModel.SetAngles(0, angles.y - 90, 0);
             local fix_Origin = g_hModel.GetBoundingMins();
@@ -326,17 +328,17 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             EntFireByHandle(g_hModel, "AddOutPut", "OnAnimationDone " + self.GetName() + ":RunScriptCode:OnAnimationComplite():0:-1", 0.01, null, null);
 
             EntFireByHandle(g_hModel, "SetParent", "!activator", 0.01, g_hKnife, g_hKnife);
-            EntFireByHandle(g_hModel, "RunScriptFile", "kotya/npst/gargantua/gargantua.nut", 0.01, null, null);    
+            EntFireByHandle(g_hModel, "RunScriptFile", "kotya/npst/gargantua/gargantua.nut", 0.01, null, null);
         }
     }
 }
 
 {
-    function Tick() 
+    function Tick()
     {
         //Debug();
-        if(!ValidTarget(g_hOwner, 2))
-            return Death();
+        // if(!ValidTarget(g_hOwner, 2))
+        //     return Death();
 
         CheckForAttack();
 
@@ -364,15 +366,15 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
     }
 
     {
-        function Debug() 
+        function Debug()
         {
             local text = "Vecocity : ";
             text += g_hOwner.GetVelocity();
 
-            ScriptPrintMessageCenterAll(text)    
+            ScriptPrintMessageCenterAll(text)
         }
 
-        function TickFlame() 
+        function TickFlame()
         {
             g_fTick_Flame += TICKRATE;
 
@@ -395,9 +397,9 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             local h = null;
             while(null != (h = Entities.FindInSphere(h, g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 250, 256)))
             {
-                if(h.GetClassname() == "player" && 
-                h.IsValid() && 
-                h.GetHealth() > 0 && 
+                if(h.GetClassname() == "player" &&
+                h.IsValid() &&
+                h.GetHealth() > 0 &&
                 h.GetTeam() == 3)
                 {
                     //h.SetOrigin(g_hOwner.GetOrigin() + g_vVelocity * 75);
@@ -406,16 +408,16 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             }
         }
 
-        function TickSprint() 
+        function TickSprint()
         {
             if(CheckWall())
             {
                 g_bSprint = false;
                 g_hOwner.SetVelocity(Vector(0, 0, 0));
                 g_fTick_Sprint = 0;
-                
+
                 Freeze();
-                
+
 
                 SetAnimation(A_Charge_Wall_Attack);
                 for(local i = 0; i < g_aPlayers_Sprint.len(); i++)
@@ -430,7 +432,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             {
                 g_bSprint = false;
                 g_hOwner.SetVelocity(Vector(0, 0, 0));
-                
+
                 g_fTick_Sprint = 0;
 
                 for(local i = 0; i < g_aPlayers_Sprint.len(); i++)
@@ -444,14 +446,14 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
                 OnAnimationComplite();
             }
-            else 
+            else
             {
                 local h = null;
                 while(null != (h = Entities.FindInSphere(h, g_hOwner.GetOrigin() + g_vVelocity * 20, g_iGrab_Sprint)))
                 {
-                    if(h.GetClassname() == "player" && 
-                    h.IsValid() && 
-                    h.GetHealth() > 0 && 
+                    if(h.GetClassname() == "player" &&
+                    h.IsValid() &&
+                    h.GetHealth() > 0 &&
                     h.GetTeam() == 3)
                     {
                         if(!CheckSprintArray(h))
@@ -466,23 +468,23 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
                 local z = self.GetVelocity().z;
                 z = (!CheckFloor()) ? -500 : (z == 0) ? 400 : 0;
-                
+
                 g_hOwner.SetVelocity(Vector(
-                    g_vVelocity.x * g_fVelocity_Sprint, 
+                    g_vVelocity.x * g_fVelocity_Sprint,
                     g_vVelocity.y * g_fVelocity_Sprint,
                     z));
             }
 
-            
+
         }
 
-        function CheckSprintArray(HANDLE) 
+        function CheckSprintArray(HANDLE)
         {
             for(local i = 0; i < g_aPlayers_Sprint.len(); i++)
                 if(g_aPlayers_Sprint[i] == HANDLE)
                     return true;
             return false;
-                
+
         }
 
         {
@@ -501,8 +503,8 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             }
         }
 
-        
-        function CheckForAttack() 
+
+        function CheckForAttack()
         {
             if(Anim_now != "Casting")
             {
@@ -519,7 +521,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
                         Cast_Sprint();
                     else if(g_key_A2)
                     {
-                        Cast_Flame();   
+                        Cast_Flame();
                     }
                     else if(g_key_A1)
                     {
@@ -530,7 +532,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
 
         {
-            function CheckLightOrHard() 
+            function CheckLightOrHard()
             {
                 if(Anim_now == "Casting")
                     return;
@@ -541,14 +543,14 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
                     Cast_Light();
             }
 
-            function CheckCTRL() 
+            function CheckCTRL()
             {
                 if(g_hOwner.GetBoundingMaxs().z <= 54)
                     return true;
                 return false;
             }
 
-            function CheckSprint() 
+            function CheckSprint()
             {
                 if(g_key_A2 && g_key_W)
                     return true;
@@ -557,7 +559,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
 
 
-        function SetAnimMovement() 
+        function SetAnimMovement()
         {
             if(Anim_now != "Casting")
             {
@@ -565,69 +567,69 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
                     SetAnimWalk();
                 else
                     SetAnimIdle();
-            }    
+            }
         }
     }
 
-    function Press_AT1() 
+    function Press_AT1()
     {
         g_key_A1 = true;
     }
 
-    function UnPress_AT1() 
+    function UnPress_AT1()
     {
         g_key_A1 = false;
     }
-    
-    function Press_AT2() 
+
+    function Press_AT2()
     {
         g_key_A2 = true;
     }
-    function UnPress_AT2() 
+    function UnPress_AT2()
     {
         g_key_A2 = false;
     }
 
 
-    function Press_W() 
+    function Press_W()
     {
         g_key_W = true;
     }
-    function UnPress_W() 
+    function UnPress_W()
     {
         g_key_W = false;
     }
 
-    function Press_S() 
+    function Press_S()
     {
         g_key_S = true;
     }
-    function UnPress_S() 
+    function UnPress_S()
     {
         g_key_S = false;
     }
 
-    function Press_A() 
+    function Press_A()
     {
        g_key_A = true;
     }
-    function UnPress_A() 
+    function UnPress_A()
     {
         g_key_A = false;
     }
 
-    function Press_D() 
+    function Press_D()
     {
         g_key_D = true;
     }
-    function UnPress_D() 
+    function UnPress_D()
     {
         g_key_D = false;
-    } 
+    }
 }
 
 {
-    function OnAnimationComplite() 
+    function OnAnimationComplite()
     {
         if(Anim_now == A_Take)
         {
@@ -644,7 +646,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
         else if(g_bSprint || g_bFlame)
         {
-            
+
         }
 
         else if(Anim_now == "Casting")
@@ -655,7 +657,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
     }
 
-    function Cast_Light() 
+    function Cast_Light()
     {
         Anim_now = "Casting";
 
@@ -666,7 +668,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(self, "RunScriptCode", "Cast_LightNext();", 0.5, null, null);
     }
 
-    function Cast_Hard() 
+    function Cast_Hard()
     {
         Anim_now = "Casting";
 
@@ -677,15 +679,15 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(self, "RunScriptCode", "Cast_HardNext();", 0.5, null, null);
     }
 
-    function Cast_LightNext() 
+    function Cast_LightNext()
     {
         local h = null;
         DebugDrawCircle(g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 75, Vector(255,255,255), 256, g_iRadius_Light, true, 0.2)
         while(null != (h = Entities.FindInSphere(h, g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 75, g_iRadius_Light)))
         {
-            if(h.GetClassname() == "player" && 
-            h.IsValid() && 
-            h.GetHealth() > 0 && 
+            if(h.GetClassname() == "player" &&
+            h.IsValid() &&
+            h.GetHealth() > 0 &&
             h.GetTeam() == 3)
             {
                 local hp = h.GetHealth();
@@ -700,15 +702,15 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function Cast_HardNext() 
+    function Cast_HardNext()
     {
         local h = null;
         DebugDrawCircle(g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 75, Vector(255,255,255), 256, g_iRadius_Hard, true, 0.2)
         while(null != (h = Entities.FindInSphere(h, g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 75, g_iRadius_Hard)))
         {
-            if(h.GetClassname() == "player" && 
-            h.IsValid() && 
-            h.GetHealth() > 0 && 
+            if(h.GetClassname() == "player" &&
+            h.IsValid() &&
+            h.GetHealth() > 0 &&
             h.GetTeam() == 3)
             {
                 local hp = h.GetHealth();
@@ -723,16 +725,16 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function Cast_Grab() 
+    function Cast_Grab()
     {
         //Anim_now = "Casting";
 
         local h = null;
         while(null != (h = Entities.FindInSphere(h, GetEyeDist(g_iDistance_Grab), g_iRadius_Grab)))
         {
-            if(h.GetClassname() == "player" && 
-            h.IsValid() && 
-            h.GetHealth() > 0 && 
+            if(h.GetClassname() == "player" &&
+            h.IsValid() &&
+            h.GetHealth() > 0 &&
             h.GetTeam() == 3)
             {
                 return Cast_GrabNext(h);
@@ -741,16 +743,16 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         return;
     }
 
-    function GetEyeDist(distance) 
+    function GetEyeDist(distance)
     {
         return TraceDir(g_hEye.GetOrigin(), g_hEye.GetForwardVector(), distance, g_hHitBox);
     }
 
-    function Cast_GrabNext(handle) 
+    function Cast_GrabNext(handle)
     {
         if(!g_bAllow_Grab)
             return;
-        else 
+        else
         {
             EntFireByHandle(self, "RunScriptCode", "g_bAllow_Grab = true;", g_fAllowTime_Grab, null, null);
             g_bAllow_Grab = false;
@@ -762,13 +764,13 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         if(handle.GetHealth() > g_iHP_Grab)
         {
             SetAnimation(A_Drop_Attack);
-        
+
             EntFireByHandle(handle, "SetParent", "!activator", 0.2, g_hModel, g_hModel);
             EntFireByHandle(handle, "SetParentAttachment", "2", 0.21, g_hModel, g_hModel);
 
             EntFireByHandle(handle, "ClearParent", "", 0.95, null, null);
             EntFireByHandle(handle, "AddOutPut", "movetype 1", 0.95, null, null);
-            
+
             EntFireByHandle(self, "RunScriptCode", "Cast_GrabAfter();", 1.00, handle, handle);
         }
         else
@@ -784,17 +786,17 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function Cast_GrabAfter() 
+    function Cast_GrabAfter()
     {
         if(activator == null || !activator.IsValid())
             return;
         local First_Pos = activator.GetOrigin();
         local Second_Pos = GetEyeDist(1200);
 
-        DrawAxis(First_Pos);  
+        DrawAxis(First_Pos);
         DrawAxis(Second_Pos);
-        
-        local nevVec = (Second_Pos - First_Pos) 
+
+        local nevVec = (Second_Pos - First_Pos)
         nevVec.Norm();
 
         activator.SetVelocity(Vector(
@@ -803,11 +805,11 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             nevVec.z * g_fVelocity_Grab));
     }
 
-    function Cast_Sprint() 
+    function Cast_Sprint()
     {
         if(!g_bAllow_Sprint)
             return;
-        else 
+        else
         {
             EntFireByHandle(self, "RunScriptCode", "g_bAllow_Sprint = true;", g_fAllowTime_Sprint, null, null);
             g_bAllow_Sprint = false;
@@ -815,10 +817,10 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
         Anim_now = "Casting";
         g_bSprint = true;
-    
+
         local First_Pos = g_hOwner.GetOrigin();
         local Second_Pos = g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 700;
-        g_vVelocity = (Second_Pos - First_Pos) 
+        g_vVelocity = (Second_Pos - First_Pos)
         g_vVelocity.Norm();
 
         SetAnimation(A_Charge_Attack);
@@ -835,7 +837,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
 
         local First_Pos = g_hOwner.GetOrigin();
         local Second_Pos = g_hOwner.GetOrigin() + g_hHitBox.GetForwardVector() * 700;
-        g_vVelocity = (Second_Pos - First_Pos) 
+        g_vVelocity = (Second_Pos - First_Pos)
         g_vVelocity.Norm();
 
         SetAnimWalk();
@@ -844,16 +846,16 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(self, "RunScriptCode", ";SetAnimIdle(true);", 3.1, null, null);
     }
 
-    function Cast_Flame() 
+    function Cast_Flame()
     {
         if(!g_bAllow_Flame)
             return;
-        else 
+        else
         {
             EntFireByHandle(self, "RunScriptCode", "g_bAllow_Flame = true;", g_fAllowTime_Flame, null, null);
             g_bAllow_Flame = false;
         }
-        
+
         Anim_now = "Casting";
         g_bFlame = true;
 
@@ -866,16 +868,16 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         g_key_A2 = false;
     }
 
-    function Cast_Stomp() 
+    function Cast_Stomp()
     {
         if(!g_bAllow_Stomp)
             return;
-        else 
+        else
         {
             EntFireByHandle(self, "RunScriptCode", "g_bAllow_Stomp = true;", g_fAllowTime_Stomp, null, null);
             g_bAllow_Stomp = false;
         }
-            
+
         Anim_now = "Casting";
         Freeze();
         SetAnimation(A_Stomp_Attack);
@@ -883,14 +885,14 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         EntFireByHandle(self, "RunScriptCode", "Cast_StompNext();", 1.20, null, null);
     }
 
-    function Cast_StompNext() 
+    function Cast_StompNext()
     {
         local h = null;
         while(null != (h = Entities.FindInSphere(h, g_hOwner.GetOrigin(), g_iRadius_Stomp)))
         {
-            if(h.GetClassname() == "player" && 
-            h.IsValid() && 
-            h.GetHealth() > 0 && 
+            if(h.GetClassname() == "player" &&
+            h.IsValid() &&
+            h.GetHealth() > 0 &&
             h.GetTeam() == 3)
             {
                 Cast_StompDamage(h);
@@ -898,19 +900,19 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
     }
 
-    function Cast_StompDamage(activator) 
+    function Cast_StompDamage(activator)
     {
         local First_Pos = activator.GetOrigin();
         local Second_Pos = g_hOwner.GetOrigin();
-        
-        local nevVec = (First_Pos - Second_Pos) 
+
+        local nevVec = (First_Pos - Second_Pos)
         nevVec.Norm();
 
         local hp = activator.GetHealth();
         local distance = GetDistance3D(First_Pos, Second_Pos)
 
-        hp -= ((distance <= g_fRadiusFullDamage_Stomp) ? 
-        (g_iDamage_Stomp) : 
+        hp -= ((distance <= g_fRadiusFullDamage_Stomp) ?
+        (g_iDamage_Stomp) :
         (g_iDamage_Stomp - (g_iDamage_Stomp * (g_fRadiusFullDamage_Stomp / distance)))
         );
 
@@ -931,7 +933,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
             320));
     }
 
-    function SetAnimIdle(id = false) 
+    function SetAnimIdle(id = false)
     {
         if(Anim_now != "idle")
         {
@@ -950,7 +952,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
         Anim_now = "idle";
     }
-    function SetAnimWalk() 
+    function SetAnimWalk()
     {
         if(Anim_now != A_Walk)
         {
@@ -959,7 +961,7 @@ g_hText.__KeyValueFromString("targetname", "gargantua_text" + Time());
         }
         Anim_now = A_Walk;
     }
-    function SetAnimSpawn() 
+    function SetAnimSpawn()
     {
         //Freeze();
         SetAnimation(A_Take);
@@ -986,7 +988,7 @@ function TraceDir(orig, dir, maxd, filter)
     return orig + (dir * (maxd * frac));
 }
 
-function OnPostSpawn() 
+function OnPostSpawn()
 {
     Start();
 }
@@ -1084,5 +1086,5 @@ die - умер от выстрела в жопу
 +вперед + пкм - спринт
 +ctrl + назад - stomp
 +ctrl + пкм - ваншот атака
-+ctrl + лкм - flame 
++ctrl + лкм - flame
 */

@@ -40,6 +40,7 @@ g_bTickRate_Fade <- 0.0;
 	class_id = 0;
 
 	grounded = false;
+	pushed = false;
 
 	constructor(_handle, _knife, _class_id = 0)
 	{
@@ -100,10 +101,12 @@ g_bTickRate_Fade <- 0.0;
 		}
 		else
 		{
+			this.pushed = true;
 			this.grounded = true;
 		}
 
-		if (!this.grounded)
+		if (!this.grounded &&
+		!this.pushed)
 		{
 			local vecVelocity = this.handle.GetVelocity();
 			if (vecVelocity.z > 0)

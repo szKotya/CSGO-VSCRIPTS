@@ -149,9 +149,29 @@ function TouchSpawn()
 	}
 	else
 	{
-		CreateZombie(origin, 2);
+		CreateZombie(origin, 1);
 		activator.SetOrigin(origin);
 		CallFunction("activator.SetOrigin(Vector(-704 + RandomInt(-64, 64), -165 + RandomInt(-64, 64), -12))", 0.5, activator);
 	}
+}
+
+::GetFloor <- function(vecOrigin, ignore = null)
+{
+	printl("" + vecOrigin);
+	local vecStart = vecOrigin;
+	local iDist = 64;
+	vecOrigin = Vector(vecOrigin.x, vecOrigin.y, vecOrigin.z + iDist);
+	local fact = TraceLine(vecOrigin, vecOrigin - Vector(0, 0, 2*iDist), ignore);
+	printl(""+ fact);
+	if (fact == 1.00)
+	{
+		DebugDrawAxis(vecStart, 64, 5);
+		return vecStart;
+	}
+	printl(""+vecOrigin);
+	vecOrigin = vecOrigin + Vector(0, 0, -1) * fact * 2*iDist;
+	printl(""+vecOrigin);
+	DebugDrawAxis(vecOrigin, 16, 5);
+	return vecOrigin;
 }
 Init();
