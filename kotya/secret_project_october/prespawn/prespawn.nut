@@ -1,8 +1,7 @@
-Maker <- Entities.CreateByClassname("env_entity_maker")
-Maker.__KeyValueFromString("EntityTemplate", self.GetName());
 KV <- {};
+g_szName <- "ERROR";
 
-CreateEntity <- function(kv) 
+function CreateEntity(kv)
 {
 	local hEntity = null;
 	local szName = split(self.GetName().toupper(),"_");
@@ -20,7 +19,7 @@ CreateEntity <- function(kv)
 		szName = self.GetName();
 	}
 
-	kv["targetname"] <- szName + ID_MAKER;
+	// kv["targetname"] <- szName + ID_MAKER; // +1 gamestingtable
 	foreach(k,v in kv)
 	{
 		KV[k] <- v;
@@ -34,8 +33,10 @@ CreateEntity <- function(kv)
 	local angles = KV["pos"].angles;
 	KV = KVremoveK(KV, "pos");
 
-	Maker.SpawnEntityAtLocation(origin, angles);
-	hEntity = Entities.FindByName(null, KV["targetname"]);
+	Env_Maker.__KeyValueFromString("EntityTemplate", self.GetName());
+	Env_Maker.SpawnEntityAtLocation(origin, angles);
+
+	hEntity = Entities.FindByName(null, g_szName); // +1 gamestingtable
 
 	ID_MAKER++;
 	KV = {};

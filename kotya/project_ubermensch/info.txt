@@ -1,0 +1,161 @@
+	[НОВОЕ]
+патроны сделать !
+
+радар зашить и превью
+
+the most common one is the zombie dont spawn when we reach the boss fight on the 3rd stage
+not always but happen a few times
+and then after we play uber, we cant jump again even tho the map already change
+убрать коллизию у людей(ноги оставить)
+
+геймтекст для задач+-
+освещение у кружков+-
+
+музыка тайминги + репит
+звук задыхания
+crimson clowns
+
+порталы анимация+
+индикация хп ктшника от сердца+
+
+	[КЛАССЫ]
+Вультура - охотник
+Танк - МИКРО_СТАН ОТ ПУША
+
+Эволюция - убиваешь кт получаешь бафы на раунд
+1) Больше хп
+2) Регенерация
+3) больше скорости
+Скин меняется
+
+	[ИТЕМЫ]
+3x электродилдо[за банком и одна в больнице 1 глава]
+чтобы получить нужно повторить послед как в солевой
+
+шотган[подземка рядом лифтом 2 глава]
+
+ракетница[гараж 3 глава]
+загадку сделать на выбор для открытия двери
+
+стартовый подбор
+
+как отдельное оружие
+при фейле главы спавнятся рядом со спавном
+сейвятся в конце раунда
+имеют заряды, которые ресетится у ящиков с аммо
+сделаем улучшалки разные(на выбор что грейдить в верстаке)
+[
+	урон
+	перезарядка
+	кол-во зарядов
+	демедж пропам(порталы)
+	утилити(замедло, горение, пробиваемость(пару зомбов прошить))
+]
+
+	[ГЕЙМТЕКСТ]
+map_entity_text_ability - 1 зомби абилка реди
+map_entity_text - 1 - нише авторы и тд
+
+map_entity_text_class_info_h_0 - 1 - инфа о классах
+map_entity_text_class_info_h_1 - 1 - инфа о классах
+map_entity_text_class_info_h_2 - 1 - инфа о классах
+map_entity_text_class_info_z_0 - 1 - инфа о классах
+map_entity_text_class_info_z_1 - 1 - инфа о классах
+map_entity_text_class_info_z_2 - 1 - инфа о классах
+
+map_entity_text_classpicker - 2 - пикер Управление
+map_entity_text_limit_class - 2 - класс лимитирован
+map_entity_text_portal - 3 - открытие портала
+
+map_entity_text_puzzle00 - 2 - головоломки
+map_entity_text_puzzle01 - 2 - головоломки
+map_entity_text_puzzle02 - 2 - головоломки
+
+map_entity_text_quest_h - 1 - текущая задача
+map_entity_text_quest_reset - 1 - текущая задача
+map_entity_text_quest_z - 1 - текущая задача
+
+	[СЛОЖНОСТИ]
+
+Чекпоинты -
+Подсветка у аптек и зарядов для итемов меньше, и радиус подсветки меньше
+ратио зомби
+время перерождения и скорость перехода от порталов
+
+кол-во зомби которые могут пройти через портал и откат
+ХП у порталов
+
+	[ГЛАВА 3]
+[+]Сейв порталов с главы
+[+]катсцена
+
+убрать точку спавна канистры в арт галереи
+
+
+когда черви умирают, из них идет фонтан крови
+
+	[ГЛАВА 4]
+Оверлей
+музыка
+текст
+
+[+]уничтожение порталов с прошлых глав
+
+SetSettings()
+LIMIT_CLASS_TANK
+
+бтр выстрелы+-
+Управление дофиксить
+На мышку?
+выход
+
+	[Админка]
+
+	[ОПТИМИЗАЦИЯ]
+Шум перевести на тригеры
+Некоторые функции поправить
+
+	[БАГИ]
+спавн зомби и телепортов
+
+	[ПОРТАЛЫ]
+debug
+Portal_Scope.Portal_Init_CH01();
+
+chapter01
+iChapter01_Save_Portals.clear();
+Portal_Scope.Portal_Init_CH01();
+Portal_Scope.Portal_Maker_CH01a();
+Portal_Scope.Portal_Init_CH01_Quest01();
+Portal_Scope.Portal_Init_CH01_Quest04();
+Portal_Scope.Portal_Maker_CH01b();
+
+Portal_Scope.Portal_Init_CH02();
+Portal_Scope.Portal_Init_CH01_CH02();
+Portal_Scope.Portal_Init_CH02_Quest01();
+Portal_Scope.ZombieToTeleport();
+
+
+chapter02
+Portal_Scope.Portal_Init_CH02();
+Portal_Scope.Portal_Init_CH02_Quest01();
+Portal_Scope.Portal_Init_CH01_Save();
+Portal_Scope.Portal_Maker_CH02a();
+Portal_Scope.Portal_Maker_CH02b();
+Portal_Scope.Portal_PostInitCH02();
+
+Portal_Scope.Portal_Init_CH03();
+Portal_Scope.Portal_InitCH02_CH03();
+Portal_Scope.ZombieToTeleport();
+
+
+chapter03
+Portal_Scope.Portal_Init_CH03();
+Portal_Scope.ZombieToTeleportRadius();
+Portal_Scope.Portal_Maker_CH03a();
+Portal_Scope.ZombieToTeleport();
+
+chapter04
+Portal_Scope.Portal_Init_CH04();
+Portal_Scope.Portal_Init_CH03_Save();
+Portal_Scope.Portal_Init_CH04a();

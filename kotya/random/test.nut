@@ -1,20 +1,57 @@
-function SetGlowModelPlayer()
+::Maker <- null;
+::ID_MAKER <- 1;
+::MakerName <- "prespawn_maker";
+
+function Init()
 {
-    if(caller != null && caller.IsValid() && caller.GetHealth())
-    {
-        local pl_model = caller.GetModelName();
-        local MODEL_GLOW = Entities.CreateByClassname("prop_dynamic_glow");
-        MODEL_GLOW.__KeyValueFromString("targetname", "pl_model");
-        MODEL_GLOW.__KeyValueFromInt("glowdist",1024);
-        MODEL_GLOW.__KeyValueFromInt("effects",1);
-        MODEL_GLOW.__KeyValueFromString("glowcolor", "255 0 0");
-        MODEL_GLOW.__KeyValueFromInt("glowenabled", 1);
-        MODEL_GLOW.__KeyValueFromInt("glowstyle", 0);
-        MODEL_GLOW.__KeyValueFromInt("rendermode", 6);
-        MODEL_GLOW.__KeyValueFromInt("DisableBoneFollowers", 1);
-        MODEL_GLOW.SetModel(pl_model);
-        MODEL_GLOW.SetOrigin(caller.GetOrigin());
-        EntFireByHandle(MODEL_GLOW, "SetParent", "!activator", 0.00, caller, null);
-        EntFireByHandle(MODEL_GLOW, "SetParentAttachment", "primary", 0.00, null, null);
-    }
+	Entities.FindByName(null, MakerName);
 }
+
+CreateEntity <- function(kv = {})
+{
+	local hEntity = null;
+	local szName = split(self.GetName().toupper(),"_");
+	if (szName.len() > 1)
+	{
+		local temp = szName[1];
+		for (local i = 2; i < szName.len(); i++)
+		{
+			temp += "_" + szName[i];
+		}
+		szName = temp;
+	}
+	else
+	{
+		szName = self.GetName();
+	}
+
+	kv["targetname"] <- szName;
+	foreach(k,v in kv)
+	{
+		KV[k] <- v;
+	}
+
+	// if (!KVhaveK(kv, "pos"))
+	// {
+	// 	KV["pos"] <- class_pos(self.GetOrigin());
+	// }
+
+	// local origin = KV["pos"].origin;
+	// local angles = KV["pos"].angles;
+	// KV = KVremoveK(KV, "pos");
+
+	Maker.__KeyValueFromString("EntityTemplate", self.GetName());
+	Maker.SpawnEntityAtLocation(Vector(0, 0, 0), Vector(0, 0, 0));
+	hEntity = Entities.FindByName(null, KV["targetname"]);
+
+	// ID_MAKER++;
+	KV = {};
+	return hEntity;
+}
+
+PreSpawnInstance <- function(szClass, szName)
+{
+	return KV;
+}
+
+EntFireByHandle(self, "RunScriptCode", "Init()", 2, null, null);

@@ -1,5 +1,6 @@
 ::Spawn_Script <- self.GetScriptScope();
 
+::Env_Maker <- null;
 ::Sprite_Maker <- null;
 ::Light_Maker <- null;
 ::Prop_dynamic_Glow_Maker <- null;
@@ -21,6 +22,10 @@
 
 function Start()
 {
+	Env_Maker = Entities.FindByName(null, "prespawn_maker");
+	printl("SA : " + Env_Maker)
+	// Env_Maker = Entities.CreateByClassname("env_entity_maker")
+
 	local point_template;
 	local szName;
 	while ((point_template = Entities.FindByClassname(point_template,"point_template")) != null)

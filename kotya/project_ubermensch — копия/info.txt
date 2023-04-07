@@ -1,0 +1,72 @@
+	[НОВОЕ]
+МИКРО_СТАН ОТ ПУША ТАНКА
+патроны сделать !
+
+радар зашить и превью
+
+геймтекст для задач+-
+освещение у кружков
+музыка тайминги + репит
+звук задыхания
+crimson clowns
+
+	[ИТЕМЫ]
+электродилдо
+шотган
+ракетница
+
+при фейле главы спавнятся рядом со спавном
+сейвятся в конце раунда
+имеют заряды, которые ресетится у ящиков с аммо
+сделаем улучшалки разные
+
+	[СЛОЖНОСТИ]
+Чекпоинты -
+Подсветка у аптек и зарядов для итемов меньше, и радиус подсветки меньше
+ратио зомби
+время перерождения и скорость перехода от порталов
+
+	[ОПТИМИЗАЦИЯ]
+Шум перевести на тригеры
+Некоторые функции поправить
+
+	[БАГИ]
+
+спавн зомби и телепортов
+
+	[ПОРТАЛЫ]
+debug
+Portal_Scope.Portal_Init_CH01();
+
+chapter01
+iChapter01_Save_Portals.clear();
+Portal_Scope.Portal_Init_CH01();
+Portal_Scope.Portal_Maker_CH01a();
+Portal_Scope.Portal_Init_CH01_Quest01();
+Portal_Scope.Portal_Init_CH01_Quest04();
+Portal_Scope.Portal_Maker_CH01b();
+
+Portal_Scope.Portal_Init_CH02();
+Portal_Scope.Portal_Init_CH01_CH02();
+Portal_Scope.Portal_Init_CH02_Quest01();
+Portal_Scope.ZombieToTeleport();
+
+
+chapter02
+Portal_Scope.Portal_Init_CH02();
+Portal_Scope.Portal_Init_CH02_Quest01();
+Portal_Scope.Portal_Init_CH01_Save();
+Portal_Scope.Portal_Maker_CH02a();
+Portal_Scope.Portal_Maker_CH02b();
+Portal_Scope.Portal_PostInitCH02();
+
+Portal_Scope.Portal_Init_CH03();
+Portal_Scope.Portal_InitCH02_CH03();
+Portal_Scope.ZombieToTeleport();
+
+
+chapter03
+Portal_Scope.Portal_Init_CH03();
+Portal_Scope.ZombieToTeleportRadius();
+Portal_Scope.Portal_Maker_CH03a();
+Portal_Scope.ZombieToTeleport();

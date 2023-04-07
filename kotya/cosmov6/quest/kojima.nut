@@ -24,7 +24,7 @@ self.PrecacheModel(g_aChest[0]);
             EntFireByHandle(MainScript, "RunScriptCode", "SlowPlayer(-" + g_fChest_Speed * count + ",-1)", 0, this.handle, this.handle);
         }
 
-        function AddChest(count) 
+        function AddChest(count)
         {
 
             if(count <= g_aBonus.len())
@@ -38,7 +38,7 @@ self.PrecacheModel(g_aChest[0]);
             }
         }
 
-        function ChestPos() 
+        function ChestPos()
         {
             local start = 5;
             local modif = 24;
@@ -59,7 +59,7 @@ self.PrecacheModel(g_aChest[0]);
             }
         }
 
-        function CreateChest() 
+        function CreateChest()
         {
             local ent = Entities.CreateByClassname("prop_dynamic_glow")
             ent.__KeyValueFromInt("solid", 0);
@@ -85,7 +85,7 @@ self.PrecacheModel(g_aChest[0]);
             ent.__KeyValueFromInt("glowstyle", 1);
             ent.__KeyValueFromInt("glowdist", 1024);
             ent.__KeyValueFromInt("glowenabled", 1);
-            
+
             ent.__KeyValueFromInt("renderamt", 0);
             ent.__KeyValueFromInt("disableshadows", 1);
             ent.__KeyValueFromString("targetname", "kojima_chest_" + this.userid);
@@ -93,7 +93,7 @@ self.PrecacheModel(g_aChest[0]);
             return ent;
         }
 
-        function Destroy() 
+        function Destroy()
         {
             local count = this.chests.len();
             for(local i = 0; i < count; i++)
@@ -107,18 +107,18 @@ self.PrecacheModel(g_aChest[0]);
     ::g_fChest_Speed <- 0.12;
     g_iChest_Money <- 5;
     g_aLoaders <- [];
-    ::g_aBonus <- [4.0, 1.5, 1.75, 2.5];
+    ::g_aBonus <- [3.5, 1.75, 2.0, 4.0];
 
-    function Create(location, count) 
+    function Create(location, count)
     {
         if(GetLoaderClassByHandle(activator) != null || activator.GetTeam() == 2 || g_iAllow_Kojima <= 0)
             return;
-        
+
         local id = null;
-        id = MainScript.GetScriptScope().GetPlayerClassByHandle(activator); 
+        id = MainScript.GetScriptScope().GetPlayerClassByHandle(activator);
         if(id == null)
             id = 0;
-        else 
+        else
             id = id.userid;
 
         EntFire("kojima_particle_0"+location, "Start", "", 1.00, null);
@@ -127,18 +127,18 @@ self.PrecacheModel(g_aChest[0]);
         g_aLoaders.push(loader(activator, id, location, count));
 
         local player_class = MainScript.GetScriptScope().GetPlayerClassByHandle(activator);
-        ScriptPrintMessageChatAll(Chat_pref + "\x04" + player_class.name + "\x01 {\x07" + player_class.steamid + "\x01} took\x04 " + count + "\x01 crates to the\x04 " + ((location == 0) ? "Chocobo farm" : (location == 1) ? "Bar" : (location == 2) ? "After Bar" : "Cave"));  
+        ScriptPrintMessageChatAll(Chat_pref + "\x04" + player_class.name + "\x01 {\x07" + player_class.steamid + "\x01} took\x04 " + count + "\x01 crates to the\x04 " + ((location == 0) ? "Chocobo farm" : (location == 1) ? "Bar" : (location == 2) ? "After Bar" : "Cave"));
     }
 
 
-    function Touch(ID) 
+    function Touch(ID)
     {
         local loader_class = GetLoaderClassByHandle(activator);
         if(loader_class == null || loader_class.handle.GetTeam() == 2)
             return;
         if(loader_class.location != ID)
             return;
-        
+
         local result = loader_class.Destroy();
 
         for(local i = 0; i < g_aLoaders.len(); i++)
@@ -154,7 +154,7 @@ self.PrecacheModel(g_aChest[0]);
             EntFire("kojima_particle_0"+ID, "Kill", "", 1.00, null);
             EntFire("kojima_trigger_0"+ID, "Kill", "", 1.00, null);
         }
-        
+
 
         EntFireByHandle(MainScript, "RunScriptCode", "GetPlayerClassByHandle(activator).invalid = false;", 0, activator, activator);
         EntFireByHandle(MainScript, "RunScriptCode", "SlowPlayer(" + g_fChest_Speed * result + ",-1)", 0, activator, activator);
@@ -169,8 +169,8 @@ self.PrecacheModel(g_aChest[0]);
         {
             if (g_aLoaders[i].location == ID)
             {
-                if (g_aLoaders[i].handle.IsValid() && 
-                g_aLoaders[i].handle.GetTeam() == 3 && 
+                if (g_aLoaders[i].handle.IsValid() &&
+                g_aLoaders[i].handle.GetTeam() == 3 &&
                 g_aLoaders[i].handle.GetHealth() > 0)
                 {
                     count++;
@@ -192,11 +192,11 @@ self.PrecacheModel(g_aChest[0]);
 }
 
 {
-    class menu_point 
+    class menu_point
     {
         name = null;
         input = null;
-        
+
         constructor(_name, _input)
         {
             this.name = _name;
@@ -206,7 +206,7 @@ self.PrecacheModel(g_aChest[0]);
 
     ::Location_menu <- [
         menu_point("Select Location", ""),
-        
+
         menu_point("Chocobo farm", "chocobo"),
         menu_point("Bar", "bar"),
         menu_point("After Bar", "afterbar"),
@@ -217,7 +217,7 @@ self.PrecacheModel(g_aChest[0]);
 
     ::Chest_menu <- [
         menu_point("Select Count", ""),
-        
+
         menu_point("1", "chest1"),
         menu_point("2", "chest2"),
         menu_point("3", "chest3"),
@@ -240,7 +240,7 @@ self.PrecacheModel(g_aChest[0]);
         back_menu = "Exit";
 
         intput1 = 0;
-    
+
         constructor(handle)
         {
             this.player = handle;
@@ -254,7 +254,7 @@ self.PrecacheModel(g_aChest[0]);
             EntFireByHandle(this.game_ui, "AddOutPut", "PressedBack " + Kojima.GetName() + ":RunScriptCode:MovePointer(false):0:-1", 0.01, null, null);
             EntFireByHandle(this.game_ui, "AddOutPut", "PlayerOff " + Kojima.GetName() + ":RunScriptCode:Disconnect():0:-1", 0.01, null, null);
             EntFireByHandle(this.game_ui, "AddOutPut", "PlayerOn " + Kojima.GetName() + ":RunScriptCode:ShowMenu():0:-1", 0.01, null, null);
-        
+
             EntFireByHandle(this.game_ui, "Activate", "", 0.05, this.player, this.player);
 
             this.game_text = Entities.CreateByClassname("game_text");
@@ -266,10 +266,10 @@ self.PrecacheModel(g_aChest[0]);
             this.game_text.__KeyValueFromFloat("holdtime", 5.0);
         }
 
-        function MoveMenu(bForward) 
+        function MoveMenu(bForward)
         {
             if(bForward)
-            {   
+            {
                 local Point = this.active_menu[this.active_ID].input;
 
                 if(Point == "chocobo")
@@ -337,17 +337,17 @@ self.PrecacheModel(g_aChest[0]);
                     this.intput1 = null;
                     this.active_menu = Location_menu;
                 }
-                    
+
             }
 
             this.active_ID = 1;
 
             this.DisplayMenu();
-            
-            return false; 
+
+            return false;
         }
 
-        function MovePointer(bForward) 
+        function MovePointer(bForward)
         {
             if(bForward)
             {
@@ -367,7 +367,7 @@ self.PrecacheModel(g_aChest[0]);
             this.DisplayMenu();
         }
 
-        function DisplayMenu() 
+        function DisplayMenu()
         {
             local text = " >> " + this.active_menu[0].name + " <<\n\n";
 
@@ -384,21 +384,21 @@ self.PrecacheModel(g_aChest[0]);
                 if(i + 1 < this.active_menu.len())
                     text += "\n";
             }
-            
-            this.PrintMenu(text); 
+
+            this.PrintMenu(text);
         }
 
-        function PrintMenu(text) 
+        function PrintMenu(text)
         {
             this.game_text.__KeyValueFromString("message", text);
             EntFireByHandle(this.game_text, "Display", "", 0, this.player, this.player);
         }
 
-        function Destroy() 
+        function Destroy()
         {
             if(this.game_text.IsValid())
             {
-                this.PrintMenu(""); 
+                this.PrintMenu("");
                 this.game_text.Destroy();
             }
             if(this.game_ui.IsValid())
@@ -417,7 +417,7 @@ self.PrecacheModel(g_aChest[0]);
         }
     }
 
-    function MovePointer(bForward) 
+    function MovePointer(bForward)
     {
         local player_display_class = GetPlayerDisplayByPlayer(activator);
         if(player_display_class == null)
@@ -431,31 +431,31 @@ self.PrecacheModel(g_aChest[0]);
         PlayerDisplayDestroy(activator);
     }
 
-    function ShowMenu() 
+    function ShowMenu()
     {
         local player_display_class = GetPlayerDisplayByPlayer(activator);
         if(player_display_class == null)
             return;
-        
+
         player_display_class.DisplayMenu();
     }
 
-    function Connect() 
+    function Connect()
     {
         local player_display_class = GetPlayerDisplayByPlayer(activator);
         local waffel_car = Entities.FindByName(null, "waffel_controller");
         local waffel_class = waffel_car.GetScriptScope().GetClassByInvalid(activator)
         if(player_display_class != null || waffel_class != null)
             return;
-            
+
 
         if(GetLoaderClassByHandle(activator) != null || activator.GetTeam() == 2)
             return;
-    
+
         PLAYERS_DISPLAY.push(player_display(activator));
     }
 
-    function PlayerDisplayDestroy(activator) 
+    function PlayerDisplayDestroy(activator)
     {
         for(local i = 0; i < PLAYERS_DISPLAY.len(); i++)
         {
@@ -465,10 +465,10 @@ self.PrecacheModel(g_aChest[0]);
                 PLAYERS_DISPLAY.remove(i);
                 return;
             }
-        } 
+        }
     }
 
-    function GetPlayerDisplayByPlayer(value) 
+    function GetPlayerDisplayByPlayer(value)
     {
         foreach(nvalue in PLAYERS_DISPLAY)
         {

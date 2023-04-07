@@ -1,5 +1,5 @@
 g_aColors_Data <- [
-	["Красный", Vector(255, 0, 0), null], 
+	["Красный", Vector(255, 0, 0), null],
 	["Желтый", Vector(255, 255, 0), null],
 	["Синий", Vector(0, 0, 255), null],
 
@@ -11,13 +11,13 @@ g_aColors_Data <- [
 	["Белый", Vector(255, 255, 255), [0, 2, 5]],    //Красный + Синий + Зеленый
 	["Голубой", Vector(0, 192, 255), [2, 7]],       //Синий + Белый
 
-	["Розовый", Vector(255, 193, 203), [7, 0]],     //Красный + Белый 
+	["Розовый", Vector(255, 193, 203), [7, 0]],     //Красный + Белый
 	["Молочный", Vector(251, 240, 178), [7, 1]],    //Желтый + Белый
 	["Коричневый", Vector(150, 75, 0), [0, 5]],     //Красный + Зеленый
 
 	["Черный", Vector(0, 0, 0), [3, 4]],//Фиолетовый + Оранжевый
 	["Серый", Vector(128, 128, 128), [7, 12]],//Белый + Черный
-	["Болотный", Vector(129, 145, 85), [1, 2, 12]],//Желтый + Синий + Черный   
+	["Болотный", Vector(129, 145, 85), [1, 2, 12]],//Желтый + Синий + Черный
 
 	["Бордовый", Vector(121, 6, 4), [0, 7, 12]],//Красный + Белый + Черный
 ];
@@ -106,7 +106,7 @@ function Init()
 			obj.combinate = [];
 			foreach (elem1 in elem[2])
 			{
-			   obj.combinate.push(g_aColors_Data[elem1]);
+				obj.combinate.push(g_aColors_Data[elem1]);
 			}
 		}
 		g_accColors.push(obj);
@@ -153,7 +153,7 @@ function Toggle(ID)
 				g_hGun_Parent_1.ValidateScriptScope();
 				EntFireByHandle(g_hGun_Parent_1, "ClearParent", "", 0, null, null);
 				EntFireByHandle(g_hGun_Parent_1, "RunScriptCode", "self.SetOrigin(activator.GetOrigin() + Vector(0, 0, 12))", 0.01, caller, caller);
-				
+
 				g_hGun_Parent_1 = null;
 			}
 			else
@@ -208,7 +208,7 @@ function Toggle(ID)
 				g_hGun_Parent_1.ValidateScriptScope();
 				EntFireByHandle(g_hGun_Parent_1, "ClearParent", "", 0, null, null);
 				EntFireByHandle(g_hGun_Parent_1, "RunScriptCode", "self.SetOrigin(activator.GetOrigin() + Vector(0, 0, 12))", 0.01, caller, caller);
-				
+
 				g_hGun_Parent_1 = null;
 			}
 			else
@@ -245,8 +245,8 @@ function GetPistol(hActivator)
 	local h;
 	while ((h = Entities.FindByClassname(h, "weapon_*")) != null)
 	{
-		if (h.GetMoveParent() == hActivator && 
-		(h == g_hGun_0 || 
+		if (h.GetMoveParent() == hActivator &&
+		(h == g_hGun_0 ||
 		h == g_hGun_1))
 		{
 			return h;
@@ -257,7 +257,7 @@ function GetPistol(hActivator)
 
 function AddColor(i)
 {
-	if ((g_hBucket_slot_0 == null && g_hBucket_slot_1 == null) || 
+	if ((g_hBucket_slot_0 == null && g_hBucket_slot_1 == null) ||
 	g_hBucket_slot_0 != null && g_hBucket_slot_1 != null)
 	{
 		return;
@@ -286,7 +286,7 @@ function AddColor(i)
 }
 
 function GenerateColor()
-{   
+{
 	if (g_hBucket_slot_0 == null && g_hBucket_slot_1 == null)
 	{
 		return;

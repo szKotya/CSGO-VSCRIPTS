@@ -45,7 +45,7 @@ function Start()
     EntFireByHandle(self, "RunScriptCode", "Tick(); ", tickrate, null, null);
 }
 
-function SetMaxPlayers(i = 8)
+function SetMaxPlayers(i = 16)
 {
     PlayerMax = i;
 }
@@ -86,7 +86,7 @@ function Tick()
         SelfBreak();
         return;
     }
-        
+
     MovePlayers();
     ShowTextPlayers();
 

@@ -21,3 +21,7 @@ ar_dizzy/
 ar_shoots/
 birds/
 control_point_master/
+vslib_main.nut
+vslib_vectors.nut
+vslib_entities.nut
+vslib_event.nut

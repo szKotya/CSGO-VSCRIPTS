@@ -1,31 +1,23 @@
-::PLAYERS <- [];
+::PLAYERSINFO <- [];
 PL_HANDLE <- [];
-MAPPER_SID <- ["STEAM_1:1:124348087"];
 
 TEMP_HANDLE <- null;
 T_Player_Check <- 5.00;
 
-::MAP_PREF <- "[Map] ";
-
-// ADMIN_ROOM_ORIGIN <- Vector(0, 0, 0);
-ADMIN_ROOM_ORIGIN <- null;
-SCRIPT_VERSION <- "07.02.22 - 0:12";
-COMMAND_PREF <- "!mc_"
-
-class class_player
+class class_playerinfo
 {
 	userid = null;
 	name = null;
 	steamid = null;
 	handle = null;
-	mapper = false;
+
 	pl_checked_r = 0;
 
-	constructor(_userid,_name,_steamid)
+	constructor(_userid, _name, _steamid)
 	{
-		userid = _userid;
-		name = _name;
-		steamid = _steamid;
+		this.userid = _userid;
+		this.name = _name;
+		this.steamid = _steamid;
 	}
 
 	function ValidThisH()
@@ -41,36 +33,15 @@ class class_player
 	}
 
 	function GetCheckedCPl(){return this.pl_checked_r;}
-	function IsMapper()
-	{
-		if (this.mapper){return true;}
-		else{return false;}
-	}
-
-	function SetMapperData()
-	{
-		if (!this.mapper){return this.mapper = true;}
-		else{return;}
-	}
-
-	function ReturnMapper()
-	{
-		if (this.mapper){return true;}
-		return false;
-	}
 }
 
 EVENT_INFO <- null;
 EVENT_PROXE <- null;
 EVENT_LIST <- null;
-EVENT_SAY <- null;
-EVENT_PLAYER_SPAWNED <- null;
 GLOBAL_ZONE <- null;
 
 function RoundStart()
 {
-	if (EVENT_PLAYER_SPAWNED == null || EVENT_PLAYER_SPAWNED != null && !EVENT_PLAYER_SPAWNED.IsValid()){EVENT_PLAYER_SPAWNED = Entities.FindByName(null, "map_eventlistener_player_spawned");}
-	if (EVENT_SAY == null || EVENT_SAY != null && !EVENT_SAY.IsValid()){EVENT_SAY = Entities.FindByName(null, "map_eventlistener_player_say");}
 	if (EVENT_LIST == null || EVENT_LIST != null && !EVENT_LIST.IsValid()){EVENT_LIST = Entities.FindByName(null, "map_eventlistener_player_connect");}
 	if (GLOBAL_ZONE == null || GLOBAL_ZONE != null && !GLOBAL_ZONE.IsValid()){GLOBAL_ZONE = Entities.FindByName(null, "map_eventlistener_zone");}
 	if (EVENT_INFO == null || EVENT_INFO != null && !EVENT_INFO.IsValid()){EVENT_INFO = Entities.FindByName(null, "map_eventlistener_player_info");}
@@ -83,7 +54,7 @@ function RoundStart()
 		EVENT_PROXE.__KeyValueFromInt("StartDisabled", 0);
 	}
 
-	for(local i = 0; i < PLAYERS.len(); i++){PLAYERS[i].ClearClassData();}
+	for(local i = 0; i < PLAYERSINFO.len(); i++){PLAYERSINFO[i].ClearClassData();}
 
 	LoopPlayerCheck();
 }
@@ -98,29 +69,11 @@ function LoopPlayerCheck()
 
 function CheckValidInArr()
 {
-	if (PLAYERS.len() > 0)
+	if (PLAYERSINFO.len() > 0)
 	{
-		for(local i = 0; i < PLAYERS.len(); i++)
+		for(local i = 0; i < PLAYERSINFO.len(); i++)
 		{
-			if (!PLAYERS[i].ValidThisH() && PLAYERS[i].GetCheckedCPl() >= 3){PLAYERS.remove(i);}
-		}
-	}
-	SetDataAM();
-}
-
-function SetDataAM()
-{
-	if (PLAYERS.len() > 0 && MAPPER_SID.len() > 0)
-	{
-		for(local i = 0; i < PLAYERS.len(); i++)
-		{
-			for(local a = 0; a < MAPPER_SID.len(); a++)
-			{
-				if (PLAYERS[i].steamid == MAPPER_SID[a])
-				{
-					PLAYERS[i].SetMapperData();
-				}
-			}
+			if (!PLAYERSINFO[i].ValidThisH() && PLAYERSINFO[i].GetCheckedCPl() >= 3){PLAYERSINFO.remove(i);}
 		}
 	}
 }
@@ -135,7 +88,7 @@ function Set_Player()
 
 function ValidHandleArr(h)
 {
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERSINFO)
 	{
 		if (p.handle == h)
 		{
@@ -170,68 +123,32 @@ function PlayerConnect()
 	local userid = EVENT_LIST.GetScriptScope().event_data.userid;
 	local name = EVENT_LIST.GetScriptScope().event_data.name;
 	local steamid = EVENT_LIST.GetScriptScope().event_data.networkid;
-	local p = class_player(userid,name,steamid);
-	PLAYERS.push(p);
+	local p = class_playerinfo(userid,name,steamid);
+	PLAYERSINFO.push(p);
 }
 
 function PlayerInfo()
 {
 	local userid = EVENT_INFO.GetScriptScope().event_data.userid;
-	if (PLAYERS.len() > 0)
+	if (PLAYERSINFO.len() > 0)
 	{
-		for(local i=0; i < PLAYERS.len(); i++)
+		for(local i=0; i < PLAYERSINFO.len(); i++)
 		{
-			if (PLAYERS[i].userid == userid)
+			if (PLAYERSINFO[i].userid == userid)
 			{
-				PLAYERS[i].handle = TEMP_HANDLE;
+				PLAYERSINFO[i].handle = TEMP_HANDLE;
 				return;
 			}
 		}
 	}
-	local p = class_player(userid,"NOT GETED","NOT GETED");
+	local p = class_playerinfo(userid,"NOT GETED","NOT GETED");
 	p.handle = TEMP_HANDLE;
-	PLAYERS.push(p);
+	PLAYERSINFO.push(p);
 }
 
-function PlayerSay()
+::GetPlayerInfoClassByHandle <- function(handle)
 {
-	try
-	{
-		if (EVENT_SAY == null || EVENT_SAY != null && !EVENT_SAY.IsValid()){EVENT_SAY = Entities.FindByName(null, "map_eventlistener_player_say");}
-		local userid = EVENT_SAY.GetScriptScope().event_data.userid;
-		local msg = EVENT_SAY.GetScriptScope().event_data.text;
-		local player_class = GetPlayerClassByUserID(userid);
-
-		if (player_class == null)
-			return;
-
-		if (player_class.ReturnMapper())
-		{
-			if (COMMAND_PREF + "version" == msg)
-			{
-				Version();
-			}
-			else if (COMMAND_PREF + "entityreport" == msg)
-			{
-				EntityReport();
-			}
-			else if (COMMAND_PREF + "adminroom" == msg)
-			{
-				TeleportAdminRoom(player_class);
-			}
-		}
-	}
-	catch(error){return;}
-}
-
-function PlayerSpawned()
-{
-
-}
-
-::GetPlayerClassByHandle <- function(handle)
-{
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERSINFO)
 	{
 		if (p.handle == handle)
 		{
@@ -241,9 +158,9 @@ function PlayerSpawned()
 	return null;
 }
 
-::GetPlayerClassByUserID <- function(uid)
+::GetPlayerInfoClassByUserID <- function(uid)
 {
-	foreach(p in PLAYERS)
+	foreach(p in PLAYERSINFO)
 	{
 		if (p.userid == uid)
 		{
@@ -251,49 +168,4 @@ function PlayerSpawned()
 		}
 	}
 	return null;
-}
-
-function TeleportAdminRoom(player_class = null)
-{
-	if (ADMIN_ROOM_ORIGIN == null){return;}
-	if (player_class == null)
-	{
-		player_class = GetPlayerClassByHandle(activator);
-		if (player_class == null){return;}
-		if (!player_class.ReturnMapper()){return;}
-	}
-
-	local handle = player_class.handle;
-
-	if (handle == null || (handle != null && handle.IsValid() && handle.GetHealth() > 0)){return;}
-
-	handle.SetOrigin(ADMIN_ROOM_ORIGIN);
-}
-
-function EntityReport()
-{
-	local first_ent = Entities.First();
-	local edict_c = 0;
-	local iterations = 0;
-	local next_ent = Entities.Next(first_ent);
-
-	while(next_ent != null)
-	{
-		iterations++;
-		if (next_ent.entindex() != 0){edict_c++;}
-		next_ent = Entities.Next(next_ent);
-	}
-
-	local text;
-	text = "Total "+iterations+" entities ("+edict_c+" edicts)";
-
-	ScriptPrintMessageChatAll(MAP_PREF + text);
-}
-
-function Version()
-{
-	local text;
-	text = "Version: " + SCRIPT_VERSION;
-
-	ScriptPrintMessageChatAll(MAP_PREF + text);
 }

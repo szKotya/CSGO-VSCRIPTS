@@ -1,0 +1,21 @@
+{
+    // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+    // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+    // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "squirrel",
+            "request": "launch",
+            "name": "Ask for hostname and port",
+            "hostnamePort": "${command:AskForHostnamePort}"
+        },
+        {
+            "type": "squirrel",
+            "request": "launch",
+            "name": "Run current file",
+            "hostnamePort": "localhost:8000",
+            "program": "${command:SdbRuntime} -p 8000 -f \"${file}\""
+        }
+    ]
+}

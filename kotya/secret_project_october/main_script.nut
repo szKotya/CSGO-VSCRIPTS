@@ -10,6 +10,7 @@ IncludeScript("kotya/secret_project_october/vectors/vec_lib.nut", this);
 
 function RoundStart()
 {
+	Count = 0;
 	local h;
 	h = Entities.CreateByClassname("logic_script");
 	EF(h, "RunScriptFile", "kotya/secret_project_october/prespawn/prespawn_controller.nut");
@@ -79,16 +80,19 @@ SendToConsole("mp_restartgame 1");
 	}
 }
 
+::Count <- 0;
 ::AOP <- function(item, key, value = "", d = 0.00)
 {
 	if (typeof item == "string")
 	{
+		Count++;
 		EntFire(item, "AddOutPut", key + " " + value, d);
 	}
 	else if (typeof item == "instance")
 	{
 		if (d > 0.00)
 		{
+			Count++;
 			EntFireByHandle(item, "AddOutPut", key + " " + value, d, item, item);
 		}
 		else
@@ -111,6 +115,7 @@ SendToConsole("mp_restartgame 1");
 			}
 			else
 			{
+				Count++;
 				EntFireByHandle(item, "AddOutPut", key + " " + value, d, item, item);
 			}
 		}
@@ -220,11 +225,17 @@ SendToConsole("mp_restartgame 1");
 	local deltaX = a.x - b.x;
 	local deltaY = a.y - b.y;
 	local deltaZ = a.z - b.z;
-	local yaw = atan2(deltaY,deltaX) * 180 / PI
-	local pitch = asin(deltaZ / sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)) * 180 / PI;
-	if(pitch > 0){pitch = -pitch;}
-	else{pitch = fabs(pitch);}
-	return Vector(pitch, yaw, 0);
+	local yaw = (atan2(deltaY,deltaX) * 180 / PI).tointeger();
+	local pitch = asin(deltaZ / sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ));
+	return Vector(pitch,yaw,0);
+}
+::GetYawFVect3D <- function(a, b)
+{
+	local deltaX = a.x - b.x;
+	local deltaY = a.y - b.y;
+	local deltaZ = a.z - b.z;
+	local yaw = (atan2(deltaY,deltaX) * 180 / PI).tointeger();
+	return yaw;
 }
 
 ::GetPredictionOriginTarget <- function(oShoot, oTarget, velTarget, iBullet, tickrate = 0.01, speedmodif = 50)
@@ -337,23 +348,51 @@ SendToConsole("mp_restartgame 1");
 ::DamageType_Item <- 0;
 ::DamageType_Explosion <- 1;
 
-// ::GetFloor <- function(origin, back = 1000, ignorehandle = null)
-// {
-// 	local count = 0;
-// 	origin = origin;
-// 	local start = origin;
+::GetFloor <- function(vecOrigin, ignore = null)
+{
+	local vecStart = vecOrigin;
+	local iDist = 64;
+	vecOrigin = Vector(vecOrigin.x, vecOrigin.y, vecOrigin.z + iDist);
+	local fact = TraceLine(vecOrigin, vecOrigin - Vector(0, 0, 2*iDist), ignore);
+	if (fact == 1.00)
+	{
+		DebugDrawAxis(vecStart, 64, 5);
+		return vecStart;
+	}
+	vecOrigin = vecOrigin + Vector(0, 0, -1) * fact * 2*iDist;
+	return vecOrigin;
+}
 
-// 	while(count < back)
-// 	{
-// 		if(!InSight(origin, origin - Vector(0, 0, 1), ignorehandle))
-// 		{
-// 			return origin;
-// 		}
-// 		origin = origin - Vector(0, 0, 1);
-// 		count++;
-// 	}
-// 	return start;
-// }
+::DebugDrawSphere <- function(vCenter, flRadius, time)
+{
+	local nPhi = 10;
+	local nTheta = 360;
+	++nTheta;
+	local pVerts = array( nPhi * nTheta );
+	local i, j, c = 0;
+	for(i = 0; i < nPhi; ++i)
+	{
+		for (j = 0; j < nTheta; ++j)
+		{
+			local u = j / (nTheta - 1).tofloat();
+			local v = i / (nPhi - 1).tofloat();
+			local theta = 6.283185307 * u;
+			local phi = PI * v;
+			local sp = flRadius * sin(phi);
+			pVerts[c++] = Vector(vCenter.x + (sp * cos(theta)), vCenter.y + (sp * sin(theta)), vCenter.z + (flRadius * cos(phi)));
+		}
+	}
+
+	for(i = 0; i < nPhi - 1; ++i)
+	{
+		for(j = 0; j < nTheta - 1; ++j)
+		{
+			local idx = nTheta * i + j;
+			DebugDrawLine(pVerts[idx], pVerts[idx+nTheta], 0, 0, 255, true, time);
+			DebugDrawLine(pVerts[idx], pVerts[idx+1], 0, 0, 255, true, time);
+		}
+	}
+}
 
 ::ValueLimiter <- function(Value, Min = null, Max = null)
 {

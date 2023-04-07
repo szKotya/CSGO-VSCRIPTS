@@ -35,9 +35,9 @@ class class_item
 		this.gun.SetModel(NULLPROP);
 		local oldowner = this.owner;
 		this.owner = null;
-		
+
 		EF(this.center, "ClearParent");
-		
+
 		EntFireByHandle(g_hItems, "RunScriptCode", "caller.SetForwardVector(activator.GetForwardVector());caller.SetOrigin(activator.GetOrigin())", 0.01, this.gun, this.center);
 		EntFireByHandle(this.center, "SetParent", "!activator", 0.01, this.gun, this.gun);
 
@@ -89,7 +89,7 @@ class class_item
 			if (weaponworldmodel.GetMoveParent() == this.gun)
 			{
 				weaponworldmodel.SetModel(NULLPROP);
-				
+
 				break;
 			}
 		}
@@ -188,7 +188,7 @@ function TickDrop()
 
 function GetItemByGun(gun)
 {
-	foreach (item in g_aiItems) 
+	foreach (item in g_aiItems)
 	{
 		if (item.gun == gun)
 		{
@@ -200,7 +200,7 @@ function GetItemByGun(gun)
 
 function GetItemByPostFix(postfix)
 {
-	foreach (item in g_aiItems) 
+	foreach (item in g_aiItems)
 	{
 		if (item.postfix == postfix)
 		{
@@ -231,7 +231,9 @@ function ItemEquip()
 	if (EVENT_EQUIP == null || EVENT_EQUIP != null && !EVENT_EQUIP.IsValid()){EVENT_EQUIP = Entities.FindByName(null, "map_eventlistener_item_equip");}
 	local userid = EVENT_EQUIP.GetScriptScope().event_data.userid;
 	local player_class = GetPlayerClassByUserID(userid);
-
+	printl("item: " + EVENT_EQUIP.GetScriptScope().event_data.item);
+	printl("defindex: " + EVENT_EQUIP.GetScriptScope().event_data.defindex);
+	printl("weptype: " + EVENT_EQUIP.GetScriptScope().event_data.weptype);
 	if (player_class == null)
 	{
 		return;
@@ -254,7 +256,7 @@ function ActivateItem(owner)
 		return;
 	}
 	printl("1");
-	local viewmodel = GetViewModelByOwner(owner); 
+	local viewmodel = GetViewModelByOwner(owner);
 	if (viewmodel == null)
 	{
 		return;
@@ -274,7 +276,7 @@ function ActivateItem(owner)
 			printl("0.35");
 			continue;
 		}
-		
+
 		if (viewmodel_name != item.gun_modelname)
 		{
 			printl(viewmodel_name + " : " + item.gun_modelname);
@@ -397,7 +399,7 @@ self.PrecacheModel(NULLPROP);
 			if (InSight(start, end, item))
 			{
 				return true;
-			}	
+			}
 		}
 	}
 
@@ -411,7 +413,7 @@ self.PrecacheModel(NULLPROP);
 		return false;
 	}
 	return true;
-} 
+}
 
 ::TraceDir <- function(orig, dir, maxd = 99999, filter = null)
 {

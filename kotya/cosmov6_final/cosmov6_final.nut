@@ -31,9 +31,9 @@ function RoundStart()
 	EF(h, "RunScriptFile", "kotya/cosmov6_final/triggers.nut");
 	AOP(h, "targetname", "map_script_trigger");
 
-	h = Entities.CreateByClassname("logic_script");
-	EF(h, "RunScriptFile", "kotya/cosmov6_final/boss/airbuster/airbuster.nut");
-	AOP(h, "targetname", "map_script_aircringe");
+	// h = Entities.CreateByClassname("logic_script");
+	// EF(h, "RunScriptFile", "kotya/cosmov6_final/boss/airbuster/airbuster.nut");
+	// AOP(h, "targetname", "map_script_aircringe");
 
 	EF("map_script_aircringe", "RunScriptCode", "Start()");
 	// EF("map_script_trigger", "RunScriptCode", "Spawn_Trigger()");
@@ -95,7 +95,7 @@ class class_iteminfo
 
 	can_silence = true;
 	transfer_ban_double = true;
-	
+
 	use_last = false;
 	use_regen = false;
 
@@ -111,35 +111,35 @@ class class_iteminfo
 	cast_up = null;
 	cast_left = null;
 
-	function Cast_SetCD(szvalue) 
+	function Cast_SetCD(szvalue)
 	{
 		this.cast_cd = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetDuration(szvalue) 
+	function Cast_SetDuration(szvalue)
 	{
 		this.cast_duration = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetRadius(szvalue) 
+	function Cast_SetRadius(szvalue)
 	{
 		this.cast_radius = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetDamage(szvalue) 
+	function Cast_SetDamage(szvalue)
 	{
 		this.cast_damage = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetTime(szvalue) 
+	function Cast_SetTime(szvalue)
 	{
 		this.cast_time = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetCastRangeForward(szvalue) 
+	function Cast_SetCastRangeForward(szvalue)
 	{
 		this.cast_forward = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetCastRangeUp(szvalue) 
+	function Cast_SetCastRangeUp(szvalue)
 	{
 		this.cast_up = ConvertStringToArrayFloat(szvalue);
 	}
-	function Cast_SetCastRangeLeft(szvalue) 
+	function Cast_SetCastRangeLeft(szvalue)
 	{
 		this.cast_left = ConvertStringToArrayFloat(szvalue);
 	}
@@ -153,7 +153,7 @@ class class_iteminfo
 		return newvalue.slice();
 	}
 
-	function SetParticle(szvalue) 
+	function SetParticle(szvalue)
 	{
 		this.use_particle_name = split(szvalue, " ");
 	}
@@ -662,11 +662,11 @@ function RegItemInfo()
 			{
 				continue;
 			}
-				
+
 			if (InSight(start, end, ignorehandle[i]))
 			{
 				return true;
-			}	
+			}
 		}
 	}
 

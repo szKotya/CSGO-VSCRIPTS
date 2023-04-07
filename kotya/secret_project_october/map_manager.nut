@@ -133,6 +133,7 @@ function Init()
 		}
 	}
 }
+
 ::GetOriginBAZA <- function()
 {
 	return g_vecBaza[((g_BazaID >= g_vecBaza.len()) ? (g_BazaID = 0) : g_BazaID++)];
@@ -140,38 +141,41 @@ function Init()
 
 function TouchSpawn()
 {
-	local origin = GetOriginBAZA();
+	local vecOrigin1 = GetOriginBAZA();
+	local vecOrigin2;
 	if (activator.GetTeam() == CS_TEAM_CT)
 	{
-		CreateHuman(origin, 0);
-		activator.SetOrigin(origin);
-		CallFunction("activator.SetOrigin(Vector(-613 + RandomInt(-64, 64), -709 + RandomInt(-64, 64), -12))", 0.5, activator);
+		ScriptPrintMessageChatAll(activator + " : human");
+		// vecOrigin2 = Vector(-613 + RandomInt(-64, 64),
+		// -709 + RandomInt(-64, 64),
+		// -12);
+		vecOrigin2 = Vector(-9774 + RandomInt(-64, 64),
+		-1848 + RandomInt(-64, 64),
+		1528);
+		CreateHuman(vecOrigin1, 0);
 	}
 	else
 	{
-		CreateZombie(origin, 1);
-		activator.SetOrigin(origin);
-		CallFunction("activator.SetOrigin(Vector(-704 + RandomInt(-64, 64), -165 + RandomInt(-64, 64), -12))", 0.5, activator);
+		ScriptPrintMessageChatAll(activator + " : zombie");
+		// vecOrigin2 = Vector(-613 + RandomInt(-64, 64),
+		// 709 + RandomInt(-64, 64),
+		// -12);
+		vecOrigin2 = Vector(-11186 + RandomInt(-64, 64),
+		-3892 + RandomInt(-64, 64),
+		1376);
+		CreateZombie(vecOrigin1, RandomInt(0, 2));
 	}
-}
+	// printl("" +vecOrigin1 );
+	// printl("" +vecOrigin2 );
 
-::GetFloor <- function(vecOrigin, ignore = null)
-{
-	printl("" + vecOrigin);
-	local vecStart = vecOrigin;
-	local iDist = 64;
-	vecOrigin = Vector(vecOrigin.x, vecOrigin.y, vecOrigin.z + iDist);
-	local fact = TraceLine(vecOrigin, vecOrigin - Vector(0, 0, 2*iDist), ignore);
-	printl(""+ fact);
-	if (fact == 1.00)
-	{
-		DebugDrawAxis(vecStart, 64, 5);
-		return vecStart;
-	}
-	printl(""+vecOrigin);
-	vecOrigin = vecOrigin + Vector(0, 0, -1) * fact * 2*iDist;
-	printl(""+vecOrigin);
-	DebugDrawAxis(vecOrigin, 16, 5);
-	return vecOrigin;
+	activator.SetForwardVector(Vector(0, 0, 0));
+	activator.SetAngles(0, 0, 0);
+
+	CallFunction("activator.SetOrigin(Vector(" + vecOrigin1.x + "," + vecOrigin1.y +"," + vecOrigin1.z + "))", 0.1, activator);
+	CallFunction("activator.SetOrigin(Vector(" + vecOrigin2.x + "," + vecOrigin2.y +"," + vecOrigin2.z + "))", 0.5, activator);
 }
+Init();
+
+
+
 Init();

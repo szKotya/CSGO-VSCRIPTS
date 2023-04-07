@@ -39,7 +39,7 @@ g_bTickRate_ANIM <- 0.0;
 	hp = 700;
 	regen_hp_hit = 20;
 
-	name = "default";
+	name = "";
 
 	modelname = "";
 
@@ -141,7 +141,8 @@ g_bTickRate_ANIM <- 0.0;
 	smoke_jump_dir = Vector(0, 0, 0);
 	smoke_jump_power = 220;
 
-	smoke_wall = false;
+	smoke_walling = false;
+	smoke_wall_origin = Vector(0, 0, 0);
 
 	grounded = false;
 	crouched = false;
@@ -155,7 +156,7 @@ g_bTickRate_ANIM <- 0.0;
 
 	constructor(_handle, _knife, _class_id = 0)
 	{
-		printl("constructor" + _handle);
+		printl("constructor : " + _handle);
 		this.handle = _handle;
 		this.knife = _knife;
 
@@ -184,7 +185,7 @@ g_bTickRate_ANIM <- 0.0;
 
 		if (_class_id != 2)
 		{
-			this.trigger_hand = CreateTrigger(this.eye.GetOrigin() + this.eye.GetForwardVector() * 20, Vector(48, 80, 48), null, {filtername = "filter_team_only_ct", parentname = this.eye.GetName()});
+			this.trigger_hand = CreateTrigger(this.eye.GetOrigin() + this.eye.GetForwardVector() * 45, Vector(48, 90, 48), null, {filtername = "filter_team_only_ct", parentname = this.eye.GetName()});
 			this.trigger_hand.SetForwardVector(this.eye.GetForwardVector());
 
 			AOP(this.trigger_hand, "OnStartTouch", "map_script_zombie_controller:RunScriptCode:TouchZombieAttackTrigger():0:-1", 0.01);
@@ -194,8 +195,8 @@ g_bTickRate_ANIM <- 0.0;
 		AOP(this.physbox, "OnHealthChanged", "map_script_zombie_controller:RunScriptCode:DamageZombieByPhysBox():0:-1", 0.01);
 
 		this.model = Prop_dynamic_Glow_Maker.CreateEntity({model = ZOMBIE_CLASS_DATA[_class_id].modelname, DefaultAnim = ZOMBIE_CLASS_DATA[_class_id].GetAnim_Stand_Idle(), glowenabled = 0, solid = 0, parentname = _handle.GetName(), pos = class_pos(_handle.GetOrigin())})
-		temp = this.knife.GetForwardVector();
-		this.model.SetForwardVector(Vector(temp.x, temp.y, 0));
+		// temp = this.knife.GetForwardVector();
+		// this.model.SetForwardVector(Vector(temp.x, temp.y, 0));
 		AOP(this.handle, "rendermode", 10);
 
 		EF(_handle, "SetDamageFilter", "filter_team_only_t");
@@ -255,13 +256,13 @@ g_bTickRate_ANIM <- 0.0;
 			EF(this.trigger_hand, "Enable", "", 0.8);
 			EF(this.trigger_hand, "Disable", "", 0.85);
 
-			SetSpeed(this.handle, -0.8, 1.05);
+			SetSpeed(this.handle, -0.7, 1.05);
 			this.SetAnimRate(1.75);
 			EntFireByHandle(Zombie_Handle "RunScriptCode", "KnifeCheck_Berserk(true)", 1.05, this.model, this.model);
 		}
 		else
 		{
-			SetSpeed(this.handle, -1.0, 0.7);
+			SetSpeed(this.handle, -0.8, 0.7);
 
 			EF(this.trigger_hand, "Enable", "", 0.15);
 			EF(this.trigger_hand, "Disable", "", 0.2);
@@ -285,14 +286,14 @@ g_bTickRate_ANIM <- 0.0;
 
 	function KnifeCheck_Tank()
 	{
-			SetSpeed(this.handle, -0.5, 0.5);
+		SetSpeed(this.handle, -0.5, 0.5);
 
-			EF(this.trigger_hand, "Enable", "", 0.2);
-			EF(this.trigger_hand, "Disable", "", 0.2 + 0.05);
+		EF(this.trigger_hand, "Enable", "", 0.2);
+		EF(this.trigger_hand, "Disable", "", 0.2 + 0.05);
 
-			this.SetAnim((RandomInt(0, 1) ? "attack_melee_l" : "attack_melee_r"));
-			this.SetAnimRate(1.8);
-			EntFireByHandle(Zombie_Handle "RunScriptCode", "KnifeCheck_Tank()", 0.5, this.model, this.model);
+		this.SetAnim((RandomInt(0, 1) ? "attack_melee_l" : "attack_melee_r"));
+		this.SetAnimRate(1.8);
+		EntFireByHandle(Zombie_Handle "RunScriptCode", "KnifeCheck_Tank()", 0.5, this.model, this.model);
 	}
 
 	function Attack_Tank()
@@ -306,7 +307,7 @@ g_bTickRate_ANIM <- 0.0;
 		if (!this.smoke_jumping &&
 		!this.smoke_prepare)
 		{
-			if (this.smoke_wall)
+			if (this.smoke_walling)
 			{
 				this.SetAnim("attack_wallprojectile");
 			}
@@ -321,10 +322,11 @@ g_bTickRate_ANIM <- 0.0;
 
 	function Attack_Smoke()
 	{
-		if (!this.smoke_wall)
+		if (!this.smoke_walling)
 		{
 			GetPlayerMovementClassByHandle(this.handle, true).SetMoveTypeWalk();
 		}
+
 		this.attacking = false;
 
 		this.fknife_time = Time() + ZOMBIE_CLASS_DATA[this.class_id].knife_delay1;
@@ -335,15 +337,39 @@ g_bTickRate_ANIM <- 0.0;
 		vecDir.Norm();
 
 		local vecAngles = GetPithXawFVect3D(vecOrigin, vecOrigin - vecDir * 64);
-		vecAngles = Vector(vecAngles.x - 20, vecAngles.y, vecAngles.z);
+		vecAngles = Vector(vecAngles.x - 10, vecAngles.y, vecAngles.z);
 		vecOrigin += vecDir * 64;
 
 		local physbox = Physbox_multiplayer_Maker.CreateEntity({pos = class_pos(vecOrigin, vecDir), model = MODEL_ZOMBIE_CUM, material = 10, spawnflags = 16902, health = 1, rendermode = 0})
-		local truster = Thruster_Maker.CreateEntity({spawnflags = 27, angles = vecAngles, force = 3500, attach1 = physbox.GetName()});
-		local triggerhurt = CreateTrigger(vecOrigin, 16, null, {filtername = "filter_team_only_ct", StartDisabled = 0, parentname = physbox.GetName()});
+		local truster = Thruster_Maker.CreateEntity({spawnflags = 27, angles = vecAngles, force = 5000, attach1 = physbox.GetName()});
+		local triggerhurt = CreateTrigger(vecOrigin, 32, null, {filtername = "filter_team_only_ct", StartDisabled = 0, parentname = physbox.GetName()});
 		triggerhurt.SetForwardVector(vecDir);
 
 		triggerhurt.SetOwner(this.handle);
+
+		// triggerhurt.ValidateScriptScope();
+		// local scriptscope = triggerhurt.GetScriptScope();
+
+		// scriptscope.truster <- truster;
+		// scriptscope.physbox <- physbox;
+		// scriptscope.InputOnStartTouch <- function()
+		// {
+		// 	EF(truster, "Kill", "", 0.15);
+		// 	EF(physbox, "Kill", "", 0.15);
+		// 	EF(Zombie_Handle, "RunScriptCode", "TouchSmokeShit()", 0, activator, self);
+		// }
+
+		// physbox.ValidateScriptScope();
+		// local scriptscope = physbox.GetScriptScope();
+
+		// scriptscope.truster <- truster;
+		// scriptscope.InputOnDamaged <- function()
+		// {
+		// 	EF(truster, "Kill", "", 0);
+		// 	EF(self, "Kill", "", 0);
+		// }
+
+		// + gamestingtable
 		AOP(triggerhurt, "OnStartTouch", truster.GetName() + ":Kill::0.15:1", 0.01);
 		AOP(triggerhurt, "OnStartTouch", physbox.GetName() + ":Kill::0.15:1", 0.01);
 		AOP(triggerhurt, "OnStartTouch", "map_script_zombie_controller:RunScriptCode:TouchSmokeShit():0:-1", 0.01);
@@ -376,6 +402,21 @@ g_bTickRate_ANIM <- 0.0;
 				this.handle.SetVelocity(vecVelocity);
 			}
 		}
+		else if (this.smoke_walling)
+		{
+			if (GetDistance3D(this.smoke_wall_origin, this.handle.GetOrigin()) > 16)
+			{
+				this.smoke_walling = false;
+				GetPlayerMovementClassByHandle(this.handle, true).SetMoveTypeWalk();
+
+				this.model.SetOrigin(this.handle.GetOrigin());
+				EntFireByHandle(this.model, "SetParent", "!activator", 0, this.handle, this.handle);
+				EntFireByHandle(Zombie_Handle "RunScriptCode", "activator.SetForwardVector(Vector(caller.GetForwardVector().x, caller.GetForwardVector().y, 0))", 0.05, this.model, this.knife);
+				EntFireByHandle(Zombie_Handle "RunScriptCode", "activator.SetAngles(0, 0, 0)", 0.05, this.model, this.model);
+
+				this.SetAnimIdle();
+			}
+		}
 		else if (this.tank_ticks > 0)
 		{
 			this.tank_ticks -= TICKRATE_ABILITY_WORK;
@@ -388,7 +429,7 @@ g_bTickRate_ANIM <- 0.0;
 	}
 	function AnimCheck()
 	{
-		if (this.smoke_wall ||
+		if (this.smoke_walling ||
 		this.smoke_jumping ||
 		this.smoke_prepare ||
 		this.attacking)
@@ -574,10 +615,9 @@ g_bTickRate_ANIM <- 0.0;
 	function Use_Smoke()
 	{
 		printl("Use_Smoke");
-		if (this.smoke_wall)
+		if (this.smoke_walling)
 		{
-			this.smoke_wall = false;
-			this.handle.SetVelocity(Vector(0, 0, 0))
+			this.smoke_walling = false;
 			GetPlayerMovementClassByHandle(this.handle, true).SetMoveTypeWalk();
 
 			this.model.SetOrigin(this.handle.GetOrigin());
@@ -609,15 +649,18 @@ g_bTickRate_ANIM <- 0.0;
 			vecWallPlance.z < SMOKE_MAX_WALL_DIR_Z)
 			{
 				printl("FIND PLACE: " + vecWallPlance);
+				vecEnd -= Vector(0, 0, 48);
 				local vecPlayer = vecEnd + vecWallPlance * 28;
 				local vecModel = vecEnd + vecWallPlance * 18;
 
-				this.smoke_wall = true;
+				this.smoke_wall_origin = vecPlayer;
+				this.smoke_walling = true;
 				this.smoke_prepare = false;
 				this.smoke_jumping = false;
 				this.smoke_jumping_time = 0.0;
 
 				this.handle.SetOrigin(vecPlayer);
+				this.handle.SetVelocity(Vector(0, 0, 0));
 				GetPlayerMovementClassByHandle(this.handle, true).SetMoveTypeFreeze();
 				// AOP(this.handle, "movetype", 0);
 				// this.handle.SetForwardVector(vecWallPlance);
@@ -769,7 +812,6 @@ g_bTickRate_ANIM <- 0.0;
 	{
 		if (this.hp < 1)
 		{
-			this.hp = -69;
 			local vecDir = Vector(0, 0, 0);
 			if (TargetValid(this.last_dps_player))
 			{
@@ -777,11 +819,13 @@ g_bTickRate_ANIM <- 0.0;
 				vecDir.Norm();
 			}
 			DispatchParticleEffect("blood_impact_headshot", this.handle.EyePosition(), vecDir);
+			EF(this.handle, "SetHealth", "-69");
+			return;
 		}
 
 		if (this.hp != this.handle.GetHealth())
 		{
-			EF(this.handle, "SetHealth", "" + this.hp);
+			this.handle.SetHealth(this.hp);
 		}
 	}
 
@@ -813,15 +857,20 @@ g_bTickRate_ANIM <- 0.0;
 		{
 			this.model.Destroy();
 		}
-		if (TargetValid(this.controller.game_ui))
-		{
-			EF(this.controller.game_ui, "Kill");
-		}
 		if (TargetValid(this.handle))
 		{
 			AOP(this.handle, "targetname", "");
 			AOP(this.handle, "rendermode", 0);
 		}
+		if (TargetValid(this.controller.game_ui))
+		{
+			if (TargetValid(this.handle))
+			{
+				EF(this.controller.game_ui, "Deactivate");
+			}
+			EF(this.controller.game_ui, "Kill");
+		}
+
 		RemovePlayerMovementClassByHandle(this.handle);
 	}
 }
@@ -911,7 +960,7 @@ function TickZombie()
 
 function PickZombieKnife(zombie_info_class_id)
 {
-	printl("PickZombieKnife" + activator);
+	ScriptPrintMessageChatAll("New zombie Owner : " + activator + " : " + ZOMBIE_CLASS_DATA[zombie_info_class_id].name)
 	ZOMBIE_OWNERS.push(class_zombie_owner(activator, caller, zombie_info_class_id));
 	if (!g_bTicking_ZombieCheck)
 	{
@@ -1292,6 +1341,16 @@ function Smoke_Jump_Wall()
 
 function t1()
 {
+	local vec1 = Vector(250, 250, 50);
+	local vec2 = Vector(125, 125, 25);
+
+	local vec3 = Vector(0, 0, 1);
+	local vec4 = Vector(1, -1, -1);
+
+	printl("" + vec1.Cross(vec2));
+	printl("" + vec3.Cross(vec4));
+	// printl("" + vec1.ToKVString());
+	return;
 	printl("t1 : " + activator);
 	local zombie_owner_class = GetZombieOwnerClassByOwner(activator);
 	if (zombie_owner_class == null)
@@ -1384,7 +1443,7 @@ function Init()
 	local obj;
 
 	obj = class_zombie_info();
-	obj.name = "default";
+	obj.name = "berserk";
 	obj.modelname = "models/microrost/b4b/ubermensch/tallboy.mdl";
 	obj.anim_stand_idle.push("idle_stand");
 	obj.anim_run_start.push("move_loop");
@@ -1394,13 +1453,14 @@ function Init()
 	obj.anim_crouch_run.push("run_crouch");
 
 	obj.hp = 700;
+	obj.hp = 5;
 	obj.speed = 0.25;
 	obj.damage = 25;
-	obj.regen_hp_hit = 20;
+	obj.regen_hp_hit = 25;
 
 	obj.knife_delay1 = 0.5;
-	obj.ability_cd = 10;
-	obj.ability_duration = 10;
+	obj.ability_cd = 20;
+	obj.ability_duration = 8;
 	ZOMBIE_CLASS_DATA.push(obj);
 
 
@@ -1414,20 +1474,20 @@ function Init()
 	obj.anim_crouch_idle.push("idle_crouch");
 	obj.anim_crouch_run.push("run_crouch");
 
-	obj.hp = 1200;
-	obj.speed = -0.2;
+	obj.hp = 5;
+	// obj.hp = 1750;
+	obj.speed = -0.1;
 	obj.damage = 35;
 	obj.regen_hp_hit = 50;
 
 	obj.knife_delay1 = 0.6;
 	obj.ability_cd = 30.0;
-	// obj.ability_cd = 2.0;
-	obj.ability_duration = 10.0;
+	obj.ability_duration = 5.0;
 	ZOMBIE_CLASS_DATA.push(obj);
 
 
 	obj = class_zombie_info();
-	obj.name = "smoker";
+	obj.name = "poisonmaker";
 	obj.modelname = "models/microrost/b4b/ubermensch/chaser.mdl";
 	obj.anim_stand_idle.push("idle_stand");
 	obj.anim_stand_idle.push("idle_stand1");
@@ -1437,12 +1497,13 @@ function Init()
 	obj.anim_crouch_idle.push("idle_crouch");
 	obj.anim_crouch_run.push("crouch_run");
 
-	obj.hp = 500;
+	obj.hp = 600;
+	obj.hp = 5;
 	obj.speed = 0.2;
 	obj.damage = 20;
 
-	obj.knife_delay1 = 1.45;
-	obj.ability_cd = 0.5;
+	obj.knife_delay1 = 1.2;
+	obj.ability_cd = 0.1;
 	ZOMBIE_CLASS_DATA.push(obj);
 }
 Init();

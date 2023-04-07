@@ -7,11 +7,13 @@ const MIN_HP_FOR_BLOOD = 55;
 const MIN_HP_FOR_FADE = 90;
 const MIN_HP_FOR_SOUNDE = 50;
 
+const CT_SKIN = "models/player/custom_player/microrost/spec/spec1.mdl";
+self.PrecacheModel(CT_SKIN);
+
 g_bTicking_HumanCheck <- false;
 
 g_bTickRate_Blood <- 0.0;
 g_bTickRate_Fade <- 0.0;
-
 
 ::g_hFade_LowHP <- Entities.CreateByClassname("env_fade");
 
@@ -49,6 +51,8 @@ g_bTickRate_Fade <- 0.0;
 		this.knife = _knife;
 
 		this.class_id = _class_id;
+
+		this.handle.SetModel(CT_SKIN);
 
 		if (_class_id != 1)
 		{
@@ -101,7 +105,7 @@ g_bTickRate_Fade <- 0.0;
 		}
 		else
 		{
-			this.pushed = true;
+			this.pushed = false;
 			this.grounded = true;
 		}
 
@@ -131,8 +135,8 @@ g_bTickRate_Fade <- 0.0;
 		if (hp <= ((maxhp * MIN_HP_FOR_FADE) / 100).tointeger())
 		{
 			local proccent = (1.00 - (0.00 + hp) / maxhp);
-			local green = 222.0 - 222.0 * proccent;
-			local blue = 164.0 - 164.0 * proccent;
+			local green = 180.0 - 180.0 * proccent;
+			local blue = 154.0 - 154.0 * proccent;
 
 			EntFireByHandle(g_hFade_LowHP, "Color", "255 " + green + " " + blue, 0, this.handle, this.handle);
 			EntFireByHandle(g_hFade_LowHP, "Fade", "", 0, this.handle, this.handle);
@@ -142,7 +146,6 @@ g_bTickRate_Fade <- 0.0;
 		{
 			EntFireByHandle(POINT_CLIENT_COMMAND, "Command", "play player/heartbeat_noloop.wav", 0.00, this.handle, this.handle);
 		}
-
 	}
 }
 
@@ -204,7 +207,7 @@ function TickHuman()
 
 function PickHumanKnife(human_info_class_id)
 {
-	printl("PickHumanKnife" + activator);
+	ScriptPrintMessageChatAll("New human Owner : " + activator + " : " + HUMAN_CLASS_DATA[human_info_class_id].name)
 	HUMAN_OWNERS.push(class_human_owner(activator, caller, human_info_class_id));
 	if (!g_bTicking_HumanCheck)
 	{
