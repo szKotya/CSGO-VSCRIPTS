@@ -803,7 +803,7 @@ Status              <- "";
         local stage = map_brush.GetScriptScope().Stage;
         if(stage == 1)
         {
-            if(RandomInt(0,3) == 0)
+            if(RandomInt(1,100) >= 95)
                 smart_system = true;
 
             minion_useDef = [18,21];

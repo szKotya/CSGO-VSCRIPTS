@@ -35,9 +35,9 @@ g_aMask <- [
 for(local i = 0; i < g_aMask.len(); i++){self.PrecacheModel(g_aMask[i])};
 
 
-function SetMask(ID, button = true) 
+function SetMask(ID, button = true)
 {
-    
+
     local player_class = MainScript.GetScriptScope().GetPlayerClassByHandle(activator);
     if(player_class == null)
         return;
@@ -62,7 +62,7 @@ function SetMask(ID, button = true)
             }
             else return EntFire("fade_red", "Fade", "", 0, activator);
         }
-        
+
         EntFire("fade_white", "Fade", "", 0, activator);
     }
     local ent = Entities.FindByName(null, "mask_" + player_class.userid);
@@ -81,6 +81,6 @@ function SetMask(ID, button = true)
         EntFireByHandle(ent,"SetParent","!activator",0.00,activator,activator);
         EntFireByHandle(ent,"setparentattachment","facemask",0.05,activator,activator);
     }
-    else 
+    else
         ent.SetModel(g_aMask[ID]);
 }

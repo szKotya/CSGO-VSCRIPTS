@@ -889,6 +889,7 @@ VIP_STEAM_ID <-[
 "STEAM_1:0:21838852",    //detroid
 "STEAM_1:1:420073883",    //shizuka
 "STEAM_1:1:76518687",    //tupu
+"STEAM_1:0:564459774",    //kinish
 "STEAM_1:1:183225255",    //ponya
 "STEAM_1:0:213888379",    //burning my life
 "STEAM_1:1:101719126",    //bulavator
@@ -911,7 +912,6 @@ VIP_STEAM_ID <-[
 
 "STEAM_1:0:125983318",    //widez
 
-"STEAM_1:0:564459774",    //kiskis
 
 "STEAM_1:1:188314072",    //Crimson
 "STEAM_1:0:51987357",    //Tachibana
@@ -945,6 +945,7 @@ INVALID_STEAM_ID <- [
 
 "STEAM_1:0:545026218 9",    //sushibanana
 "STEAM_1:0:67807133 10",    //spxctator
+"STEAM_1:0:564459774 33",    //kinish
 "STEAM_1:1:184872578 11",    //xiaodi
 "STEAM_1:0:139000667 12",    //liala
 "STEAM_1:1:231588744 13",    //takoyaki
@@ -969,8 +970,6 @@ INVALID_STEAM_ID <- [
 "STEAM_1:0:118645099 31",    //MercaXlv
 
 "STEAM_1:1:54109628 32",    //Cron
-
-"STEAM_1:0:564459774 33",    //kiskis
 
 "STEAM_1:1:188314072 34",    //Crimson
 "STEAM_1:0:51987357 35",    //Tachibana

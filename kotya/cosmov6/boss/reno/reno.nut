@@ -354,22 +354,28 @@ function BossDead()
 function DeadStart()
 {
     MainScript.GetScriptScope().Active_Boss = "Reno";
-    HP = 0;
+
     HP_INIT = 0;
     HP_BARS = 16;
+
     SetHP(60);
+    if (g_bUseUltima)
+    {
+        AddHP(200);
+    }
+
     stage = true;
     ticking = true;
     EntFire("Special_HealthTexture", "SetTextureIndex","0", 0.00);
     EntFireByHandle(self, "RunScriptCode", "Tick();", 1, null, null);
     EntFire("Reno_Final_Move", "FrieUser4", "", 0); //вижен камням
     EntFire("Reno_Final_Move", "FrieUser4", "", 0);
-    EntFire("Reno_HP_Bar", "ShowSprite", "", 1);
-    EntFire("Reno_Name_Bar", "ShowSprite", "", 1);
-    EntFire("Reno_Phys", "Enable", "", 1);
-    EntFire("Reno_Nade", "Enable", "", 1);
-    EntFire("Reno_Final_Rock_Model_*", "Enable", "", 1);
-    EntFire("Reno_Rock_Movelinear", "Open", "", 4);
+    EntFire("Reno_HP_Bar", "ShowSprite", "", 2);
+    EntFire("Reno_Name_Bar", "ShowSprite", "", 2);
+    EntFire("Reno_Phys", "Enable", "", 2);
+    EntFire("Reno_Nade", "Enable", "", 2);
+    EntFire("Reno_Final_Rock_Model_*", "Enable", "", 3);
+    EntFire("Reno_Rock_Movelinear", "Open", "", 5);
     EntFireByHandle(self, "RunScriptCode", "NewAttack();", 3, null, null);
     EntFireByHandle(self, "RunScriptCode", "bChek = true;", 20, null, null);
     PlaySound((RandomInt(0,1) ? Sound_ScheneMove1 : Sound_ScheneMove2), 1, 2, 0);
@@ -426,6 +432,12 @@ function NewAttack()
             EntFire("Reno_Path_x6", "AddOutPut", "OnPass Temp_Reno:runscriptcode:Lose():0:1", 0, null);
         }
     }
+}
+
+g_bUseUltima <- false;
+function ItemEffect_Ultima()
+{
+    g_bUseUltima = true;
 }
 
 function EbashuLaser()
@@ -500,7 +512,7 @@ function Chek()
     if (bChek)
     {
         ticking = false;
-        EntFire("End_End", "RunScriptCode", "Nuke(3);", 0);
+        EntFire("End_End", "RunScriptCode", "Nuke(3);", 5);
         EntFire("Reno_HP_Bar", "HideSprite", "", 0);
         EntFire("Reno_Name_Bar", "HideSprite", "", 0);
     }
@@ -906,14 +918,14 @@ function DeadOnLaser()
     if (!bChek)
     {
         if (damage < min)
-        damage = min;
-    else if (damage > max)
-        damage = max;
-    SubtractHP(damage);
+            damage = min;
+        else if (damage > max)
+            damage = max;
+        SubtractHP(damage);
     }
     else
     {
-       SubtractHP(40);
+       SubtractHP(30);
     }
 }
 
